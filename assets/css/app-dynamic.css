@@ -8,7 +8,10 @@
     height: auto;
 }
 
-.collage .polaroid .face { width: 100% !important; height: auto; }
+.collage .polaroid .face {
+    width: 100% !important;
+    height: auto;
+}
 
 /* Mobile touch guards */
 #mobileTouchGuards,
@@ -20,13 +23,14 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Allow dragging with pointer events while disabling double-tap zoom; 'manipulation' is lighter than 'none'. */
 .collage .polaroid {
-    touch-action: none;
+    touch-action: manipulation;
 }
 
 .collage img {
     -webkit-user-drag: none;
-    user-drag: none;
+    /* Prevent image drag ghost */
     pointer-events: auto;
 }
 

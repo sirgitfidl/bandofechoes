@@ -769,12 +769,9 @@ input[type=email] {
         justify-content: start;
     }
 
+    /* Allow dragging: don't freeze custom properties with !important.
+         We just set a tighter base margin; JS will manage --tx/--ty/--ux/--uy/--rot */
     #watch .polaroid {
-        --tx: 0px !important;
-        --ty: 0px !important;
-        --ux: 0px !important;
-        --uy: 0px !important;
-        --rot: 0deg;
         margin: 2px 2px;
     }
 }
