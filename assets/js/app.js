@@ -93,26 +93,77 @@ const debugVals = () => { };
   function scatter() {
     if (!collage) return;
     const items = collage.querySelectorAll('.polaroid');
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const mobileMode = vw <= 560;
+    let repW = 0, repH = 0;
+    if (mobileMode) {
+      // Pick first polaroid width as representative; approximate full card height (~ image aspect + frame)
+      const first = items[0];
+      if (first) {
+        repW = first.offsetWidth || 200;
+        repH = repW * 1.22; // empirical card height multiplier
+        // Set a compact fixed container height so grid auto placement doesn't balloon.
+        const targetH = Math.round(repH * 2.15); // roughly fits 2 rows with heavy overlap
+        collage.style.position = 'relative';
+        collage.style.height = targetH + 'px';
+      }
+    } else {
+      // Clear any mobile inline overrides when returning to desktop
+      if (collage.style.height) {
+        collage.style.height = '';
+        collage.style.position = '';
+      }
+    }
+
     items.forEach((el, i) => {
-      const w = el.offsetWidth || 300;
-  const vw = window.innerWidth || document.documentElement.clientWidth || 1024;
-  // Maintain generous horizontal spread everywhere; tighten vertical spread on small screens
-  const maxX = Math.max(40, Math.min(220, w * 0.55));
-  // On mobile (<=560px) reduce vertical wander so cards cluster closer; scale smoothly
-  const mobileTightFactor = vw <= 360 ? 0.45 : vw <= 440 ? 0.55 : vw <= 560 ? 0.65 : 1;
-  const baseMaxY = w * 0.20; // original proportional vertical spread
-  const maxY = Math.max(10, Math.min(80, baseMaxY * mobileTightFactor));
+      const w = el.offsetWidth || repW || 300;
       const maxR = 16;
-      let rx = (Math.random() * 2 - 1) * maxX;
-      if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
-      if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
-  // Slightly more clustering near top by using exponent; on very tight mobile factor also reduce exponent to keep group cohesive
-  const exp = mobileTightFactor < 1 ? 1.0 : 1.2;
-  const ry = Math.pow(Math.random(), exp) * maxY;
-      const rot = (Math.random() * 2 - 1) * maxR;
-      el.style.setProperty('--tx', `${rx}px`);
-      el.style.setProperty('--ty', `${ry}px`);
-      el.style.setProperty('--rot', `${rot}deg`);
+      if (mobileMode) {
+        // Force absolute positioning so layout boxes don't stack vertically
+        if (el.style.position !== 'absolute') {
+          el.style.position = 'absolute';
+          el.style.top = '0';
+          el.style.left = '0';
+        }
+        // Centered overlap cloud: distribute around container center for more balanced look
+        const h = repH || (w * 1.22);
+        const containerW = collage.clientWidth || (w * 3);
+        const containerH = parseFloat(collage.style.height) || (h * 2.1);
+        const cx = containerW / 2;
+        const cy = containerH / 2;
+        // Spread radii (controls density)
+        const spreadX = w * 1.15; // allow about a bit over one width left/right
+        const spreadY = h * 0.55;  // about half height up/down
+        // Use triangular distribution (sum of two uniforms - 1) for more center weight
+        const tri = () => (Math.random() + Math.random() - 1); // range [-1,1]
+        const rxLocal = tri() * spreadX;
+        const ryLocal = tri() * spreadY;
+        const rx = cx - w / 2 + rxLocal;
+        const ry = cy - h / 2 + ryLocal;
+        const rot = (Math.random() * 2 - 1) * (maxR * 0.85);
+        el.style.setProperty('--tx', `${rx}px`);
+        el.style.setProperty('--ty', `${ry}px`);
+        // Slight layering tweak: front-load z for later items for visual variation
+        el.style.setProperty('--rot', `${rot}deg`);
+      } else {
+        // Desktop original scatter logic
+        const maxX = Math.max(40, Math.min(220, w * 0.55));
+        const maxY = Math.max(14, Math.min(80, w * 0.20));
+        let rx = (Math.random() * 2 - 1) * maxX;
+        if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
+        if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
+        const ry = Math.pow(Math.random(), 1.2) * maxY;
+        const rot = (Math.random() * 2 - 1) * maxR;
+        el.style.setProperty('--tx', `${rx}px`);
+        el.style.setProperty('--ty', `${ry}px`);
+        el.style.setProperty('--rot', `${rot}deg`);
+        // Reset any absolute positioning from mobile mode
+        if (el.style.position === 'absolute' && !mobileMode) {
+          el.style.position = '';
+          el.style.top = '';
+          el.style.left = '';
+        }
+      }
       if (!el.style.zIndex) el.style.zIndex = String(10 + i);
     });
   }
@@ -316,8 +367,6 @@ const debugVals = () => { };
 
     function down(e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return; // left click only
-      // Prevent default to stop touch scrolling or text selection gestures from interrupting drag
-      if (e.cancelable) e.preventDefault();
       id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false;
 
       // Build per-member baselines so the whole snapped group drags rigidly
@@ -379,6 +428,26 @@ const debugVals = () => { };
 
   // Initial scatter after layout
   scatter();
+  // Track mode to re-scatter only when crossing breakpoint so mobile cluster recenters
+  let __lastScatterMode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop';
+  function responsiveRescatter() {
+    const mode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop';
+    if (mode === __lastScatterMode) return; // no breakpoint crossing
+    // Re-scatter fresh for new mode (keeps user drag offsets if any by resetting ux/uy/rot deltas first)
+    document.querySelectorAll('.polaroid').forEach(el => {
+      // If user has moved pieces, preserve zIndex but reset offsets for clean cluster switch
+      el.style.setProperty('--ux', '0px');
+      el.style.setProperty('--uy', '0px');
+      // keep rotation randomization to scatter() (we clear previous deltas)
+    });
+    scatter();
+    __lastScatterMode = mode;
+  }
+  let __rszTimer = null;
+  window.addEventListener('resize', () => {
+    if (__rszTimer) clearTimeout(__rszTimer);
+    __rszTimer = setTimeout(responsiveRescatter, 140); // debounce
+  });
 
   // snapping logic ----------------------------------------------------------
   const SNAP = { ang: 8, frac: 0.12, gap: 0 };
