@@ -254,6 +254,7 @@ body {
 
 @supports (-webkit-appearance: slider-vertical) {
     .fader {
+        appearance: slider-vertical;
         -webkit-appearance: slider-vertical;
         width: 42px;
         height: 220px
