@@ -1,0 +1,431 @@
+/* CSS for Right In Two — Stem Mixer (Secret) */
+:root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --card: #1e2230;
+    --text: #e7eaf3;
+    --muted: #8a90a6;
+    --accent: #6aa6ff;
+    --shadow: rgba(0, 0, 0, .35);
+}
+
+html,
+body {
+    justify-content: center;
+    height: 100%
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(1200px 700px at 70% -20%, #1b2030 0%, #0d0f14 60%, #0b0d12 100%);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px
+}
+
+.page-title {
+    width: min(1100px, 96vw);
+    margin: 0 auto 6px auto;
+    text-align: center
+}
+
+.page-title h1 {
+    margin: 0 0 2px 0;
+    font-size: 20px;
+    letter-spacing: .4px;
+    font-weight: 700
+}
+
+.page-title .sub {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: .3px
+}
+
+.mixer-wrap {
+    width: min(1100px, 96vw);
+    background: linear-gradient(180deg, #1b2130 0%, #131722 100%);
+    border: 1px solid #272c3a;
+    border-radius: 16px;
+    box-shadow: 0 30px 80px var(--shadow);
+    padding: 16px 20px;
+    position: relative
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 6px 12px;
+    border-bottom: 1px solid #2a3246;
+    margin-bottom: 12px
+}
+
+.transport {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%
+}
+
+.btn {
+    background: var(--card);
+    border: 1px solid #2a3246;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform .05s ease, background .2s ease, border-color .2s ease;
+    user-select: none
+}
+
+.btn:hover {
+    background: #252b3d
+}
+
+.btn:active {
+    transform: translateY(1px)
+}
+
+.btn[disabled] {
+    opacity: .55;
+    cursor: default
+}
+
+.btn.primary {
+    border-color: #35508c
+}
+
+.time {
+    margin-left: 8px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-size: 14px
+}
+
+.progress {
+    flex: 1;
+    min-width: 320px;
+    height: 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    margin: 0 10px;
+    cursor: pointer;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent
+}
+
+.progress::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #20263a, #141822);
+    border: 1px solid #2a3246
+}
+
+.progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #3b4668;
+    background: #b6c8ff;
+    margin-top: -3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35)
+}
+
+.progress::-moz-range-track {
+    height: 8px;
+    border-radius: 999px;
+    background: #141822;
+    border: 1px solid #2a3246
+}
+
+.progress::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #3b4668;
+    background: #b6c8ff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35)
+}
+
+.strips {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(140px, 1fr));
+    grid-template-rows: auto 1fr;
+    column-gap: 14px;
+    row-gap: 16px;
+    align-items: end;
+    grid-template-areas:
+        "master instruments instruments vocals vocals"
+        "master guitar cello eric kathryn"
+}
+
+.strip[data-channel="master"] {
+    grid-area: master
+}
+
+.strip[data-channel="guitar"] {
+    grid-area: guitar
+}
+
+.strip[data-channel="cello"] {
+    grid-area: cello
+}
+
+.strip[data-channel="eric"] {
+    grid-area: eric
+}
+
+.strip[data-channel="kathryn"] {
+    grid-area: kathryn
+}
+
+.group-banner {
+    grid-row: 1;
+    place-self: center;
+    position: relative;
+    z-index: 5;
+    font-size: 10px;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    color: #cbd5ff;
+    background: #202742;
+    border: 1px solid #2a3246;
+    padding: 4px 10px;
+    border-radius: 999px;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none
+}
+
+.group-banner.held {
+    filter: brightness(1.2)
+}
+
+.group-banner.instruments {
+    grid-area: instruments;
+    color: #b3ffe0;
+    border-color: #297a58;
+    background: #142a21
+}
+
+.group-banner.vocals {
+    grid-area: vocals;
+    color: #ffd6f0;
+    border-color: #7a2959;
+    background: #2a1421
+}
+
+.strip {
+    background: var(--card);
+    border: 1px solid #2a3246;
+    border-radius: 14px;
+    padding: 14px 12px 12px;
+    box-shadow: inset 0 1px 0 #2c3245;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    grid-row: 2
+}
+
+.strip .name {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-align: center
+}
+
+.fader {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    width: 42px;
+    height: 220px;
+    cursor: pointer
+}
+
+@supports (-webkit-appearance: slider-vertical) {
+    .fader {
+        -webkit-appearance: slider-vertical;
+        width: 42px;
+        height: 220px
+    }
+
+    .fader::-webkit-slider-runnable-track {
+        width: 10px;
+        height: 210px;
+        background: linear-gradient(180deg, #e8edf2, #c3ccd5);
+        border: 1px solid #a6b1bb;
+        border-radius: 8px;
+        box-shadow: inset 0 0 0 2px #cdd4db, inset 0 0 8px rgba(0, 0, 0, .35)
+    }
+
+    .fader::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 34px;
+        height: 22px;
+        border-radius: 4px;
+        border: 1px solid #9aa6b1;
+        background: linear-gradient(90deg, transparent 0 15px, #1b1f24 15px 17px, transparent 17px), linear-gradient(180deg, #f9fbfd, #dbe3ea);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, .45), inset 0 -1px 0 rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .6)
+    }
+}
+
+@supports not (-webkit-appearance: slider-vertical) {
+    .fader {
+        transform: rotate(-90deg);
+        width: 220px;
+        height: 42px
+    }
+
+    .fader::-webkit-slider-runnable-track,
+    .fader::-moz-range-track {
+        height: 10px;
+        border-radius: 8px;
+        border: 1px solid #a6b1bb;
+        background: linear-gradient(180deg, #e8edf2, #c3ccd5);
+        box-shadow: inset 0 0 0 2px #cdd4db, inset 0 0 8px rgba(0, 0, 0, .35)
+    }
+
+    .fader::-webkit-slider-thumb,
+    .fader::-moz-range-thumb {
+        width: 34px;
+        height: 22px;
+        border-radius: 4px;
+        border: 1px solid #9aa6b1;
+        background: linear-gradient(90deg, transparent 0 15px, #1b1f24 15px 17px, transparent 17px), linear-gradient(180deg, #f9fbfd, #dbe3ea);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, .45), inset 0 -1px 0 rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .6)
+    }
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center
+}
+
+.chip {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #2a3246;
+    background: #192033;
+    cursor: pointer;
+    user-select: none
+}
+
+.chip.active {
+    background: #13223c;
+    border-color: #35508c;
+    color: #d3e2ff
+}
+
+.chip.mute.active {
+    background: #2a1720;
+    border-color: #6b2d2d;
+    color: #ffd4d4
+}
+
+.chip.solo.active {
+    background: #152a1f;
+    border-color: #2b7a4b;
+    color: #d6ffe6
+}
+
+.meter {
+    width: 100%;
+    height: 6px;
+    background: #111522;
+    border: 1px solid #2a3246;
+    border-radius: 999px;
+    overflow: hidden
+}
+
+.meter>span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #2fe38d, #6aa6ff);
+    transition: width .08s linear
+}
+
+.db {
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 16px
+}
+
+.group-tag {
+    font-size: 10px;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    color: #cbd5ff;
+    background: #202742;
+    border: 1px solid #2a3246;
+    padding: 3px 8px;
+    border-radius: 999px
+}
+
+.group-tag.instruments {
+    color: #b3ffe0;
+    border-color: #297a58;
+    background: #142a21
+}
+
+.group-tag.vocals {
+    color: #ffd6f0;
+    border-color: #7a2959;
+    background: #2a1421
+}
+
+audio {
+    display: none
+}
+
+#loadingOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(9, 11, 18, .55);
+    backdrop-filter: blur(3px);
+    border-radius: 16px
+}
+
+#loadingOverlay[hidden] {
+    display: none
+}
+
+.spinner {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, .18);
+    border-top-color: #b6c8ff;
+    animation: spin 1s linear infinite
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.loading-text {
+    color: #d0dbff;
+    font-weight: 700;
+    letter-spacing: .3px
+}

@@ -1,6 +1,5 @@
 // Band of Echoes — app.js (sanity v5)
 // Goal: keep ALL existing behaviors; add cache-busting log, periodic solver, ultra-lenient gates.
-// Press D to toggle HUD; press S to force-solve. No random back-rotation (upright only) for sanity.
 const CONFIG = {
   featuredVideoId: 'dRs_bLfrtu8',
   youtubeHandleUrl: 'https://youtube.com/@BandOfEchoes',
@@ -8,31 +7,31 @@ const CONFIG = {
 };
 
 // helpers
-const mean = a => a.reduce((s,v)=>s+v,0)/a.length;
-const variance = a => { const m=mean(a); return a.reduce((s,v)=>s+(v-m)**2,0)/a.length; };
-const cov = (a,b) => { const ma=mean(a), mb=mean(b); return a.reduce((s,_,i)=>s+(a[i]-ma)*(b[i]-mb),0)/a.length; };
-const wrap180 = d => ((d+90)%180+180)%180-90;
-function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+const variance = a => { const m = mean(a); return a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length; };
+const cov = (a, b) => { const ma = mean(a), mb = mean(b); return a.reduce((s, _, i) => s + (a[i] - ma) * (b[i] - mb), 0) / a.length; };
+const wrap180 = d => ((d + 90) % 180 + 180) % 180 - 90;
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
 
 // debug stubs (defined early so any calls before bottom are safe)
-const debugMsg = ()=>{};
-const debugVals = ()=>{};
+const debugMsg = () => { };
+const debugVals = () => { };
 
-(function init(){
+(function init() {
   const year = document.getElementById('year'); if (year) year.textContent = new Date().getFullYear();
 
   // click-to-play hero
   const wrap = document.getElementById('playerWrap');
   const poster = document.getElementById('poster');
-  if (wrap && poster && CONFIG.featuredVideoId){
-    poster.addEventListener('click', (e)=>{
+  if (wrap && poster && CONFIG.featuredVideoId) {
+    poster.addEventListener('click', (e) => {
       e.preventDefault();
       const f = document.createElement('iframe');
-      f.className='video-frame';
-      f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.className = 'video-frame';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       f.allowFullscreen = true;
-      f.src=`https://www.youtube.com/embed/${CONFIG.featuredVideoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
-      wrap.innerHTML=''; wrap.appendChild(f);
+      f.src = `https://www.youtube.com/embed/${CONFIG.featuredVideoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
+      wrap.innerHTML = ''; wrap.appendChild(f);
     });
   }
 
@@ -48,100 +47,62 @@ const debugVals = ()=>{};
     const openMenu = () => {
       prevFocusEl = document.activeElement;
       navMenu.classList.add('open');
-      navMenu.setAttribute('aria-hidden','false');
-      navToggle.setAttribute('aria-expanded','true');
-      (navMenu.querySelector('a')||navMenu)?.focus?.();
+      navMenu.setAttribute('aria-hidden', 'false');
+      navToggle.setAttribute('aria-expanded', 'true');
+      (navMenu.querySelector('a') || navMenu)?.focus?.();
     };
     const closeMenu = () => {
       navMenu.classList.remove('open');
-      navMenu.setAttribute('aria-hidden','true');
-      navToggle.setAttribute('aria-expanded','false');
-      (prevFocusEl||navToggle)?.focus?.();
+      navMenu.setAttribute('aria-hidden', 'true');
+      navToggle.setAttribute('aria-expanded', 'false');
+      (prevFocusEl || navToggle)?.focus?.();
     };
-    navToggle.addEventListener('click', (e)=>{
+    navToggle.addEventListener('click', (e) => {
       e.preventDefault();
       navMenu.classList.contains('open') ? closeMenu() : openMenu();
     });
-    document.addEventListener('click', (e)=>{
+    document.addEventListener('click', (e) => {
       if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
         if (navMenu.classList.contains('open')) closeMenu();
       }
     });
-    document.addEventListener('keydown', (e)=>{
+    document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && navMenu.classList.contains('open')) closeMenu();
     });
-    navMenu.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeMenu));
+    navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
   }
-  // --- Mobile sizing: make polaroids comfortably large on phones/tablets ---
-  function injectPolaroidMobileSizing(){
-    if (document.getElementById('polaroidMobileSizing')) return;
-    const st = document.createElement('style');
-    st.id = 'polaroidMobileSizing';
-    st.textContent = `
-      /* Fixed puzzle piece size across all screen widths */
-      .collage .polaroid{ width: 230px !important; height: auto; }
-      .collage .polaroid .face{ width: 100% !important; height: auto; }
-    `;
-    document.head.appendChild(st);
+  // Polaroid mobile sizing CSS is now in app-dynamic.css
+
+  // Mobile touch guards CSS is now in app-dynamic.css
+  // Still need to prevent context menu, selection, and set draggable=false for images
+  const root = document.querySelector('.collage');
+  if (root) {
+    root.addEventListener('contextmenu', e => { e.preventDefault(); }, { capture: true });
+    root.addEventListener('selectstart', e => { e.preventDefault(); }, { capture: true });
+    // Safari gesture events (pinch/long‑press)
+    root.addEventListener('gesturestart', e => { e.preventDefault(); });
   }
-  injectPolaroidMobileSizing();
-
-  // --- Prevent long‑press context menus / image save on mobile in the puzzle area ---
-  function injectMobileTouchGuards(){
-    if (document.getElementById('mobileTouchGuards')) return;
-    const st = document.createElement('style');
-    st.id = 'mobileTouchGuards';
-    st.textContent = `
-      /* Scope to the collage so the rest of the site still allows selection */
-      .collage, .collage * {
-        -webkit-touch-callout: none;  /* iOS long‑press menu */
-        -webkit-user-select: none;    /* iOS text selection */
-        user-select: none;            /* Other browsers */
-        -webkit-tap-highlight-color: transparent;
-      }
-      .collage .polaroid{
-        touch-action: none;           /* You handle gestures; disable browser defaults */
-      }
-      .collage img{
-        -webkit-user-drag: none;      /* Prevent image drag ghost */
-        user-drag: none;
-        pointer-events: auto;
-      }
-    `;
-    document.head.appendChild(st);
-
-    const root = document.querySelector('.collage');
-    if (root){
-      root.addEventListener('contextmenu', e => { e.preventDefault(); }, { capture:true });
-      root.addEventListener('selectstart', e => { e.preventDefault(); }, { capture:true });
-      // Safari gesture events (pinch/long‑press)
-      root.addEventListener('gesturestart', e => { e.preventDefault(); });
-    }
-
-    // Ensure all images in the collage are not draggable
-    document.querySelectorAll('.collage img').forEach(img => {
-      img.setAttribute('draggable','false');
-    });
-  }
-  injectMobileTouchGuards();
+  document.querySelectorAll('.collage img').forEach(img => {
+    img.setAttribute('draggable', 'false');
+  });
 
   // scatter once (after layout) — preserves your look
   const collage = document.querySelector('.collage');
   let zCounter = 10000;
   // Scatter (initial random offsets/tilt)
-  function scatter(){
+  function scatter() {
     if (!collage) return;
     const items = collage.querySelectorAll('.polaroid');
-    items.forEach((el,i)=>{
+    items.forEach((el, i) => {
       const w = el.offsetWidth || 300;
-      const maxX = Math.max(40, Math.min(220, w*0.55));
-      const maxY = Math.max(14, Math.min(80,  w*0.20));
+      const maxX = Math.max(40, Math.min(220, w * 0.55));
+      const maxY = Math.max(14, Math.min(80, w * 0.20));
       const maxR = 16;
-      let rx = (Math.random()*2 - 1) * maxX;
-      if ((i%5)===4 && rx>0) rx = Math.min(rx, maxX*0.4);
-      if (i>=5) rx = Math.max(-maxX*1.1, Math.min(maxX*1.1, rx*1.1));
-      const ry = Math.pow(Math.random(),1.2) * maxY;
-      const rot = (Math.random()*2 - 1) * maxR;
+      let rx = (Math.random() * 2 - 1) * maxX;
+      if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
+      if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
+      const ry = Math.pow(Math.random(), 1.2) * maxY;
+      const rot = (Math.random() * 2 - 1) * maxR;
       el.style.setProperty('--tx', `${rx}px`);
       el.style.setProperty('--ty', `${ry}px`);
       el.style.setProperty('--rot', `${rot}deg`);
@@ -152,41 +113,41 @@ const debugVals = ()=>{};
   // --- Grouping & snapping infra --------------------------------------
   let groupSeq = 1;
   const groups = new Map(); // id -> Set<HTMLElement>
-  const newGroupId = ()=> 'g' + (groupSeq++);
-  function ensureGroup(el){
-    if(!el.dataset.group){
+  const newGroupId = () => 'g' + (groupSeq++);
+  function ensureGroup(el) {
+    if (!el.dataset.group) {
       const id = newGroupId(); el.dataset.group = id; groups.set(id, new Set([el]));
     }
     return el.dataset.group;
   }
-  function membersOf(el){ const id = ensureGroup(el); return groups.get(id) || new Set([el]); }
-  function mergeGroups(a,b){ const ia=ensureGroup(a), ib=ensureGroup(b); if(ia===ib) return ia; const A=groups.get(ia), B=groups.get(ib); B.forEach(n=>{ n.dataset.group=ia; A.add(n); }); groups.delete(ib); A.forEach(n=>{ updateFlipper(n); updateRotor(n); }); return ia; }
-  function unsnap(el){ const id=ensureGroup(el); const set=groups.get(id); if(!set||set.size<=1) return; set.delete(el); const nid=newGroupId(); el.dataset.group=nid; groups.set(nid, new Set([el])); updateFlipper(el); updateRotor(el); set.forEach(n=>{ updateFlipper(n); updateRotor(n); }); }
-  function getStyleNum(el, name){ const v=getComputedStyle(el).getPropertyValue(name); const n=parseFloat(v); return isNaN(n)?0:n; }
-  function applyDeltaToGroup(el, dx, dy, dRot){ membersOf(el).forEach(n=>{ const ux=getStyleNum(n,'--ux'); const uy=getStyleNum(n,'--uy'); const rot=getStyleNum(n,'--rot'); n.style.setProperty('--ux', (ux+dx)+'px'); n.style.setProperty('--uy', (uy+dy)+'px'); n.style.setProperty('--rot', (rot+dRot)+'deg'); }); }
+  function membersOf(el) { const id = ensureGroup(el); return groups.get(id) || new Set([el]); }
+  function mergeGroups(a, b) { const ia = ensureGroup(a), ib = ensureGroup(b); if (ia === ib) return ia; const A = groups.get(ia), B = groups.get(ib); B.forEach(n => { n.dataset.group = ia; A.add(n); }); groups.delete(ib); A.forEach(n => { updateFlipper(n); updateRotor(n); }); return ia; }
+  function unsnap(el) { const id = ensureGroup(el); const set = groups.get(id); if (!set || set.size <= 1) return; set.delete(el); const nid = newGroupId(); el.dataset.group = nid; groups.set(nid, new Set([el])); updateFlipper(el); updateRotor(el); set.forEach(n => { updateFlipper(n); updateRotor(n); }); }
+  function getStyleNum(el, name) { const v = getComputedStyle(el).getPropertyValue(name); const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function applyDeltaToGroup(el, dx, dy, dRot) { membersOf(el).forEach(n => { const ux = getStyleNum(n, '--ux'); const uy = getStyleNum(n, '--uy'); const rot = getStyleNum(n, '--rot'); n.style.setProperty('--ux', (ux + dx) + 'px'); n.style.setProperty('--uy', (uy + dy) + 'px'); n.style.setProperty('--rot', (rot + dRot) + 'deg'); }); }
   // Temporarily disable transitions for a set of nodes during precise snaps
-  function withoutAnim(nodes, fn){ const list=[]; nodes.forEach(n=>{ list.push([n, n.style.transition]); n.style.transition='none'; }); try{ fn(); } finally { list.forEach(([n,t])=>{ n.style.transition=t; }); } }
-  function updateFlipper(el){
+  function withoutAnim(nodes, fn) { const list = []; nodes.forEach(n => { list.push([n, n.style.transition]); n.style.transition = 'none'; }); try { fn(); } finally { list.forEach(([n, t]) => { n.style.transition = t; }); } }
+  function updateFlipper(el) {
     let btn = el.querySelector('.flipper');
     if (!btn) return;
 
     // Always clickable; never bubble to the card (so lightbox doesn't open)
     btn.style.pointerEvents = 'auto';
-    btn.onpointerdown = (ev)=>{ ev.preventDefault(); ev.stopPropagation(); };
-    btn.onmousedown   = (ev)=>{ ev.preventDefault(); ev.stopPropagation(); };
+    btn.onpointerdown = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+    btn.onmousedown = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
 
     const grouped = membersOf(el).size > 1;
-    const isBack  = el.dataset.flipped === '1';
+    const isBack = el.dataset.flipped === '1';
 
     if (grouped) {
       // Coupled pieces cannot flip — only de‑snap
       btn.textContent = '⎌';
       btn.title = 'De-snap';
-      btn.setAttribute('aria-label','De-snap');
-      btn.onclick = (ev)=>{
+      btn.setAttribute('aria-label', 'De-snap');
+      btn.onclick = (ev) => {
         ev.preventDefault(); ev.stopPropagation();
         unsnap(el);
-        setTimeout(()=>{ delete el.dataset.didDrag; },0);
+        setTimeout(() => { delete el.dataset.didDrag; }, 0);
         checkSolvedSoon();
         updateFlipper(el);
       };
@@ -195,11 +156,11 @@ const debugVals = ()=>{};
       btn.textContent = '⇄';
       btn.title = isBack ? 'Flip to front' : 'Flip to back';
       btn.setAttribute('aria-label', btn.title);
-      btn.onclick = (ev)=>{
+      btn.onclick = (ev) => {
         ev.preventDefault(); ev.stopPropagation();
         el.dataset.flipped = isBack ? '0' : '1';
         el.dataset.didDrag = '1';
-        setTimeout(()=>{ delete el.dataset.didDrag; },120);
+        setTimeout(() => { delete el.dataset.didDrag; }, 120);
         updateFlipper(el);
         checkSolvedSoon();
       };
@@ -207,21 +168,21 @@ const debugVals = ()=>{};
   }
 
   // Disable/enable the rotor based on grouping state
-  function updateRotor(el){
+  function updateRotor(el) {
     const knob = el.querySelector('.rotor');
     if (!knob) return;
     const grouped = membersOf(el).size > 1;
 
     // Install hover wiring once to avoid duplicate listeners
-    if (!el.dataset.peInit){
+    if (!el.dataset.peInit) {
       el.dataset.peInit = '1';
       knob.style.pointerEvents = 'none';
-      el.addEventListener('mouseenter',()=>{ if(membersOf(el).size<=1) knob.style.pointerEvents='auto'; });
-      el.addEventListener('mouseleave',()=>{ knob.style.pointerEvents='none'; });
+      el.addEventListener('mouseenter', () => { if (membersOf(el).size <= 1) knob.style.pointerEvents = 'auto'; });
+      el.addEventListener('mouseleave', () => { knob.style.pointerEvents = 'none'; });
     }
 
-    if (grouped){
-      knob.setAttribute('disabled','');
+    if (grouped) {
+      knob.setAttribute('disabled', '');
       knob.style.opacity = '0.35';
       knob.style.pointerEvents = 'none';
       knob.title = 'Rotate (disabled while snapped)';
@@ -234,16 +195,16 @@ const debugVals = ()=>{};
   }
 
   // rotation knob — group-aware
-  function addRotor(el){
+  function addRotor(el) {
     // Ensure a knob exists
     let knob = el.querySelector('.rotor');
-    if(!knob){
-      knob=document.createElement('button');
-      knob.type='button';
-      knob.className='rotor';
-      knob.textContent='⟲';
-      knob.title='Rotate';
-      knob.setAttribute('aria-label','Rotate photo');
+    if (!knob) {
+      knob = document.createElement('button');
+      knob.type = 'button';
+      knob.className = 'rotor';
+      knob.textContent = '⟲';
+      knob.title = 'Rotate';
+      knob.setAttribute('aria-label', 'Rotate photo');
       el.appendChild(knob);
     }
     // reflect initial state (disabled when grouped)
@@ -253,31 +214,31 @@ const debugVals = ()=>{};
     // - rotate SOLO tiles only
     // - no layout reads inside RAF
     // - never adjust --ux/--uy while rotating a solo tile
-    let id=null, prev=0, baseRot=0, acc=0, raf=null, prevOrigin='';
+    let id = null, prev = 0, baseRot = 0, acc = 0, raf = null, prevOrigin = '';
 
-    const angleAt = (e, pivot)=>{
-      return Math.atan2(e.clientY - pivot.y, e.clientX - pivot.x) * 180/Math.PI;
+    const angleAt = (e, pivot) => {
+      return Math.atan2(e.clientY - pivot.y, e.clientX - pivot.x) * 180 / Math.PI;
     };
 
-    function down(e){
+    function down(e) {
       // If part of any coupling, rotation is disabled entirely
       if (membersOf(el).size > 1) { e.preventDefault(); e.stopPropagation(); return; }
-      if (e.pointerType==='mouse' && e.button!==0) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
       e.preventDefault(); e.stopPropagation();
 
       id = e.pointerId;
       acc = 0;
-      baseRot = getStyleNum(el,'--rot');
+      baseRot = getStyleNum(el, '--rot');
 
       // pivot = this card's center (read once on pointerdown)
       const r = el.getBoundingClientRect();
-      const pivot = { x: r.left + r.width/2, y: r.top + r.height/2 };
+      const pivot = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
       prev = angleAt(e, pivot);
 
       // tighten rotation math; mark state
       el.classList.add('rotating');
       el.dataset.didDrag = '1';
-      setTimeout(()=>{ delete el.dataset.didDrag; }, 120);
+      setTimeout(() => { delete el.dataset.didDrag; }, 120);
 
       // rotate about true center for stability
       prevOrigin = el.style.transformOrigin;
@@ -288,30 +249,30 @@ const debugVals = ()=>{};
       knob.setPointerCapture?.(id);
     }
 
-    function move(e){
-      if (id===null || e.pointerId!==id) return;
+    function move(e) {
+      if (id === null || e.pointerId !== id) return;
       // normalize delta to avoid ±180° flips
-      const pivot = knob.__pivot || {x:0,y:0};
+      const pivot = knob.__pivot || { x: 0, y: 0 };
       let d = angleAt(e, pivot) - prev;
       if (d > 180) d -= 360; else if (d < -180) d += 360;
       prev += d; acc += d;
 
-      if (!raf){
-        raf = requestAnimationFrame(()=>{
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
           el.style.setProperty('--rot', `${baseRot + acc}deg`);
           raf = null;
         });
       }
     }
 
-    function up(e){
-      if (id===null || e.pointerId!==id) return;
+    function up(e) {
+      if (id === null || e.pointerId !== id) return;
       knob.releasePointerCapture?.(id);
       id = null;
       el.classList.remove('rotating');
       // restore origin so layout returns to normal
       el.style.transformOrigin = prevOrigin;
-      try { trySnap(el); } catch(_) {}
+      try { trySnap(el); } catch (_) { }
       checkSolvedSoon();
     }
 
@@ -319,35 +280,35 @@ const debugVals = ()=>{};
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', up);
-    knob.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); });
+    knob.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
   }
   document.querySelectorAll('.polaroid').forEach(addRotor);
 
   // flip button (bottom-left)
-  function addFlipper(el){
+  function addFlipper(el) {
     // Create once, then delegate behavior to updateFlipper (so we can swap flip ⇄ / de‑snap ⎌).
     let b = el.querySelector('.flipper');
-    if(!b){ b = document.createElement('button'); b.type='button'; b.className='flipper'; el.appendChild(b); }
+    if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'flipper'; el.appendChild(b); }
     updateFlipper(el);
   }
   document.querySelectorAll('.polaroid').forEach(addFlipper);
 
   // Bring hovered/focused/touched card to front
-  document.querySelectorAll('.polaroid').forEach(el=>{
-    const raise=()=>{ zCounter+=1; el.style.zIndex=String(zCounter); };
-    el.addEventListener('mouseenter',raise);
-    el.addEventListener('focusin',raise);
-    el.addEventListener('touchstart',raise,{passive:true});
+  document.querySelectorAll('.polaroid').forEach(el => {
+    const raise = () => { zCounter += 1; el.style.zIndex = String(zCounter); };
+    el.addEventListener('mouseenter', raise);
+    el.addEventListener('focusin', raise);
+    el.addEventListener('touchstart', raise, { passive: true });
   });
 
   // Drag & drop (restore)
-  function makeDraggable(el){
+  function makeDraggable(el) {
     let id = null, sx = 0, sy = 0, moved = false, raf = null, lastDX = 0, lastDY = 0;
-    const num = v => parseFloat(String(v).replace('px','')) || 0;
+    const num = v => parseFloat(String(v).replace('px', '')) || 0;
     let baseMap = null; // Map<HTMLElement,{ux,uy}>
 
-    function down(e){
-      if (e.pointerType==='mouse' && e.button!==0) return; // left click only
+    function down(e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return; // left click only
       id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false;
 
       // Build per-member baselines so the whole snapped group drags rigidly
@@ -367,13 +328,13 @@ const debugVals = ()=>{};
       el.setPointerCapture?.(id);
     }
 
-    function move(e){
-      if (id===null || e.pointerId!==id) return;
-      if (e.pointerType==='mouse' && e.buttons===0) return; // ignore stray moves
+    function move(e) {
+      if (id === null || e.pointerId !== id) return;
+      if (e.pointerType === 'mouse' && e.buttons === 0) return; // ignore stray moves
       lastDX = e.clientX - sx; lastDY = e.clientY - sy;
-      if (!moved && (Math.abs(lastDX)>3 || Math.abs(lastDY)>3)) moved = true;
+      if (!moved && (Math.abs(lastDX) > 3 || Math.abs(lastDY) > 3)) moved = true;
 
-      if (!raf){
+      if (!raf) {
         raf = requestAnimationFrame(() => {
           if (!baseMap) { raf = null; return; }
           baseMap.forEach((b, n) => {
@@ -385,18 +346,18 @@ const debugVals = ()=>{};
       }
     }
 
-    function up(e){
-      if (id===null || e.pointerId!==id) return;
+    function up(e) {
+      if (id === null || e.pointerId !== id) return;
       // clear dragging state on whole group and suppress click-to-zoom right after drag
-      if (baseMap){
+      if (baseMap) {
         baseMap.forEach((_, n) => {
           n.classList.remove('dragging');
-          if (moved) { n.dataset.didDrag = '1'; setTimeout(()=>{ delete n.dataset.didDrag; }, 120); }
+          if (moved) { n.dataset.didDrag = '1'; setTimeout(() => { delete n.dataset.didDrag; }, 120); }
         });
       }
       el.releasePointerCapture?.(id);
       id = null; baseMap = null;
-      try { trySnap(el); } catch(_) {}
+      try { trySnap(el); } catch (_) { }
       checkSolvedSoon();
     }
 
@@ -412,40 +373,40 @@ const debugVals = ()=>{};
 
   // snapping logic ----------------------------------------------------------
   const SNAP = { ang: 8, frac: 0.12, gap: 0 };
-  function trySnap(anchor){
-    if(anchor.dataset.flipped!=='1') return; // only when both are flipped
+  function trySnap(anchor) {
+    if (anchor.dataset.flipped !== '1') return; // only when both are flipped
 
-    const ra = getStyleNum(anchor,'--rot');
+    const ra = getStyleNum(anchor, '--rot');
     const ar = anchor.getBoundingClientRect();
-    const ax = ar.left + ar.width/2, ay = ar.top + ar.height/2;
+    const ax = ar.left + ar.width / 2, ay = ar.top + ar.height / 2;
     const aw0 = anchor.offsetWidth, ah0 = anchor.offsetHeight; // layout sizes for exact math
 
-    const ca = Math.cos(ra*Math.PI/180), sa = Math.sin(ra*Math.PI/180);
+    const ca = Math.cos(ra * Math.PI / 180), sa = Math.sin(ra * Math.PI / 180);
 
     let snapped = false;
     const others = [...document.querySelectorAll('.polaroid')]
-      .filter(o => o!==anchor && o.dataset.flipped==='1' && ensureGroup(o)!==ensureGroup(anchor));
+      .filter(o => o !== anchor && o.dataset.flipped === '1' && ensureGroup(o) !== ensureGroup(anchor));
 
-    for(const o of others){
-      const rb = getStyleNum(o,'--rot');
+    for (const o of others) {
+      const rb = getStyleNum(o, '--rot');
       let dAng = wrap180(rb - ra);
       if (Math.abs(dAng) > SNAP.ang) continue;
 
       const br = o.getBoundingClientRect();
-      const bx = br.left + br.width/2, by = br.top + br.height/2;
+      const bx = br.left + br.width / 2, by = br.top + br.height / 2;
       const bw0 = o.offsetWidth, bh0 = o.offsetHeight;
 
       // Relative position of B in A's local frame
       const dxw = bx - ax, dyw = by - ay;
-      let dx = dxw*ca + dyw*sa;
-      let dy = -dxw*sa + dyw*ca;
+      let dx = dxw * ca + dyw * sa;
+      let dy = -dxw * sa + dyw * ca;
 
       const horizontal = Math.abs(dx) >= Math.abs(dy);
-      const idealDX = horizontal ? Math.sign(dx) * ((aw0 + bw0)/2 - SNAP.gap) : 0;
-      const idealDY = horizontal ? 0 : Math.sign(dy) * ((ah0 + bh0)/2 - SNAP.gap);
+      const idealDX = horizontal ? Math.sign(dx) * ((aw0 + bw0) / 2 - SNAP.gap) : 0;
+      const idealDY = horizontal ? 0 : Math.sign(dy) * ((ah0 + bh0) / 2 - SNAP.gap);
 
-      const tolX = SNAP.frac * ((aw0 + bw0)/2);
-      const tolY = SNAP.frac * ((ah0 + bh0)/2);
+      const tolX = SNAP.frac * ((aw0 + bw0) / 2);
+      const tolY = SNAP.frac * ((ah0 + bh0) / 2);
 
       const ex0 = idealDX - dx;
       const ey0 = idealDY - dy;
@@ -457,38 +418,38 @@ const debugVals = ()=>{};
       const both = new Set([...setA, ...setB]);
 
       // Rigid-body seat: rotate entire incoming group B about its own pivot, then translate so tile o is flush
-      withoutAnim(both, ()=>{
+      withoutAnim(both, () => {
         // target center for o in world coords when flush
-        const targetX = ax + (idealDX*ca - idealDY*sa);
-        const targetY = ay + (idealDX*sa + idealDY*ca);
+        const targetX = ax + (idealDX * ca - idealDY * sa);
+        const targetY = ay + (idealDX * sa + idealDY * ca);
 
         // rotation delta needed to align B with A
         const dAng2 = wrap180(ra - rb);
-        const rad = dAng2 * Math.PI/180;
+        const rad = dAng2 * Math.PI / 180;
         const cosA = Math.cos(rad), sinA = Math.sin(rad);
 
         // pivot = bounding-box center of group B (stable under layout)
-        let minL=Infinity,minT=Infinity,maxR=-Infinity,maxB=-Infinity;
-        setB.forEach(n=>{ const r=n.getBoundingClientRect(); minL=Math.min(minL,r.left); minT=Math.min(minT,r.top); maxR=Math.max(maxR,r.right); maxB=Math.max(maxB,r.bottom); });
-        const pivotX=(minL+maxR)/2, pivotY=(minT+maxB)/2;
+        let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
+        setB.forEach(n => { const r = n.getBoundingClientRect(); minL = Math.min(minL, r.left); minT = Math.min(minT, r.top); maxR = Math.max(maxR, r.right); maxB = Math.max(maxB, r.bottom); });
+        const pivotX = (minL + maxR) / 2, pivotY = (minT + maxB) / 2;
 
         // o's rotated center (about pivot), then translation needed to hit target
         const obr = o.getBoundingClientRect();
-        const ocx = obr.left + obr.width/2, ocy = obr.top + obr.height/2;
-        const orx = pivotX + ((ocx - pivotX)*cosA - (ocy - pivotY)*sinA);
-        const ory = pivotY + ((ocx - pivotX)*sinA + (ocy - pivotY)*cosA);
+        const ocx = obr.left + obr.width / 2, ocy = obr.top + obr.height / 2;
+        const orx = pivotX + ((ocx - pivotX) * cosA - (ocy - pivotY) * sinA);
+        const ory = pivotY + ((ocx - pivotX) * sinA + (ocy - pivotY) * cosA);
         const tX = Math.round(targetX - orx);
         const tY = Math.round(targetY - ory);
 
         // apply rigid transform to every member of B
-        setB.forEach(n=>{
-          const r=n.getBoundingClientRect();
-          const cx = r.left + r.width/2, cy = r.top + r.height/2;
-          const rx = pivotX + ((cx - pivotX)*cosA - (cy - pivotY)*sinA);
-          const ry = pivotY + ((cx - pivotX)*sinA + (cy - pivotY)*cosA);
+        setB.forEach(n => {
+          const r = n.getBoundingClientRect();
+          const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+          const rx = pivotX + ((cx - pivotX) * cosA - (cy - pivotY) * sinA);
+          const ry = pivotY + ((cx - pivotX) * sinA + (cy - pivotY) * cosA);
           const deltaX = (rx + tX) - cx;
           const deltaY = (ry + tY) - cy;
-          const ux = getStyleNum(n,'--ux'), uy=getStyleNum(n,'--uy'), rot=getStyleNum(n,'--rot');
+          const ux = getStyleNum(n, '--ux'), uy = getStyleNum(n, '--uy'), rot = getStyleNum(n, '--rot');
           n.style.setProperty('--ux', `${ux + deltaX}px`);
           n.style.setProperty('--uy', `${uy + deltaY}px`);
           n.style.setProperty('--rot', `${rot + dAng2}deg`);
@@ -499,21 +460,21 @@ const debugVals = ()=>{};
       snapped = true;
     }
 
-    if (snapped) { membersOf(anchor).forEach(n=>{ updateFlipper(n); updateRotor(n); }); }
+    if (snapped) { membersOf(anchor).forEach(n => { updateFlipper(n); updateRotor(n); }); }
   }
 
-// assign puzzle backs (3x3 slices) — upright orientation, true shuffle
-  function assignPuzzleBacks(imgPath = 'assets/images/hidden_messages/hiddenMessage.png'){
-    const cards = Array.from(document.querySelectorAll('.polaroid')).slice(0,9);
+  // assign puzzle backs (3x3 slices) — upright orientation, true shuffle
+  function assignPuzzleBacks(imgPath = 'assets/images/hidden_messages/hiddenMessage.png') {
+    const cards = Array.from(document.querySelectorAll('.polaroid')).slice(0, 9);
     if (cards.length < 9) return;
-    const coords = shuffle(Array.from({length:9}, (_,k)=>({r: Math.floor(k/3), c: k%3})));
+    const coords = shuffle(Array.from({ length: 9 }, (_, k) => ({ r: Math.floor(k / 3), c: k % 3 })));
     cards.forEach((card, i) => {
       const backFace = card.querySelector('.face.back'); if (!backFace) return;
       const old = backFace.querySelector('img'); if (old) old.style.display = 'none';
       let ink = backFace.querySelector('.ink'); if (!ink) { ink = document.createElement('div'); ink.className = 'ink'; backFace.appendChild(ink); }
-      Object.assign(ink.style, { position:'absolute', inset:'0', backgroundImage:`url('${imgPath}')`, backgroundRepeat:'no-repeat', backgroundSize:'300% 300%', transformOrigin:'50% 50%' });
-      const {r,c} = coords[i];
-      ink.style.backgroundPosition = `${c*50}% ${r*50}%`;
+      Object.assign(ink.style, { position: 'absolute', inset: '0', backgroundImage: `url('${imgPath}')`, backgroundRepeat: 'no-repeat', backgroundSize: '300% 300%', transformOrigin: '50% 50%' });
+      const { r, c } = coords[i];
+      ink.style.backgroundPosition = `${c * 50}% ${r * 50}%`;
       // Keep all slices upright so the final image has a single, consistent orientation
       ink.style.transform = 'rotate(0deg)'; // randomize back segment orientation (0°/180°)
       backFace.dataset.gridR = String(r); backFace.dataset.gridC = String(c);
@@ -523,53 +484,53 @@ const debugVals = ()=>{};
   assignPuzzleBacks('assets/images/hidden_messages/hiddenMessage.png');
 
   // lightbox (fronts only)
-  const lb=document.getElementById('lightbox'), lbImg=document.getElementById('lightboxImg');
-  const lbClose=document.querySelector('.lightbox-close'), lbPrev=document.querySelector('.lightbox-arrow.prev'), lbNext=document.querySelector('.lightbox-arrow.next');
-  const cards=[...document.querySelectorAll('.polaroid')];
-  const gallery=[...document.querySelectorAll('.polaroid .face.front img')];
-  let current=-1, lastFocus=null;
-  function openAt(i){
-    current=(i+gallery.length)%gallery.length;
+  const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lightboxImg');
+  const lbClose = document.querySelector('.lightbox-close'), lbPrev = document.querySelector('.lightbox-arrow.prev'), lbNext = document.querySelector('.lightbox-arrow.next');
+  const cards = [...document.querySelectorAll('.polaroid')];
+  const gallery = [...document.querySelectorAll('.polaroid .face.front img')];
+  let current = -1, lastFocus = null;
+  function openAt(i) {
+    current = (i + gallery.length) % gallery.length;
     if (!lb || !lbImg) return;
-    lbImg.src=gallery[current]?.src || '';
+    lbImg.src = gallery[current]?.src || '';
     lb.classList.add('open');
-    lastFocus=document.activeElement;
-    document.body.style.overflow='hidden';
-    (lbClose||lbImg)?.focus?.();
+    lastFocus = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    (lbClose || lbImg)?.focus?.();
   }
-  function close(){
+  function close() {
     if (!lb || !lbImg) return;
     lb.classList.remove('open');
-    lbImg.src='';
-    document.body.style.overflow='';
-    (lastFocus||document.body)?.focus?.();
+    lbImg.src = '';
+    document.body.style.overflow = '';
+    (lastFocus || document.body)?.focus?.();
   }
-  function next(n){
+  function next(n) {
     if (!gallery.length) return;
-    current=(current+n+gallery.length)%gallery.length;
-    if (lbImg) lbImg.src=gallery[current]?.src || '';
+    current = (current + n + gallery.length) % gallery.length;
+    if (lbImg) lbImg.src = gallery[current]?.src || '';
   }
-  cards.forEach((card,i)=>{
-    card.addEventListener('click', (ev)=>{
+  cards.forEach((card, i) => {
+    card.addEventListener('click', (ev) => {
       // Block lightbox when using controls, when on back, or immediately after drag/rotate
       if (ev.target.closest('.flipper, .rotor')) return;
-      if (card.dataset.flipped==='1') return;
+      if (card.dataset.flipped === '1') return;
       if (card.dataset.didDrag) return;
       if (card.classList.contains('dragging') || card.classList.contains('rotating')) return;
       openAt(i);
     });
-    card.addEventListener('keydown', (e)=>{
-      if((e.key==='Enter'||e.key===' ') && card.dataset.flipped!=='1'){
+    card.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && card.dataset.flipped !== '1') {
         e.preventDefault();
         openAt(i);
       }
     });
   });
 
-  lb && lb.addEventListener('click', (e)=>{ if (e.target===lb) close(); });
+  lb && lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
   lbClose && lbClose.addEventListener('click', close);
-  lbPrev && lbPrev.addEventListener('click', ()=>next(-1));
-  lbNext && lbNext.addEventListener('click', ()=>next(1));
+  lbPrev && lbPrev.addEventListener('click', () => next(-1));
+  lbNext && lbNext.addEventListener('click', () => next(1));
 
   // ---------------- Super-lenient solver with periodic check ----------------
   const TOL = {
@@ -581,11 +542,11 @@ const debugVals = ()=>{};
     okCount: 8,      // allow 1 tile slightly out of its window
     windowFrac: 0.40 // slightly larger per-tile windows
   };
-  let solved=false, checking=false;
-  function axialMeanDeg(deg){ let sx=0,sy=0; for(const d of deg){ const r=(d*2)*Math.PI/180; sx+=Math.cos(r); sy+=Math.sin(r);} return 0.5*Math.atan2(sy,sx)*180/Math.PI; }
+  let solved = false, checking = false;
+  function axialMeanDeg(deg) { let sx = 0, sy = 0; for (const d of deg) { const r = (d * 2) * Math.PI / 180; sx += Math.cos(r); sy += Math.sin(r); } return 0.5 * Math.atan2(sy, sx) * 180 / Math.PI; }
 
-  function checkSolved(){
-    const nine = [...document.querySelectorAll('.polaroid')].slice(0,9);
+  function checkSolved() {
+    const nine = [...document.querySelectorAll('.polaroid')].slice(0, 9);
     if (nine.length !== 9) return false;
     if (!nine.every(n => n.dataset.flipped === '1')) { setSolved(false); return false; }
 
@@ -599,21 +560,21 @@ const debugVals = ()=>{};
     const rAvg = axialMeanDeg(rots); // average rotation of the snapped block
 
     // centers in screen coords
-    const pts = nine.map(n => { const r=n.getBoundingClientRect(); return { n, cx:r.left+r.width/2, cy:r.top+r.height/2, rI:+(n.dataset.gridR||0), cI:+(n.dataset.gridC||0) }; });
-    const mx = mean(pts.map(p=>p.cx)), my = mean(pts.map(p=>p.cy));
-    const ang = -rAvg*Math.PI/180, ca = Math.cos(ang), sa = Math.sin(ang);
-    pts.forEach(p=>{ const dx=p.cx-mx, dy=p.cy-my; p.xn=dx*ca-dy*sa; p.yn=dx*sa+dy*ca; });
+    const pts = nine.map(n => { const r = n.getBoundingClientRect(); return { n, cx: r.left + r.width / 2, cy: r.top + r.height / 2, rI: +(n.dataset.gridR || 0), cI: +(n.dataset.gridC || 0) }; });
+    const mx = mean(pts.map(p => p.cx)), my = mean(pts.map(p => p.cy));
+    const ang = -rAvg * Math.PI / 180, ca = Math.cos(ang), sa = Math.sin(ang);
+    pts.forEach(p => { const dx = p.cx - mx, dy = p.cy - my; p.xn = dx * ca - dy * sa; p.yn = dx * sa + dy * ca; });
 
     // Cluster x' and y' into exactly 3 columns/rows with a small epsilon
-    const cluster = (vals, eps=3)=>{ const s=[...vals].sort((a,b)=>a-b); const reps=[], cnt=[]; for(const v of s){ if(!reps.length||Math.abs(v-reps[reps.length-1])>eps){ reps.push(v); cnt.push(1);} else { const i=reps.length-1; reps[i]=(reps[i]*cnt[i]+v)/(cnt[i]+1); cnt[i]++; } } return reps; };
-    const nearestIndex = (v,reps,eps=3)=>{ let best=-1,bd=Infinity; for(let i=0;i<reps.length;i++){ const d=Math.abs(v-reps[i]); if(d<bd){ bd=d; best=i; } } return (bd<=eps)?best:-1; };
+    const cluster = (vals, eps = 3) => { const s = [...vals].sort((a, b) => a - b); const reps = [], cnt = []; for (const v of s) { if (!reps.length || Math.abs(v - reps[reps.length - 1]) > eps) { reps.push(v); cnt.push(1); } else { const i = reps.length - 1; reps[i] = (reps[i] * cnt[i] + v) / (cnt[i] + 1); cnt[i]++; } } return reps; };
+    const nearestIndex = (v, reps, eps = 3) => { let best = -1, bd = Infinity; for (let i = 0; i < reps.length; i++) { const d = Math.abs(v - reps[i]); if (d < bd) { bd = d; best = i; } } return (bd <= eps) ? best : -1; };
 
-    const colReps = cluster(pts.map(p=>p.xn));
-    const rowReps = cluster(pts.map(p=>p.yn));
+    const colReps = cluster(pts.map(p => p.xn));
+    const rowReps = cluster(pts.map(p => p.yn));
     if (rowReps.length !== 3 || colReps.length !== 3) { setSolved(false); return false; }
 
     // Check each tile maps to its assigned (r,c)
-    for (const p of pts){
+    for (const p of pts) {
       const rr = nearestIndex(p.yn, rowReps);
       const cc = nearestIndex(p.xn, colReps);
       if (rr < 0 || cc < 0) { setSolved(false); return false; }
@@ -623,28 +584,28 @@ const debugVals = ()=>{};
     setSolved(true); return true;
   }
 
-  function checkSolvedSoon(){ if(checking) return; checking = true; setTimeout(() => { checking = false; checkSolved(); }, 80); }
+  function checkSolvedSoon() { if (checking) return; checking = true; setTimeout(() => { checking = false; checkSolved(); }, 80); }
 
   // Stop all audio on the site (YT, <audio>/<video>)
-  function stopAllSiteAudio(){
+  function stopAllSiteAudio() {
     try {
-      document.querySelectorAll('iframe[src*="youtube.com/embed"], iframe[src*="youtube-nocookie.com/embed"]').forEach(f=>{
-        try { f.contentWindow.postMessage(JSON.stringify({event:'command', func:'pauseVideo', args:''}), '*'); } catch(_){}
+      document.querySelectorAll('iframe[src*="youtube.com/embed"], iframe[src*="youtube-nocookie.com/embed"]').forEach(f => {
+        try { f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*'); } catch (_) { }
       });
-    } catch(_){}
+    } catch (_) { }
     try {
-      document.querySelectorAll('audio, video').forEach(m=>{ try{ m.pause(); }catch(_){ } });
-    } catch(_){}
+      document.querySelectorAll('audio, video').forEach(m => { try { m.pause(); } catch (_) { } });
+    } catch (_) { }
   }
 
   // === NEW: Fullscreen modal that hosts the mixer page as an iframe ===
-  function openMixerModal(){
+  function openMixerModal() {
     // Remove any existing instance
     const existing = document.getElementById('mixerModal');
     if (existing) existing.remove();
 
     // stop any site audio before opening the mixer
-    try{ stopAllSiteAudio(); }catch(_){ }
+    try { stopAllSiteAudio(); } catch (_) { }
 
     // Overlay: semi‑transparent dark with slight blur
     const overlay = document.createElement('div');
@@ -676,14 +637,14 @@ const debugVals = ()=>{};
       'border:0',
       'border-radius:0',
       'overflow:hidden',
-      'background:transparent','padding-top: env(safe-area-inset-top, 0px)','padding-bottom: env(safe-area-inset-bottom, 0px)'].join(';');
+      'background:transparent', 'padding-top: env(safe-area-inset-top, 0px)', 'padding-bottom: env(safe-area-inset-bottom, 0px)'].join(';');
 
     // Close button — larger and near the console
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label','Close mixer');
+    closeBtn.setAttribute('aria-label', 'Close mixer');
     closeBtn.style.cssText = [
-      'position:absolute','top:calc(env(safe-area-inset-top, 0px) + 6px)','right:8px',
+      'position:absolute', 'top:calc(env(safe-area-inset-top, 0px) + 6px)', 'right:8px',
       'z-index:2',
       'background:rgba(0,0,0,.55)',
       'border:1px solid #2a3246',
@@ -721,10 +682,8 @@ const debugVals = ()=>{};
       try {
         const d = frame.contentDocument || frame.contentWindow?.document;
         if (!d) return;
-        const st = d.createElement('style');
-        st.textContent = 'html,body{margin:0;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}::-webkit-scrollbar{width:0;height:0}';
-        d.head.appendChild(st);
-      } catch(_) { /* ignore if cross‑origin */ }
+        d.documentElement.classList.add('mixer-iframe-style');
+      } catch (_) { /* ignore if cross‑origin */ }
     });
 
     box.appendChild(closeBtn);
@@ -742,28 +701,28 @@ const debugVals = ()=>{};
     };
     fitBox();
     window.addEventListener('resize', fitBox);
-    try { window.visualViewport && window.visualViewport.addEventListener('resize', fitBox); } catch(_) {}
+    try { window.visualViewport && window.visualViewport.addEventListener('resize', fitBox); } catch (_) { }
 
     // Close handlers with fade‑out
     const prevFocus = document.activeElement;
     let closing = false;
-    function finishClose(){
-      try { window.removeEventListener('resize', fitBox); } catch(_) {}
-      try { window.visualViewport && window.visualViewport.removeEventListener('resize', fitBox); } catch(_) {}
+    function finishClose() {
+      try { window.removeEventListener('resize', fitBox); } catch (_) { }
+      try { window.visualViewport && window.visualViewport.removeEventListener('resize', fitBox); } catch (_) { }
       overlay.remove();
       document.body.style.overflow = '';
-      (prevFocus||document.body)?.focus?.();
+      (prevFocus || document.body)?.focus?.();
       document.removeEventListener('keydown', onKey);
     }
-    function dismiss(){
+    function dismiss() {
       if (closing) return; closing = true;
       overlay.style.opacity = '0';
       const tid = setTimeout(finishClose, 300);
-      overlay.addEventListener('transitionend', (e)=>{
+      overlay.addEventListener('transitionend', (e) => {
         if (e.propertyName === 'opacity') { clearTimeout(tid); finishClose(); }
-      }, { once:true });
+      }, { once: true });
     }
-    function onKey(e){ if (e.key === 'Escape') { e.preventDefault(); dismiss(); } }
+    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); dismiss(); } }
 
     overlay.addEventListener('click', (e) => { if (e.target === overlay) dismiss(); });
     closeBtn.addEventListener('click', dismiss);
@@ -774,22 +733,22 @@ const debugVals = ()=>{};
     closeBtn.focus();
   }
 
-  function setSolved(v){
-    if(v===solved) return; solved=v;
+  function setSolved(v) {
+    if (v === solved) return; solved = v;
     document.body.classList.toggle('puzzle-solved', v);
 
     // clear any pending timers from previous solves
     if (!window.__solveTimers) window.__solveTimers = [];
-    window.__solveTimers.forEach(t=>clearTimeout(t));
+    window.__solveTimers.forEach(t => clearTimeout(t));
     window.__solveTimers = [];
 
-    if(!v){ return; }
+    if (!v) { return; }
 
     // Helper to apply/remove a brief glow to all nine tiles (final coupling)
-    const cards9 = Array.from(document.querySelectorAll('.polaroid')).slice(0,9);
-    const applyGlow = (on)=>{
-      cards9.forEach(c=>{
-        if (on){
+    const cards9 = Array.from(document.querySelectorAll('.polaroid')).slice(0, 9);
+    const applyGlow = (on) => {
+      cards9.forEach(c => {
+        if (on) {
           // remember previous inline styles to restore
           if (!c.dataset._prevShadow) c.dataset._prevShadow = c.style.boxShadow || '';
           if (!c.dataset._prevFilter) c.dataset._prevFilter = c.style.filter || '';
@@ -810,8 +769,8 @@ const debugVals = ()=>{};
 
       const overlay = document.createElement('div');
       overlay.id = 'puzzleModal';
-      overlay.setAttribute('role','dialog');
-      overlay.setAttribute('aria-modal','true');
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:2147483647;opacity:0;transition:opacity 1.5s ease;';
 
       const box = document.createElement('div');
@@ -828,30 +787,12 @@ const debugVals = ()=>{};
       document.body.appendChild(overlay);
 
       // Install hover/glow styles for modal buttons (only once)
-      (function(){
-        const id='puzzleModalStyles';
-        if(!document.getElementById(id)){
-          const st=document.createElement('style');
-          st.id=id;
-          st.textContent = `
-#puzzleModal a#pmCMND, #puzzleModal a#pmCNTRL{transition:box-shadow .2s ease,transform .2s ease,filter .2s ease}
-#puzzleModal a#pmCMND:hover, #puzzleModal a#pmCMND:focus-visible,
-#puzzleModal a#pmCNTRL:hover, #puzzleModal a#pmCNTRL:focus-visible{
-  box-shadow:0 0 0 3px rgba(212,175,55,.9),0 0 28px rgba(212,175,55,.55);
-  transform:translateY(-1px);
-  filter:brightness(1.04);
-  text-decoration:none;
-  outline:none
-}
-          `;
-          document.head.appendChild(st);
-        }
-      })();
+      // Modal button hover/glow styles are now in app-dynamic.css
 
-      const dismiss = ()=>{ overlay.remove(); window.__doSolveResetOnce?.(); };
+      const dismiss = () => { overlay.remove(); window.__doSolveResetOnce?.(); };
       box.querySelector('#pmClose').addEventListener('click', dismiss);
-      overlay.addEventListener('click', (e)=>{ if (e.target === overlay) dismiss(); });
-      const onKey = (e)=>{ if(e.key==='Escape'){ e.preventDefault(); dismiss(); document.removeEventListener('keydown', onKey);} };
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) dismiss(); });
+      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); dismiss(); document.removeEventListener('keydown', onKey); } };
       document.addEventListener('keydown', onKey);
 
       const linkCMND = box.querySelector('#pmCMND');
@@ -859,9 +800,9 @@ const debugVals = ()=>{};
 
       // CMND: keep opening in new tab and reset once
       if (linkCMND) {
-        linkCMND.setAttribute('target','_blank');
-        linkCMND.setAttribute('rel','noopener');
-        linkCMND.addEventListener('click', ()=> { try{ stopAllSiteAudio(); }catch(_){} overlay.remove(); window.__doSolveResetOnce?.(); });
+        linkCMND.setAttribute('target', '_blank');
+        linkCMND.setAttribute('rel', 'noopener');
+        linkCMND.addEventListener('click', () => { try { stopAllSiteAudio(); } catch (_) { } overlay.remove(); window.__doSolveResetOnce?.(); });
       }
 
       // === CHANGED: CNTRL now opens the mixer in a modal instead of a new tab ===
@@ -869,61 +810,61 @@ const debugVals = ()=>{};
         linkCNTRL.removeAttribute('target');
         linkCNTRL.removeAttribute('rel');
         linkCNTRL.addEventListener('click', (ev) => {
-        ev.preventDefault();
-        try{ stopAllSiteAudio(); }catch(_){}
-        overlay.remove();
-        window.__doSolveResetOnce?.();
-        openMixerModal();
-      });
+          ev.preventDefault();
+          try { stopAllSiteAudio(); } catch (_) { }
+          overlay.remove();
+          window.__doSolveResetOnce?.();
+          openMixerModal();
+        });
       }
 
       // fade in the overlay (force reflow, then next frame for reliable transition)
       overlay.style.opacity = '0';
       void overlay.offsetWidth; // reflow so the transition is honored
-      requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ overlay.style.opacity = '1'; }); });
+      requestAnimationFrame(() => { requestAnimationFrame(() => { overlay.style.opacity = '1'; }); });
     };
 
     // Sequence: glow 1s → begin 5s fade of solved grid → show modal at 1.2s (overlaps)
-// A single reset function ensures we only reset/scatter once.
-window.__didAutoReset = false;
-function doResetOnce(){
-  if (window.__didAutoReset) return;
-  window.__didAutoReset = true;
-  // cancel any pending timers
-  if (window.__solveTimers) { window.__solveTimers.forEach(t=>clearTimeout(t)); window.__solveTimers = []; }
-  // Reset groups & cards, then scatter; keep a quick fade-in for polish
-  groups.clear(); groupSeq=1;
-  cards9.forEach(c=>{
-    c.classList.remove('dragging','rotating');
-    c.dataset.group=''; ensureGroup(c);
-    c.dataset.flipped='0'; delete c.dataset.didDrag;
-    c.style.setProperty('--ux','0px'); c.style.setProperty('--uy','0px'); c.style.setProperty('--rot','0deg');
-    c.style.transition = ''; // clear custom fades
-    c.style.opacity = '0';
-    updateFlipper(c); updateRotor(c);
-  });
-  scatter();
-  requestAnimationFrame(()=>{ cards9.forEach(c=>{ c.style.transition='opacity .45s ease'; c.style.opacity='1'; setTimeout(()=>{ c.style.transition=''; }, 500); }); });
-}
-// Expose so modal handlers can trigger the same reset
-window.__doSolveResetOnce = doResetOnce;
+    // A single reset function ensures we only reset/scatter once.
+    window.__didAutoReset = false;
+    function doResetOnce() {
+      if (window.__didAutoReset) return;
+      window.__didAutoReset = true;
+      // cancel any pending timers
+      if (window.__solveTimers) { window.__solveTimers.forEach(t => clearTimeout(t)); window.__solveTimers = []; }
+      // Reset groups & cards, then scatter; keep a quick fade-in for polish
+      groups.clear(); groupSeq = 1;
+      cards9.forEach(c => {
+        c.classList.remove('dragging', 'rotating');
+        c.dataset.group = ''; ensureGroup(c);
+        c.dataset.flipped = '0'; delete c.dataset.didDrag;
+        c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg');
+        c.style.transition = ''; // clear custom fades
+        c.style.opacity = '0';
+        updateFlipper(c); updateRotor(c);
+      });
+      scatter();
+      requestAnimationFrame(() => { cards9.forEach(c => { c.style.transition = 'opacity .45s ease'; c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); });
+    }
+    // Expose so modal handlers can trigger the same reset
+    window.__doSolveResetOnce = doResetOnce;
 
-applyGlow(true);
-// stop glow after 1s
-const t1 = setTimeout(()=>{ applyGlow(false); }, 1000);
-// start long fade of solved grid right after glow ends
-const t3 = setTimeout(()=>{
-  cards9.forEach(c=>{ c.style.transition='opacity 5s ease'; c.style.opacity='0'; });
-  const t4 = setTimeout(()=>{ doResetOnce(); }, 5000);
-  window.__solveTimers.push(t4);
-}, 1000);
-// show modal slightly after glow begins to fade
-const t2 = setTimeout(()=>{ buildModal(); }, 1200);
-window.__solveTimers.push(t1, t2, t3);
+    applyGlow(true);
+    // stop glow after 1s
+    const t1 = setTimeout(() => { applyGlow(false); }, 1000);
+    // start long fade of solved grid right after glow ends
+    const t3 = setTimeout(() => {
+      cards9.forEach(c => { c.style.transition = 'opacity 5s ease'; c.style.opacity = '0'; });
+      const t4 = setTimeout(() => { doResetOnce(); }, 5000);
+      window.__solveTimers.push(t4);
+    }, 1000);
+    // show modal slightly after glow begins to fade
+    const t2 = setTimeout(() => { buildModal(); }, 1200);
+    window.__solveTimers.push(t1, t2, t3);
   }
 
   // Helper used by modal dismiss AND by back/forward restore
-  function resetAfterSolveWithFade(){
+  function resetAfterSolveWithFade() {
     // Clear state flag so we don't think it's still solved
     document.body.classList.remove('puzzle-solved');
     // Remove any stray modal
@@ -931,19 +872,19 @@ window.__solveTimers.push(t1, t2, t3);
     if (modal) modal.remove();
 
     // Fade out current 3x3 backs (if present), then reset and re-scatter
-    const cards9 = Array.from(document.querySelectorAll('.polaroid')).slice(0,9);
-    cards9.forEach(c=>{ c.style.transition='opacity .45s ease'; c.style.opacity='0'; });
-    setTimeout(()=>{
-      groups.clear(); groupSeq=1;
-      cards9.forEach(c=>{
-        c.classList.remove('dragging','rotating');
-        c.dataset.group=''; ensureGroup(c);
-        c.dataset.flipped='0'; delete c.dataset.didDrag;
-        c.style.setProperty('--ux','0px'); c.style.setProperty('--uy','0px'); c.style.setProperty('--rot','0deg');
+    const cards9 = Array.from(document.querySelectorAll('.polaroid')).slice(0, 9);
+    cards9.forEach(c => { c.style.transition = 'opacity .45s ease'; c.style.opacity = '0'; });
+    setTimeout(() => {
+      groups.clear(); groupSeq = 1;
+      cards9.forEach(c => {
+        c.classList.remove('dragging', 'rotating');
+        c.dataset.group = ''; ensureGroup(c);
+        c.dataset.flipped = '0'; delete c.dataset.didDrag;
+        c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg');
         updateFlipper(c); updateRotor(c);
       });
       scatter();
-      requestAnimationFrame(()=>{ cards9.forEach(c=>{ c.style.opacity='1'; setTimeout(()=>{ c.style.transition=''; }, 500); }); });
+      requestAnimationFrame(() => { cards9.forEach(c => { c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); });
     }, 460);
   }
 })();

@@ -1,0 +1,117 @@
+/* Responsive and dynamic CSS for the stem mixer UI (moved from mixer.js) */
+
+/* Responsive layout for tablets, laptops, and phones */
+@media (max-width: 1100px) {
+    .mixer-wrap {
+        width: 96vw;
+        padding: 14px;
+    }
+
+    .topbar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .transport {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .progress {
+        width: 100% !important;
+        order: 3;
+    }
+
+    .time {
+        margin-left: auto;
+    }
+
+    .strips {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-areas:
+            'instruments instruments vocals vocals'
+            'guitar cello eric kathryn'
+            'master master master master';
+        column-gap: 10px;
+        row-gap: 12px;
+    }
+
+    .fader {
+        height: 180px;
+    }
+}
+
+@media (max-width: 700px) {
+    .mixer-wrap {
+        width: 96vw;
+        padding: 12px;
+    }
+
+    .strips {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            'instruments instruments'
+            'guitar cello'
+            'vocals vocals'
+            'eric kathryn'
+            'master master';
+    }
+
+    .fader {
+        height: 160px;
+    }
+
+    .btn {
+        padding: 7px 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+
+    .mixer-wrap {
+        padding: 12px;
+    }
+
+    .strips {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            'instruments instruments'
+            'guitar cello'
+            'vocals vocals'
+            'eric kathryn'
+            'master master';
+        column-gap: 8px;
+        row-gap: 10px;
+    }
+
+    .fader {
+        height: 140px;
+    }
+
+    .chip {
+        padding: 5px 9px;
+        font-size: 11px;
+    }
+
+    .group-banner {
+        font-size: 9px;
+        padding: 3px 8px;
+    }
+
+    .name {
+        font-size: 13px;
+    }
+
+    .btn {
+        padding: 6px 10px;
+    }
+
+    .progress {
+        height: 12px;
+    }
+}
+
+/* Progress and fader cap overlays (SVG backgrounds) are injected by JS and do not need static CSS here. */

@@ -1,0 +1,65 @@
+/* CSS for dynamic styles injected by app.js */
+
+/* Polaroid sizing (base + mobile reduction) */
+#polaroidMobileSizing,
+.collage .polaroid {
+    /* Fluid width: ~138px at 520px viewport, ~230px at 1200px+, never below 120px */
+    width: clamp(120px, calc(13.53vw + 67.7px), 230px) !important;
+    height: auto;
+}
+
+.collage .polaroid .face { width: 100% !important; height: auto; }
+
+/* Mobile touch guards */
+#mobileTouchGuards,
+.collage,
+.collage * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.collage .polaroid {
+    touch-action: none;
+}
+
+.collage img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: auto;
+}
+
+/* Hide scrollbars inside the iframe (same-origin) */
+.mixer-iframe-style html,
+.mixer-iframe-style body {
+    margin: 0;
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mixer-iframe-style ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+/* Puzzle modal button hover/glow styles */
+#puzzleModal a#pmCMND,
+#puzzleModal a#pmCNTRL {
+    transition: box-shadow .2s ease, transform .2s ease, filter .2s ease;
+}
+
+#puzzleModal a#pmCMND:hover,
+#puzzleModal a#pmCMND:focus-visible,
+#puzzleModal a#pmCNTRL:hover,
+#puzzleModal a#pmCNTRL:focus-visible {
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, .9), 0 0 28px rgba(212, 175, 55, .55);
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+    text-decoration: none;
+    outline: none;
+}

@@ -54,11 +54,11 @@
     return Math.pow(10, dB / 20);
   }
   function gainToDb(g) { if (g <= 0) return '−∞'; const dB = 20 * Math.log10(g); return dB.toFixed(1); }
-  function fmt(sec) { if (!isFinite(sec)) return '00:00'; const m = Math.floor(sec / 60), s = Math.floor(sec % 60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+  function fmt(sec) { if (!isFinite(sec)) return '00:00'; const m = Math.floor(sec / 60), s = Math.floor(sec % 60); return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; }
 
-  function showLoading(msg) { if (!overlay) return; overlay.hidden = false; overlay.setAttribute('aria-busy','true'); if (msg) loadingMsg.textContent = msg; playBtn.disabled = true; }
+  function showLoading(msg) { if (!overlay) return; overlay.hidden = false; overlay.setAttribute('aria-busy', 'true'); if (msg) loadingMsg.textContent = msg; playBtn.disabled = true; }
   function updateLoading(msg) { if (overlay && msg) loadingMsg.textContent = msg; }
-  function hideLoading() { if (!overlay) return; overlay.setAttribute('aria-busy','false'); overlay.hidden = true; playBtn.disabled = false; }
+  function hideLoading() { if (!overlay) return; overlay.setAttribute('aria-busy', 'false'); overlay.hidden = true; playBtn.disabled = false; }
 
   // ===== Audio Graph =====
   function ensureGraph() {
@@ -125,11 +125,11 @@
   }
 
   // ===== Transport =====
-  function clearEnd(){ if (endTimer) { clearTimeout(endTimer); endTimer = null; } }
+  function clearEnd() { if (endTimer) { clearTimeout(endTimer); endTimer = null; } }
 
   function startFrom(offsetSec = 0) {
     clearEnd();
-    for (const [, s] of sources) { try { s.stop(); } catch {} }
+    for (const [, s] of sources) { try { s.stop(); } catch { } }
     sources.clear();
 
     for (const ch of CH_NAMES) {
@@ -141,36 +141,36 @@
     }
 
     startedAt = ctx.currentTime - offsetSec;
-    state.playing = true; playBtn.textContent = 'Pause'; playBtn.setAttribute('aria-pressed','true');
+    state.playing = true; playBtn.textContent = 'Pause'; playBtn.setAttribute('aria-pressed', 'true');
     rafMeters();
     const remain = Math.max(0, state.duration - offsetSec);
     endTimer = setTimeout(onEnded, remain * 1000 + 20);
   }
 
-  function onEnded(){ if (!state.playing) return; pausePlayback(false); offsetAtPause = 0; setTimeReadout(); updateProgressUI(0); }
-  function getCurrentPos(){ return Math.min(state.duration, state.playing ? (ctx.currentTime - startedAt) : offsetAtPause); }
+  function onEnded() { if (!state.playing) return; pausePlayback(false); offsetAtPause = 0; setTimeReadout(); updateProgressUI(0); }
+  function getCurrentPos() { return Math.min(state.duration, state.playing ? (ctx.currentTime - startedAt) : offsetAtPause); }
 
-  function pausePlayback(updateBtn = true){
+  function pausePlayback(updateBtn = true) {
     clearEnd();
-    for (const [, s] of sources) { try { s.stop(); } catch {} }
+    for (const [, s] of sources) { try { s.stop(); } catch { } }
     sources.clear();
     offsetAtPause = getCurrentPos();
     state.playing = false;
-    if (updateBtn) { playBtn.textContent = 'Play'; playBtn.setAttribute('aria-pressed','false'); }
+    if (updateBtn) { playBtn.textContent = 'Play'; playBtn.setAttribute('aria-pressed', 'false'); }
     startMeterDecay();
   }
 
-  async function playPause(){
+  async function playPause() {
     ensureGraph();
-    try { await ctx.resume(); } catch {}
+    try { await ctx.resume(); } catch { }
     if (!state.playing) { await loadAllBuffers(); startFrom(offsetAtPause); }
     else { pausePlayback(true); }
   }
 
-  function setTimeReadout(){ const cur = getCurrentPos(); const dur = state.duration || 0; timeReadout.textContent = `${fmt(cur)} / ${fmt(dur)}`; }
+  function setTimeReadout() { const cur = getCurrentPos(); const dur = state.duration || 0; timeReadout.textContent = `${fmt(cur)} / ${fmt(dur)}`; }
 
   // ===== Gains & UI =====
-  function applyGains(){
+  function applyGains() {
     const anySolo = state.solos.size > 0;
     for (const ch of CH_NAMES) {
       const userGain = faderToGain(state.faderValues.get(ch) ?? 70);
@@ -193,7 +193,7 @@
     if (!ctx || !nodes.masterGain) return; nodes.masterGain.gain.value = masterGainLin;
   }
 
-  function bindStrip(strip){
+  function bindStrip(strip) {
     const channel = strip.dataset.channel;
     const fader = strip.querySelector('.fader');
     const soloBtn = strip.querySelector('.chip.solo');
@@ -216,9 +216,9 @@
   const meterBufs = { master: null, ch: new Map() };
   let meterDecayRAF = null;
 
-  function startMeterDecay(){
+  function startMeterDecay() {
     if (meterDecayRAF) { cancelAnimationFrame(meterDecayRAF); meterDecayRAF = null; }
-    function step(){
+    function step() {
       let any = false;
       for (const [, bar] of meterBars) { if (!bar) continue; const cur = parseFloat(bar.style.width) || 0; const next = Math.max(0, cur - 6); if (next > 0) any = true; bar.style.width = next + '%'; }
       if (any) meterDecayRAF = requestAnimationFrame(step);
@@ -226,17 +226,17 @@
     step();
   }
 
-  function setupMeters(){ for (const ch of [...CH_NAMES, 'master']) { const span = document.querySelector(`.strip[data-channel="${ch}"] .meter > span`); meterBars.set(ch, span); } }
+  function setupMeters() { for (const ch of [...CH_NAMES, 'master']) { const span = document.querySelector(`.strip[data-channel="${ch}"] .meter > span`); meterBars.set(ch, span); } }
 
-  function analyserRms(an, key){
+  function analyserRms(an, key) {
     if (!an) return 0; let buf = key === 'master' ? meterBufs.master : meterBufs.ch.get(key);
     if (!buf || buf.length !== an.fftSize) { buf = new Float32Array(an.fftSize); if (key === 'master') meterBufs.master = buf; else meterBufs.ch.set(key, buf); }
-    if (an.getFloatTimeDomainData) an.getFloatTimeDomainData(buf); else { const t = new Uint8Array(an.fftSize); an.getByteTimeDomainData(t); for (let i=0;i<t.length;i++) buf[i] = (t[i]-128)/128; }
-    let sum = 0; for (let i=0;i<buf.length;i++){ const v = buf[i]; sum += v*v; }
-    const rms = Math.sqrt(sum / buf.length) + 1e-8; const db = 20*Math.log10(rms); let x = (db + 80) / 80; x = Math.max(0, Math.min(1, x)); return Math.max(0, Math.min(100, Math.pow(x, 1.1) * 100));
+    if (an.getFloatTimeDomainData) an.getFloatTimeDomainData(buf); else { const t = new Uint8Array(an.fftSize); an.getByteTimeDomainData(t); for (let i = 0; i < t.length; i++) buf[i] = (t[i] - 128) / 128; }
+    let sum = 0; for (let i = 0; i < buf.length; i++) { const v = buf[i]; sum += v * v; }
+    const rms = Math.sqrt(sum / buf.length) + 1e-8; const db = 20 * Math.log10(rms); let x = (db + 80) / 80; x = Math.max(0, Math.min(1, x)); return Math.max(0, Math.min(100, Math.pow(x, 1.1) * 100));
   }
 
-  function rafMeters(){
+  function rafMeters() {
     if (!state.playing) return;
     for (const ch of CH_NAMES) { const pct = analyserRms(nodes.chAnalyser.get(ch), ch); const bar = meterBars.get(ch); if (bar) bar.style.width = `${pct}%`; }
     const masterPct = analyserRms(nodes.masterAnalyser, 'master'); const mbar = meterBars.get('master'); if (mbar) mbar.style.width = `${masterPct}%`;
@@ -244,54 +244,54 @@
   }
 
   // ===== Progress / Scrubbing =====
-  function updateProgressUI(posSec){ if (!state.duration) { progress.value = '0'; return; } const v = Math.max(0, Math.min(1000, Math.round((posSec / state.duration) * 1000))); progress.value = String(v); }
+  function updateProgressUI(posSec) { if (!state.duration) { progress.value = '0'; return; } const v = Math.max(0, Math.min(1000, Math.round((posSec / state.duration) * 1000))); progress.value = String(v); }
 
   playBtn.addEventListener('click', playPause);
   rewBtn.addEventListener('click', () => { ensureGraph(); const wasPlaying = state.playing; if (wasPlaying) startFrom(0); else { offsetAtPause = 0; setTimeReadout(); updateProgressUI(0); } });
 
   let scrubbing = false, wasPlayingOnScrub = false;
-  function scrubToEvent(clientX){
-      const rect = progress.getBoundingClientRect();
-      const trackW = rect.width;
-      const half = PROG_THUMB_W / 2;
-      // Clamp pointer to the usable track (accounting for the cap width) so
-      // clicks in the middle of the cap don't jump its left edge.
-      const localX = Math.max(half, Math.min(trackW - half, clientX - rect.left));
-      const t = (localX - half) / Math.max(1, (trackW - PROG_THUMB_W));
-      const sec = t * (state.duration || 0);
-      progress.value = String(Math.round(t * 1000));
-      timeReadout.textContent = `${fmt(sec)} / ${fmt(state.duration || 0)}`;
-      return sec;
-    }
+  function scrubToEvent(clientX) {
+    const rect = progress.getBoundingClientRect();
+    const trackW = rect.width;
+    const half = PROG_THUMB_W / 2;
+    // Clamp pointer to the usable track (accounting for the cap width) so
+    // clicks in the middle of the cap don't jump its left edge.
+    const localX = Math.max(half, Math.min(trackW - half, clientX - rect.left));
+    const t = (localX - half) / Math.max(1, (trackW - PROG_THUMB_W));
+    const sec = t * (state.duration || 0);
+    progress.value = String(Math.round(t * 1000));
+    timeReadout.textContent = `${fmt(sec)} / ${fmt(state.duration || 0)}`;
+    return sec;
+  }
   progress.addEventListener('pointerdown', e => { if (!state.duration) return; progress.setPointerCapture(e.pointerId); scrubbing = true; wasPlayingOnScrub = state.playing; if (wasPlayingOnScrub) pausePlayback(true); scrubToEvent(e.clientX); });
   progress.addEventListener('pointermove', e => { if (!scrubbing) return; scrubToEvent(e.clientX); });
-  function endScrub(e){ if (!scrubbing) return; const sec = scrubToEvent(e.clientX); scrubbing = false; if (wasPlayingOnScrub) startFrom(sec); else { offsetAtPause = sec; setTimeReadout(); } }
+  function endScrub(e) { if (!scrubbing) return; const sec = scrubToEvent(e.clientX); scrubbing = false; if (wasPlayingOnScrub) startFrom(sec); else { offsetAtPause = sec; setTimeReadout(); } }
   progress.addEventListener('pointerup', endScrub); progress.addEventListener('pointercancel', endScrub);
 
   // ===== Group banners (additive toggles) =====
-  function groupIncluded(channels){ return channels.every(ch => state.solos.has(ch)); }
-  function updateGroupBanners(){ const instBtn = document.querySelector('.group-banner.instruments'); const vocBtn = document.querySelector('.group-banner.vocals'); if (instBtn) instBtn.classList.toggle('held', groupIncluded(['guitar','cello'])); if (vocBtn) vocBtn.classList.toggle('held', groupIncluded(['eric','kathryn'])); }
-  function updateSoloChips(){ for (const ch of CH_NAMES) { const el = document.querySelector(`.strip[data-channel="${ch}"] .chip.solo`); if (!el) continue; const on = state.solos.has(ch); el.classList.toggle('active', on); el.setAttribute('aria-checked', String(on)); } updateGroupBanners(); }
-  function attachGroupToggle(btn, channels){ if (!btn) return; const toggle = () => { if (groupIncluded(channels)) { for (const ch of channels) state.solos.delete(ch); } else { for (const ch of channels) state.solos.add(ch); } updateSoloChips(); applyGains(); }; btn.addEventListener('click', toggle); btn.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } }); }
+  function groupIncluded(channels) { return channels.every(ch => state.solos.has(ch)); }
+  function updateGroupBanners() { const instBtn = document.querySelector('.group-banner.instruments'); const vocBtn = document.querySelector('.group-banner.vocals'); if (instBtn) instBtn.classList.toggle('held', groupIncluded(['guitar', 'cello'])); if (vocBtn) vocBtn.classList.toggle('held', groupIncluded(['eric', 'kathryn'])); }
+  function updateSoloChips() { for (const ch of CH_NAMES) { const el = document.querySelector(`.strip[data-channel="${ch}"] .chip.solo`); if (!el) continue; const on = state.solos.has(ch); el.classList.toggle('active', on); el.setAttribute('aria-checked', String(on)); } updateGroupBanners(); }
+  function attachGroupToggle(btn, channels) { if (!btn) return; const toggle = () => { if (groupIncluded(channels)) { for (const ch of channels) state.solos.delete(ch); } else { for (const ch of channels) state.solos.add(ch); } updateSoloChips(); applyGains(); }; btn.addEventListener('click', toggle); btn.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } }); }
 
   // ===== Progress CAP styling via inline SVG (drawn in JS) =====
-  function svgCapDataURI({w=28,h=18,r=4, top='#f9fbfd', bottom='#dbe3ea', stripe='#1b1f24'}={}){
+  function svgCapDataURI({ w = 28, h = 18, r = 4, top = '#f9fbfd', bottom = '#dbe3ea', stripe = '#1b1f24' } = {}) {
     const svg =
-      `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>`+
-      `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>`+
-      `<stop offset='0' stop-color='${top}'/><stop offset='1' stop-color='${bottom}'/>`+
-      `</linearGradient></defs>`+
-      `<rect x='0.5' y='0.5' width='${w-1}' height='${h-1}' rx='${r}' ry='${r}' fill='url(#g)' stroke='#9aa6b1'/>`+
-      `<rect x='${w/2-1}' y='2' width='2' height='${h-4}' rx='1' fill='${stripe}' opacity='0.95'/>`+
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>` +
+      `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>` +
+      `<stop offset='0' stop-color='${top}'/><stop offset='1' stop-color='${bottom}'/>` +
+      `</linearGradient></defs>` +
+      `<rect x='0.5' y='0.5' width='${w - 1}' height='${h - 1}' rx='${r}' ry='${r}' fill='url(#g)' stroke='#9aa6b1'/>` +
+      `<rect x='${w / 2 - 1}' y='2' width='2' height='${h - 4}' rx='1' fill='${stripe}' opacity='0.95'/>` +
       `</svg>`;
     const encoded = encodeURIComponent(svg)
       .replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29');
     return `url('data:image/svg+xml;charset=utf-8,${encoded}')`;
   }
 
-  function injectProgressCapStyles(){
+  function injectProgressCapStyles() {
     if (document.getElementById('mixer-progress-cap')) return;
-    const bg = svgCapDataURI({w:28,h:18,r:4});
+    const bg = svgCapDataURI({ w: 28, h: 18, r: 4 });
     const css = `
       input#progress.progress::-webkit-slider-thumb{
         -webkit-appearance:none !important; appearance:none !important;
@@ -310,12 +310,12 @@
   }
 
   // ===== Fader CAP overlays via inline SVG (applied to all faders) =====
-  function injectMasterCapStyles(){
+  function injectMasterCapStyles() {
     if (document.getElementById('mixer-track-caps')) return;
 
     const capW = 28, capH = 18; // transport-like proportions, rotated later
     const bgTrack = svgCapDataURI({ w: capW, h: capH, r: 4 });
-    const bgMaster = svgCapDataURI({ w: capW, h: capH, r: 4, top:'#ffd8d8', bottom:'#ff9c9c', stripe:'#6b1a1a' });
+    const bgMaster = svgCapDataURI({ w: capW, h: capH, r: 4, top: '#ffd8d8', bottom: '#ff9c9c', stripe: '#6b1a1a' });
     const channels = ['master', ...CH_NAMES];
 
     const css = `
@@ -375,7 +375,7 @@
     });
   }
   // Lock Play/Pause button width so label swap doesn't shift layout
-  function lockPlayButtonWidth(){
+  function lockPlayButtonWidth() {
     if (!playBtn) return;
     const clone = playBtn.cloneNode(true);
     clone.textContent = 'Pause'; // widest label
@@ -389,86 +389,17 @@
     document.body.removeChild(clone);
     playBtn.style.minWidth = w + 'px';
   }
-  // ===== Responsive CSS (mobile-friendly layout) =====
-  function injectResponsiveMixerCSS(){
-    if (document.getElementById('mixer-responsive')) return;
-    const css = `
-      /* Tablet & small laptop: keep all four channels on the first row, 
-         and park MASTER full-width on the bottom to avoid the weird layout */
-      @media (max-width: 1100px){
-        .mixer-wrap{ width:96vw; padding:14px; }
-        .topbar{ flex-wrap:wrap; gap:8px; }
-        .transport{ flex-wrap:wrap; gap:8px; }
-        .progress{ width:100% !important; order:3; }
-        .time{ margin-left:auto; }
-        .strips{
-          grid-template-columns:repeat(4, minmax(0,1fr));
-          grid-template-areas:
-            'instruments instruments vocals vocals'
-            'guitar cello eric kathryn'
-            'master master master master';
-          column-gap:10px; row-gap:12px;
-        }
-        .fader{ height:180px; }
-      }
-
-      /* Narrow tablets / large phones: **two columns**. Instruments row, 
-         then Vocals row, then MASTER full-width. This avoids the layout
-         you screenshotted where one vocal drops and MASTER goes up. */
-      @media (max-width: 700px){
-        .mixer-wrap{ width:96vw; padding:12px; }
-        .strips{
-          grid-template-columns:repeat(2, minmax(0,1fr));
-          grid-template-areas:
-            'instruments instruments'
-            'guitar cello'
-            'vocals vocals'
-            'eric kathryn'
-            'master master';
-        }
-        .fader{ height:160px; }
-        .btn{ padding:7px 11px; }
-      }
-
-      /* Phones: 2 columns, tighter spacing, MASTER full-width on the bottom */
-      @media (max-width: 480px){
-        body{ padding:12px; }
-        .mixer-wrap{ padding:12px; }
-        .strips{
-          grid-template-columns:repeat(2, minmax(0,1fr));
-          grid-template-areas:
-            'instruments instruments'
-            'guitar cello'
-            'vocals vocals'
-            'eric kathryn'
-            'master master';
-          column-gap:8px; row-gap:10px;
-        }
-        .fader{ height:140px; }
-        .chip{ padding:5px 9px; font-size:11px; }
-        .group-banner{ font-size:9px; padding:3px 8px; }
-        .name{ font-size:13px; }
-        .btn{ padding:6px 10px; }
-        .progress{ height:12px; }
-      }
-    `;
-    const s = document.createElement('style');
-    s.id = 'mixer-responsive';
-    s.textContent = css;
-    document.head.appendChild(s);
-  }
 
   // ===== Init =====
   ELS('.strip').forEach(bindStrip);
   setupMeters();
-  (function initDb(){ for (const ch of CH_NAMES) { const f = EL(`.strip[data-channel="${ch}"] .fader`); state.faderValues.set(ch, Number(f.value)); } state.masterFader = Number(EL(`.strip[data-channel="master"] .fader`).value); applyGains(); })();
+  (function initDb() { for (const ch of CH_NAMES) { const f = EL(`.strip[data-channel="${ch}"] .fader`); state.faderValues.set(ch, Number(f.value)); } state.masterFader = Number(EL(`.strip[data-channel="master"] .fader`).value); applyGains(); })();
 
-  attachGroupToggle(document.querySelector('.group-banner.instruments'), ['guitar','cello']);
-  attachGroupToggle(document.querySelector('.group-banner.vocals'), ['eric','kathryn']);
+  attachGroupToggle(document.querySelector('.group-banner.instruments'), ['guitar', 'cello']);
+  attachGroupToggle(document.querySelector('.group-banner.vocals'), ['eric', 'kathryn']);
   updateGroupBanners();
 
-  // Responsive CSS for smaller screens
-  injectResponsiveMixerCSS();
+  // Responsive CSS is now in assets/css/mixer-responsive.css
 
   // Draw the progress cap now
   injectProgressCapStyles();
