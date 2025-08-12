@@ -213,6 +213,18 @@
     form { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
     input[type=email] { padding: 10px 12px; border-radius: 10px; border: 0; background: #0f0f0f; color: var(--fg); }
     .fine { font-size: 12px; color: var(--muted); }
+
+    /* Mobile: tighter side gutters + align collage */
+    @media (max-width: 520px) {
+      .wrap { padding-left: 12px; padding-right: 12px; }
+      header .wrap { padding-left: 12px; padding-right: 12px; }
+      /* Remove inner horizontal padding so cards align with hero edges */
+      .pad { padding-block: 16px; padding-left: 0; padding-right: 0; }
+
+      /* Collage: left-align and drop any JS scatter on small screens */
+      #watch .collage { grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: start; }
+      #watch .polaroid { --tx: 0px !important; --ty: 0px !important; --ux: 0px !important; --uy: 0px !important; --rot: 0deg; margin: 2px 2px; }
+    }
   </style>
 </head>
 <body>
