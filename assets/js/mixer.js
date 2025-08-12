@@ -412,4 +412,56 @@
 
   // Background prefetch so first Play is nearly instant
   prefetchStems().catch(console.warn);
+
+  // === Mobile vertical squish so title & mixer never overflow viewport ===
+  (function verticalSquish() {
+    const MIN_WATCH_W = 700; // only apply on narrow/mobile widths
+    let lastFactor = 1;
+    function apply() {
+      const w = window.innerWidth;
+      const body = document.body;
+      if (w > MIN_WATCH_W) {
+        if (body.classList.contains('vh-squished')) {
+          body.classList.remove('vh-squished');
+          body.style.removeProperty('--vhSquish');
+          body.style.removeProperty('padding-bottom');
+        }
+        return;
+      }
+      const title = document.querySelector('.page-title');
+      const wrap = document.querySelector('.mixer-wrap');
+      if (!title || !wrap) return;
+      // Natural (unsquished) combined height including body top padding
+      const rectTitle = title.getBoundingClientRect();
+      const rectWrap = wrap.getBoundingClientRect();
+      const topMost = Math.min(rectTitle.top, rectWrap.top);
+      const bottomMost = Math.max(rectTitle.bottom, rectWrap.bottom);
+      const natural = bottomMost - topMost; // visible vertical span needed
+      const avail = window.innerHeight; // current viewport
+      let factor = 1;
+      if (natural > avail) factor = Math.max(0.72, avail / natural); // clamp minimal readability
+      if (Math.abs(factor - lastFactor) > 0.005) {
+        lastFactor = factor;
+        if (factor < 1) {
+          body.classList.add('vh-squished');
+          body.style.setProperty('--vhSquish', factor.toFixed(4));
+          // Add bottom padding compensation so last row breathing room preserved visually after scale
+          const basePad = 16; // matches desktop default roughly
+            body.style.paddingBottom = Math.round(basePad / factor) + 'px';
+        } else {
+          body.classList.remove('vh-squished');
+          body.style.removeProperty('--vhSquish');
+          body.style.removeProperty('padding-bottom');
+        }
+      }
+    }
+    let rafId = null;
+    function onResize() { if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(apply); }
+    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('orientationchange', () => setTimeout(apply, 50));
+    // Initial after layout
+    setTimeout(apply, 30);
+    // Re-apply after fonts (in case of reflow)
+    window.addEventListener('load', () => setTimeout(apply, 30));
+  })();
 })();

@@ -114,4 +114,17 @@
     }
 }
 
+/* --- Mobile viewport vertical squish (ensure entire mixer + title fits) --- */
+@media (max-width: 700px) {
+    body.vh-squished {
+        /* Scale ONLY the vertical axis so width remains unchanged */
+        --vhSquish: 1; /* JS sets this to <1 when needed */
+        transform-origin: top center;
+        transform: scaleY(var(--vhSquish));
+        height: 100dvh; /* lock to viewport */
+        overflow: hidden; /* prevent scrolling of off-screen unscaled layout */
+    }
+}
+
+
 /* Progress and fader cap overlays (SVG backgrounds) are injected by JS and do not need static CSS here. */
