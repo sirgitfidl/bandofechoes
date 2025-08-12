@@ -95,13 +95,20 @@ const debugVals = () => { };
     const items = collage.querySelectorAll('.polaroid');
     items.forEach((el, i) => {
       const w = el.offsetWidth || 300;
-      const maxX = Math.max(40, Math.min(220, w * 0.55));
-      const maxY = Math.max(14, Math.min(80, w * 0.20));
+  const vw = window.innerWidth || document.documentElement.clientWidth || 1024;
+  // Maintain generous horizontal spread everywhere; tighten vertical spread on small screens
+  const maxX = Math.max(40, Math.min(220, w * 0.55));
+  // On mobile (<=560px) reduce vertical wander so cards cluster closer; scale smoothly
+  const mobileTightFactor = vw <= 360 ? 0.45 : vw <= 440 ? 0.55 : vw <= 560 ? 0.65 : 1;
+  const baseMaxY = w * 0.20; // original proportional vertical spread
+  const maxY = Math.max(10, Math.min(80, baseMaxY * mobileTightFactor));
       const maxR = 16;
       let rx = (Math.random() * 2 - 1) * maxX;
       if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
       if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
-      const ry = Math.pow(Math.random(), 1.2) * maxY;
+  // Slightly more clustering near top by using exponent; on very tight mobile factor also reduce exponent to keep group cohesive
+  const exp = mobileTightFactor < 1 ? 1.0 : 1.2;
+  const ry = Math.pow(Math.random(), exp) * maxY;
       const rot = (Math.random() * 2 - 1) * maxR;
       el.style.setProperty('--tx', `${rx}px`);
       el.style.setProperty('--ty', `${ry}px`);
