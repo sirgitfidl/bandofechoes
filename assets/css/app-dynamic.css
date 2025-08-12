@@ -23,9 +23,9 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Allow dragging with pointer events while disabling double-tap zoom; 'manipulation' is lighter than 'none'. */
+/* Drag reliability: use touch-action:none so mobile browsers don't convert the gesture into a scroll after a few px (was 'manipulation'). */
 .collage .polaroid {
-    touch-action: manipulation;
+    touch-action: none;
 }
 
 .collage img {

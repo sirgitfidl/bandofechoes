@@ -309,6 +309,8 @@ const debugVals = () => { };
 
     function down(e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return; // left click only
+      // Prevent default to stop touch scrolling or text selection gestures from interrupting drag
+      if (e.cancelable) e.preventDefault();
       id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false;
 
       // Build per-member baselines so the whole snapped group drags rigidly
