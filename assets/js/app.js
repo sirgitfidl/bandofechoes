@@ -72,6 +72,58 @@ const debugVals = ()=>{};
     });
     navMenu.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeMenu));
   }
+  // --- Mobile sizing: make polaroids comfortably large on phones/tablets ---
+  function injectPolaroidMobileSizing(){
+    if (document.getElementById('polaroidMobileSizing')) return;
+    const st = document.createElement('style');
+    st.id = 'polaroidMobileSizing';
+    st.textContent = `
+      /* Fixed puzzle piece size across all screen widths */
+      .collage .polaroid{ width: 230px !important; height: auto; }
+      .collage .polaroid .face{ width: 100% !important; height: auto; }
+    `;
+    document.head.appendChild(st);
+  }
+  injectPolaroidMobileSizing();
+
+  // --- Prevent long‑press context menus / image save on mobile in the puzzle area ---
+  function injectMobileTouchGuards(){
+    if (document.getElementById('mobileTouchGuards')) return;
+    const st = document.createElement('style');
+    st.id = 'mobileTouchGuards';
+    st.textContent = `
+      /* Scope to the collage so the rest of the site still allows selection */
+      .collage, .collage * {
+        -webkit-touch-callout: none;  /* iOS long‑press menu */
+        -webkit-user-select: none;    /* iOS text selection */
+        user-select: none;            /* Other browsers */
+        -webkit-tap-highlight-color: transparent;
+      }
+      .collage .polaroid{
+        touch-action: none;           /* You handle gestures; disable browser defaults */
+      }
+      .collage img{
+        -webkit-user-drag: none;      /* Prevent image drag ghost */
+        user-drag: none;
+        pointer-events: auto;
+      }
+    `;
+    document.head.appendChild(st);
+
+    const root = document.querySelector('.collage');
+    if (root){
+      root.addEventListener('contextmenu', e => { e.preventDefault(); }, { capture:true });
+      root.addEventListener('selectstart', e => { e.preventDefault(); }, { capture:true });
+      // Safari gesture events (pinch/long‑press)
+      root.addEventListener('gesturestart', e => { e.preventDefault(); });
+    }
+
+    // Ensure all images in the collage are not draggable
+    document.querySelectorAll('.collage img').forEach(img => {
+      img.setAttribute('draggable','false');
+    });
+  }
+  injectMobileTouchGuards();
 
   // scatter once (after layout) — preserves your look
   const collage = document.querySelector('.collage');
@@ -618,21 +670,20 @@ const debugVals = ()=>{};
     box.style.cssText = [
       'position:relative',
       'width:100vw',
-      'height:100vh',
+      'height:100dvh',
       'max-width:100vw',
-      'max-height:100vh',
+      'max-height:100dvh',
       'border:0',
       'border-radius:0',
       'overflow:hidden',
-      'background:transparent'
-    ].join(';');
+      'background:transparent','padding-top: env(safe-area-inset-top, 0px)','padding-bottom: env(safe-area-inset-bottom, 0px)'].join(';');
 
     // Close button — larger and near the console
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label','Close mixer');
     closeBtn.style.cssText = [
-      'position:absolute','top:6px','right:8px',
+      'position:absolute','top:calc(env(safe-area-inset-top, 0px) + 6px)','right:8px',
       'z-index:2',
       'background:rgba(0,0,0,.55)',
       'border:1px solid #2a3246',
@@ -671,7 +722,7 @@ const debugVals = ()=>{};
         const d = frame.contentDocument || frame.contentWindow?.document;
         if (!d) return;
         const st = d.createElement('style');
-        st.textContent = 'html,body{margin:0;height:100%;overflow:hidden}::-webkit-scrollbar{width:0;height:0}';
+        st.textContent = 'html,body{margin:0;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}::-webkit-scrollbar{width:0;height:0}';
         d.head.appendChild(st);
       } catch(_) { /* ignore if cross‑origin */ }
     });
@@ -681,10 +732,24 @@ const debugVals = ()=>{};
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
+    // Fit the inner box to the *visual* viewport on mobile (iOS URL bar shrink/expand)
+    const fitBox = () => {
+      const vv = window.visualViewport;
+      const h = (vv?.height || window.innerHeight);
+      const w = (vv?.width || window.innerWidth);
+      box.style.height = h + 'px';
+      box.style.width = w + 'px';
+    };
+    fitBox();
+    window.addEventListener('resize', fitBox);
+    try { window.visualViewport && window.visualViewport.addEventListener('resize', fitBox); } catch(_) {}
+
     // Close handlers with fade‑out
     const prevFocus = document.activeElement;
     let closing = false;
     function finishClose(){
+      try { window.removeEventListener('resize', fitBox); } catch(_) {}
+      try { window.visualViewport && window.visualViewport.removeEventListener('resize', fitBox); } catch(_) {}
       overlay.remove();
       document.body.style.overflow = '';
       (prevFocus||document.body)?.focus?.();
@@ -881,18 +946,4 @@ window.__solveTimers.push(t1, t2, t3);
       requestAnimationFrame(()=>{ cards9.forEach(c=>{ c.style.opacity='1'; setTimeout(()=>{ c.style.transition=''; }, 500); }); });
     }, 460);
   }
-
-  // When returning via the browser back/forward cache, auto‑reset a solved state
-  window.addEventListener('pageshow', (e)=>{
-    try {
-      if (document.body.classList.contains('puzzle-solved')) {
-        resetAfterSolveWithFade();
-      }
-    } catch(_){}
-  });
-
-  // periodic check in case event misses
-  const __interval = setInterval(()=>{ try{ checkSolved(); }catch(e){ /* no-op */ } }, 500);
-  // debug removed
-  
 })();
