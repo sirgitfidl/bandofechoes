@@ -907,7 +907,7 @@ const debugVals = () => { };
     const preventKeyZoom = (e) => {
       if (!e.ctrlKey && !e.metaKey) return;
       const k = e.key;
-      if (k === '+' || k === '-' || k === '=' || k === '_' ) { e.preventDefault(); }
+      if (k === '+' || k === '-' || k === '=' || k === '_') { e.preventDefault(); }
     };
     window.addEventListener('keydown', preventKeyZoom, true);
     cleanupFns.push(() => window.removeEventListener('keydown', preventKeyZoom, true));
@@ -934,8 +934,8 @@ const debugVals = () => { };
       document.body.style.overflow = '';
       (prevFocus || document.body)?.focus?.();
       document.removeEventListener('keydown', onKey);
-  // Restore zoom/scroll environment
-  cleanupFns.forEach(fn => { try { fn(); } catch (_) { } });
+      // Restore zoom/scroll environment
+      cleanupFns.forEach(fn => { try { fn(); } catch (_) { } });
     }
     function dismiss() {
       if (closing) return; closing = true;
