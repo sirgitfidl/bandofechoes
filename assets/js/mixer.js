@@ -323,10 +323,10 @@
       ${channels.map(ch => `.strip[data-channel='${ch}'] .fader::-webkit-slider-thumb`).join(', ')}{ opacity: 0 !important; }
       ${channels.map(ch => `.strip[data-channel='${ch}'] .fader::-moz-range-thumb`).join(', ')}{ opacity: 0 !important; }
       .cap-overlay{
-        position: absolute; left: 0; top: 0; width: ${capW}px; height: ${capH}px;
+  position: absolute; left: 50%; top: 0; width: ${capW}px; height: ${capH}px;
         pointer-events: none; z-index: 3;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,.45));
-        transform: translate(0,0) rotate(90deg);
+  transform: translate(-50%,0) rotate(90deg);
         transform-origin: 50% 50%;
         will-change: transform;
       }
@@ -353,20 +353,16 @@
       // Per-channel color: red for master, silver for others
       cap.style.background = ((ch === 'master') ? bgMaster : bgTrack) + ' center / contain no-repeat';
 
-      const place = (recalcX = false) => {
-        const stripRect = strip.getBoundingClientRect();
+      const place = () => {
         const r = fader.getBoundingClientRect();
-        // Recalculate baseX only if not set or explicitly requested (resize/orientation)
-        if (recalcX || !cap.dataset.baseX) {
-          const baseX = (r.left - stripRect.left) + (r.width / 2) - (capW / 2);
-          cap.dataset.baseX = String(baseX);
-        }
         const usable = Math.max(0, r.height - capH);
         const val = Number(fader.value) || 0; // 0..100
         const t = 1 - (val / 100);
-        const y = (r.top - stripRect.top) + (t * usable);
-        const x = parseFloat(cap.dataset.baseX);
-        cap.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) rotate(90deg)`;
+        // Position relative to strip via left:50%; only translate vertically
+        // Compute vertical offset relative to fader top inside its strip
+        const parentRect = strip.getBoundingClientRect();
+        const y = (r.top - parentRect.top) + (t * usable);
+        cap.style.transform = `translate(-50%, ${Math.round(y)}px) rotate(90deg)`;
       };
 
       placeFns.set(ch, place);
@@ -375,11 +371,11 @@
       fader.addEventListener('change', place);
     });
 
-    function redoAll(recalcX) {
-      channels.forEach(ch => { const fn = placeFns.get(ch); if (fn) fn(recalcX); });
+    function redoAll() {
+      channels.forEach(ch => { const fn = placeFns.get(ch); if (fn) fn(); });
     }
-    window.addEventListener('resize', () => redoAll(true));
-    window.addEventListener('orientationchange', () => setTimeout(() => redoAll(true), 40));
+    window.addEventListener('resize', () => redoAll());
+    window.addEventListener('orientationchange', () => setTimeout(() => redoAll(), 40));
   }
   // Lock Play/Pause button width so label swap doesn't shift layout
   function lockPlayButtonWidth() {
