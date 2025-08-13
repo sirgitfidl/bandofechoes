@@ -416,8 +416,8 @@
   // === Mobile whole-console scale-to-fit (title + mixer) ===
   (function scaleToFit() {
     const MAX_W = 700; // Only scale below this width.
-    const TEST_FORCE_SCALE = 0.45; // TEST: force very small overall scale on mobile (remove later)
-    let lastScale = 1;
+    let appliedScale = 1; // monotonic: only decrease
+    let initialized = false;
     function measureAndScale() {
       const all = document.getElementById('mixAll');
       if (!all) return;
@@ -428,25 +428,26 @@
       const vpH = window.innerHeight;
       let scale = 1;
       if (window.innerWidth <= MAX_W && natH > vpH) {
-        scale = Math.max(0.62, vpH / natH); // allow down to 62%
+        scale = Math.max(0.62, Math.min(1, vpH / natH)); // clamp
       }
-      // Force a smaller scale for testing while under mobile width
-      if (window.innerWidth <= MAX_W) {
-        scale = Math.min(scale, TEST_FORCE_SCALE);
-      }
-      if (Math.abs(scale - lastScale) > 0.004) {
-        lastScale = scale;
-        if (scale < 1) {
-          all.style.transformOrigin = 'top center';
-          all.style.transform = `scale(${scale.toFixed(4)})`;
-        } else {
-          all.style.transform = 'none';
+      // Monotonic: only apply if smaller than current appliedScale
+      if (scale < appliedScale - 0.003) {
+        appliedScale = scale;
+        all.style.transformOrigin = 'top center';
+        all.style.transform = (appliedScale < 1) ? `scale(${appliedScale.toFixed(4)})` : 'none';
+        // Keep user at top if initial shrink; prevents hidden title
+        if (!initialized) {
+          window.scrollTo({ top: 0, behavior: 'instant' });
         }
+      } else {
+        // Re-apply previously chosen scale if we decided not to enlarge
+        all.style.transform = (appliedScale < 1) ? `scale(${appliedScale.toFixed(4)})` : 'none';
       }
       // Reveal after first stable measurement
       if (all.classList.contains('pre-fit')) {
         requestAnimationFrame(() => all.classList.remove('pre-fit'));
       }
+      initialized = true;
     }
     let rafId = null;
     function queue() { if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(measureAndScale); }
