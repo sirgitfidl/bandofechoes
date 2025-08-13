@@ -451,7 +451,10 @@
       const vpH = window.innerHeight;
       let c = 1;
       if (window.innerWidth <= MAX_W && natH > vpH) {
-        c = Math.max(0.62, Math.min(1, vpH / natH));
+        const raw = Math.min(1, vpH / natH); // base proportion
+        // Aggressive curve: amplify shrink (1 - raw) * 2, bounded
+        c = 1 - Math.min(0.9, (1 - raw) * 2);
+        c = Math.max(0.48, c); // allow smaller than previous 0.62
       }
       if (Math.abs(c - last) > 0.012) {
         last = c;

@@ -131,5 +131,9 @@ body.vh-compress .meter { height: calc(6px * var(--c)); }
 body.vh-compress .meter > span { transition: width .08s linear; }
 body.vh-compress .progress { height: calc(10px * var(--c)); }
 body.vh-compress .time { font-size: calc(14px * var(--c)); }
+body.vh-compress .strips { column-gap: calc(14px * var(--c)); row-gap: calc(16px * var(--c)); }
+body.vh-compress .strip .row { gap: calc(8px * var(--c)); }
+body.vh-compress .fader { width: calc(42px * var(--c)); }
+body.vh-compress .progress { margin: 0 calc(10px * var(--c)); }
 
 /* Progress and fader cap overlays (SVG backgrounds) are injected by JS and do not need static CSS here. */
