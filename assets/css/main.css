@@ -819,3 +819,9 @@ input[type=email] {
         margin: 2px 2px;
     }
 }
+
+/* Utility classes */
+.text-justify {
+    text-align: justify;
+    text-justify: inter-word;
+}
