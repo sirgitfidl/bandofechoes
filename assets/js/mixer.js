@@ -438,6 +438,10 @@
           all.style.transform = 'none';
         }
       }
+      // Reveal after first stable measurement
+      if (all.classList.contains('pre-fit')) {
+        requestAnimationFrame(() => all.classList.remove('pre-fit'));
+      }
     }
     let rafId = null;
     function queue() { if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(measureAndScale); }

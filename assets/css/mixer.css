@@ -56,6 +56,10 @@ body {
     position: relative
 }
 
+/* Unified wrapper containing title + mixer for mobile scale-to-fit */
+.mix-all-wrap { transition: opacity .18s ease; }
+.mix-all-wrap.pre-fit { opacity: 0; }
+
 .topbar {
     display: flex;
     align-items: center;
