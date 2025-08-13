@@ -428,50 +428,41 @@
   // Background prefetch so first Play is nearly instant
   prefetchStems().catch(console.warn);
 
-  // === Mobile whole-console scale-to-fit (title + mixer) ===
-  (function scaleToFit() {
-    const MAX_W = 700; // Only scale below this width.
-    let appliedScale = 1; // monotonic: only decrease
-    let initialized = false;
-    function measureAndScale() {
-      const all = document.getElementById('mixAll');
-      if (!all) return;
-      document.body.classList.add('scaled-fit');
-      all.classList.add('scaled');
-      // Reset scale to get natural height
-      all.style.transform = 'none';
-      const natH = all.getBoundingClientRect().height;
+  // === Mobile compression (no transform scaling to preserve slider geometry) ===
+  (function compressionFit() {
+    const MAX_W = 700;
+    let last = 1;
+    function apply() {
+      const wrap = document.getElementById('mixAll');
+      if (!wrap) return;
+      wrap.classList.add('scaled');
+      const body = document.body;
+      body.classList.remove('scaled-fit'); // legacy class cleanup
+      // Measure natural height without transform scaling
+      const natH = wrap.getBoundingClientRect().height;
       const vpH = window.innerHeight;
-      let scale = 1;
+      let c = 1;
       if (window.innerWidth <= MAX_W && natH > vpH) {
-        scale = Math.max(0.62, Math.min(1, vpH / natH)); // clamp
+        c = Math.max(0.65, Math.min(1, vpH / natH));
       }
-      // Monotonic: only apply if smaller than current appliedScale
-      if (scale < appliedScale - 0.003) {
-        appliedScale = scale;
-        all.style.transformOrigin = 'top center';
-  const yOffset = 0; // keep at top; adjust if needed later
-  all.style.transform = (appliedScale < 1) ? `translateY(${yOffset}px) scale(${appliedScale.toFixed(4)})` : 'none';
-        // Keep user at top if initial shrink; prevents hidden title
-        if (!initialized) {
-          window.scrollTo({ top: 0, behavior: 'instant' });
+      if (Math.abs(c - last) > 0.01) {
+        last = c;
+        if (c < 1) {
+          body.classList.add('vh-compress');
+          body.style.setProperty('--vhCompress', c.toFixed(4));
+        } else {
+          body.classList.remove('vh-compress');
+          body.style.removeProperty('--vhCompress');
         }
-      } else {
-        // Re-apply previously chosen scale if we decided not to enlarge
-  const yOffset2 = 0;
-  all.style.transform = (appliedScale < 1) ? `translateY(${yOffset2}px) scale(${appliedScale.toFixed(4)})` : 'none';
       }
-      // Reveal after first stable measurement
-      if (all.classList.contains('pre-fit')) {
-        requestAnimationFrame(() => all.classList.remove('pre-fit'));
+      if (wrap.classList.contains('pre-fit')) {
+        requestAnimationFrame(() => wrap.classList.remove('pre-fit'));
       }
-      initialized = true;
     }
-    let rafId = null;
-    function queue() { if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(measureAndScale); }
+    let rid = null; const queue = () => { if (rid) cancelAnimationFrame(rid); rid = requestAnimationFrame(apply); };
     window.addEventListener('resize', queue, { passive: true });
-    window.addEventListener('orientationchange', () => setTimeout(measureAndScale, 50));
-    setTimeout(measureAndScale, 30);
-    window.addEventListener('load', () => setTimeout(measureAndScale, 30));
+    window.addEventListener('orientationchange', () => setTimeout(apply, 50));
+    setTimeout(apply, 40);
+    window.addEventListener('load', () => setTimeout(apply, 40));
   })();
 })();
