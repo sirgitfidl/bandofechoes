@@ -388,6 +388,7 @@
     }
     window.addEventListener('resize', () => redoAll());
     window.addEventListener('orientationchange', () => setTimeout(() => redoAll(), 40));
+  window.addEventListener('mixer-layout', redoAll);
   }
   // Lock Play/Pause button width so label swap doesn't shift layout
   function lockPlayButtonWidth() {
@@ -474,6 +475,11 @@
       if (hdr) {
         const h = hdr.getBoundingClientRect().height;
         body.style.setProperty('--headerH', h + 'px');
+      }
+      // Notify cap overlays / layout-dependent elements to recompute positions after any compression change.
+      if (!apply.__pendingEvt) {
+        apply.__pendingEvt = true;
+        requestAnimationFrame(() => { apply.__pendingEvt = false; window.dispatchEvent(new Event('mixer-layout')); });
       }
     }
     let rafId = null;
