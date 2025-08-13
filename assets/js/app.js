@@ -331,7 +331,7 @@ const debugVals = () => { };
       // restore origin so layout returns to normal
       el.style.transformOrigin = prevOrigin;
       try { trySnap(el); } catch (_) { }
-      checkSolvedSoon();
+    triggerSolveDoubleCheck();
     }
 
     knob.addEventListener('pointerdown', down);
@@ -416,7 +416,7 @@ const debugVals = () => { };
       el.releasePointerCapture?.(id);
       id = null; baseMap = null;
       try { trySnap(el); } catch (_) { }
-      checkSolvedSoon();
+    triggerSolveDoubleCheck();
     }
 
     el.addEventListener('pointerdown', down);
@@ -624,14 +624,27 @@ const debugVals = () => { };
   function axialMeanDeg(deg) { let sx = 0, sy = 0; for (const d of deg) { const r = (d * 2) * Math.PI / 180; sx += Math.cos(r); sy += Math.sin(r); } return 0.5 * Math.atan2(sy, sx) * 180 / Math.PI; }
 
   function checkSolved() {
+    const DBG = !!window.PUZZLE_DEBUG;
+    const fail = (reason, extra) => {
+      window.PUZZLE_LAST_FAIL = { ts: Date.now(), reason, ...(extra||{}) };
+      if (DBG) {
+        // eslint-disable-next-line no-console
+        console.debug('[puzzle][fail]', reason, extra||'');
+        if (extra && extra.badTiles) {
+          extra.badTiles.forEach(t => { t.style.outline = '2px solid #d22'; setTimeout(()=>{ t.style.outline=''; }, 1200); });
+        }
+      }
+      return false;
+    };
+
     const nine = [...document.querySelectorAll('.polaroid')].slice(0, 9);
-    if (nine.length !== 9) return false;
-    if (!nine.every(n => n.dataset.flipped === '1')) { setSolved(false); return false; }
+    if (nine.length !== 9) return fail('not-enough-tiles', { count: nine.length });
+    if (!nine.every(n => n.dataset.flipped === '1')) { setSolved(false); return fail('not-all-flipped', { flipped: nine.map(n=>n.dataset.flipped) }); }
 
     // All 9 must be in a single snapped group
     const gid = nine[0].dataset.group;
     const gset = gid ? groups.get(gid) : null;
-    if (!gid || !gset || !nine.every(n => n.dataset.group === gid) || gset.size < 9) { setSolved(false); return false; }
+  if (!gid || !gset || !nine.every(n => n.dataset.group === gid) || gset.size < 9) { setSolved(false); return fail('not-single-group', { gid, gsetSize: gset? gset.size:0, perGroup: nine.map(n=>n.dataset.group) }); }
 
     // Work in the puzzle's local frame (so global rotation doesn't matter)
     const rots = nine.map(n => parseFloat(getComputedStyle(n).getPropertyValue('--rot')) || 0);
@@ -643,26 +656,99 @@ const debugVals = () => { };
     const ang = -rAvg * Math.PI / 180, ca = Math.cos(ang), sa = Math.sin(ang);
     pts.forEach(p => { const dx = p.cx - mx, dy = p.cy - my; p.xn = dx * ca - dy * sa; p.yn = dx * sa + dy * ca; });
 
-    // Cluster x' and y' into exactly 3 columns/rows with a small epsilon
-    const cluster = (vals, eps = 3) => { const s = [...vals].sort((a, b) => a - b); const reps = [], cnt = []; for (const v of s) { if (!reps.length || Math.abs(v - reps[reps.length - 1]) > eps) { reps.push(v); cnt.push(1); } else { const i = reps.length - 1; reps[i] = (reps[i] * cnt[i] + v) / (cnt[i] + 1); cnt[i]++; } } return reps; };
-    const nearestIndex = (v, reps, eps = 3) => { let best = -1, bd = Infinity; for (let i = 0; i < reps.length; i++) { const d = Math.abs(v - reps[i]); if (d < bd) { bd = d; best = i; } } return (bd <= eps) ? best : -1; };
-
-    const colReps = cluster(pts.map(p => p.xn));
-    const rowReps = cluster(pts.map(p => p.yn));
-    if (rowReps.length !== 3 || colReps.length !== 3) { setSolved(false); return false; }
+  // Adaptive clustering: derive spacing and allow slightly larger tolerance; then merge to exactly 3 centers if needed.
+  const cluster = (vals, eps) => { const s = [...vals].sort((a,b)=>a-b); const reps=[], cnt=[]; for (const v of s){ if(!reps.length || Math.abs(v-reps[reps.length-1])>eps){ reps.push(v); cnt.push(1);} else { const i=reps.length-1; reps[i]=(reps[i]*cnt[i]+v)/(cnt[i]+1); cnt[i]++; } } return reps; };
+  const nearestIndex = (v,reps,eps)=>{ let best=-1,bd=Infinity; for(let i=0;i<reps.length;i++){ const d=Math.abs(v-reps[i]); if(d<bd){ bd=d; best=i; } } return (bd<=eps)?best:-1; };
+  const xsRaw = pts.map(p=>p.xn), ysRaw = pts.map(p=>p.yn);
+  function median(a){ const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
+  function medianSpacing(sortedVals){ const diffs=[]; for(let i=1;i<sortedVals.length;i++){ const d=sortedVals[i]-sortedVals[i-1]; if (d>4) diffs.push(d);} diffs.sort((a,b)=>a-b); const m=Math.floor(diffs.length/2); return diffs.length? diffs[m]: 0; }
+  const xsSorted=[...xsRaw].sort((a,b)=>a-b), ysSorted=[...ysRaw].sort((a,b)=>a-b);
+  const dxMed = medianSpacing(xsSorted) || (xsSorted[xsSorted.length-1]-xsSorted[0])/2 || 100;
+  const dyMed = medianSpacing(ysSorted) || (ysSorted[ysSorted.length-1]-ysSorted[0])/2 || 100;
+  // eps scaled to spacing; clamp reasonable bounds
+  const epsX = Math.min(Math.max(dxMed*0.22, 6), 48);
+  const epsY = Math.min(Math.max(dyMed*0.22, 6), 48);
+  let colReps = cluster(xsRaw, epsX);
+  let rowReps = cluster(ysRaw, epsY);
+  // If we got more than 3 reps, iteratively merge closest until 3.
+  function reduceToThree(reps){ reps=[...reps].sort((a,b)=>a-b); while(reps.length>3){ let bi=0, bg=Infinity; for(let i=1;i<reps.length;i++){ const g=reps[i]-reps[i-1]; if(g<bg){ bg=g; bi=i; } } const merged=(reps[bi]+reps[bi-1])/2; reps.splice(bi-1,2,merged); } return reps; }
+  if (colReps.length>3) colReps = reduceToThree(colReps);
+  if (rowReps.length>3) rowReps = reduceToThree(rowReps);
+  if (rowReps.length !== 3 || colReps.length !== 3) { setSolved(false); return fail('cluster-mismatch', { rowReps, colReps, epsX, epsY, dxMed, dyMed }); }
 
     // Check each tile maps to its assigned (r,c)
+    let bad = [];
     for (const p of pts) {
-      const rr = nearestIndex(p.yn, rowReps);
-      const cc = nearestIndex(p.xn, colReps);
-      if (rr < 0 || cc < 0) { setSolved(false); return false; }
-      if (p.rI !== rr || p.cI !== cc) { setSolved(false); return false; }
+      const rr = nearestIndex(p.yn, rowReps, epsY);
+      const cc = nearestIndex(p.xn, colReps, epsX);
+      if (rr < 0 || cc < 0) { bad.push(p.n); continue; }
+      if (p.rI !== rr || p.cI !== cc) { bad.push(p.n); }
     }
+    if (bad.length) { setSolved(false); return fail('tile-mismatch', { badTiles: bad, tiles: pts.map(p=>({id:p.n.id, rI:p.rI, cI:p.cI, xn:Math.round(p.xn), yn:Math.round(p.yn)})) }); }
 
+  // Orientation gate (lightweight): ensure no tile is ~180° inverted relative to the group's mean orientation.
+  // We purposefully do this AFTER grid validation so we don't block snapping or grouping.
+  const norm = d => { d = ((d % 360) + 360) % 360; if (d > 180) d -= 360; return d; }; // [-180,180)
+  const raw = rots.map(norm);
+  // First-order circular mean (NOT axial) so a lone 180° outlier is detected.
+  let sx = 0, sy = 0; raw.forEach(r => { const rad = r * Math.PI / 180; sx += Math.cos(rad); sy += Math.sin(rad); });
+  const meanDir = Math.atan2(sy, sx) * 180 / Math.PI;
+  const diff = (a,b)=>{ let d=a-b; while(d>180)d-=360; while(d<-180)d+=360; return d; };
+  let inverted = false;
+  for (const r of raw) { const delta = Math.abs(diff(r, meanDir)); if (delta > 120) { inverted = true; break; } }
+    if (inverted) { setSolved(false); return fail('orientation-inverted', { meanDir: Math.round(meanDir*10)/10, rots: raw.map(r=>Math.round(r*10)/10) }); }
+
+    if (DBG) { console.debug('[puzzle][solved]', { rotations: raw.map(r=>Math.round(r*10)/10) }); }
+    window.PUZZLE_LAST_FAIL = null;
     setSolved(true); return true;
   }
 
+  // Public debug helpers (no-op unless enabled)
+  if (!window.dumpPuzzleState) {
+    window.dumpPuzzleState = () => {
+      const nine = [...document.querySelectorAll('.polaroid')].slice(0,9);
+      const data = nine.map(n=>{
+        const cs = getComputedStyle(n);
+        return {
+          id: n.id || null,
+          flipped: n.dataset.flipped,
+            group: n.dataset.group,
+          rot: parseFloat(cs.getPropertyValue('--rot'))||0,
+          ux: cs.getPropertyValue('--ux'),
+          uy: cs.getPropertyValue('--uy'),
+          gridR: n.dataset.gridR, gridC: n.dataset.gridC
+        };
+      });
+      // eslint-disable-next-line no-console
+      console.table(data);
+      return data;
+    };
+  }
+  if (!window.forcePuzzleCheck) {
+    window.forcePuzzleCheck = () => { const ok = checkSolved(); console.debug('[puzzle][forceCheck]', { ok, lastFail: window.PUZZLE_LAST_FAIL }); return ok; };
+  }
+
   function checkSolvedSoon() { if (checking) return; checking = true; setTimeout(() => { checking = false; checkSolved(); }, 80); }
+  window.PUZZLE_LAST_CHECKS = window.PUZZLE_LAST_CHECKS || [];
+  function checkSolvedSoon() {
+    if (checking) return;
+    const t0 = Date.now();
+    checking = true;
+    setTimeout(() => {
+      checking = false;
+      const ok = checkSolved();
+      window.PUZZLE_LAST_CHECKS.push({ t: t0, ran: Date.now(), ok });
+      if (window.PUZZLE_DEBUG) console.debug('[puzzle][autoCheck]', { ok, queuedAt: t0 });
+    }, 80);
+  }
+  function triggerSolveDoubleCheck() {
+    checkSolvedSoon();
+    setTimeout(() => {
+      const ok = checkSolved();
+      window.PUZZLE_LAST_CHECKS.push({ t: Date.now(), ran: Date.now(), ok, forced: true });
+      if (window.PUZZLE_DEBUG) console.debug('[puzzle][doubleCheck]', { ok });
+    }, 170);
+  }
 
   // Stop all audio on the site (YT, <audio>/<video>)
   function stopAllSiteAudio() {
