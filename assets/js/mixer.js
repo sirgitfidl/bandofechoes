@@ -338,7 +338,7 @@
 
     const placeFns = new Map();
 
-  channels.forEach((ch) => {
+    channels.forEach((ch) => {
       const strip = document.querySelector(`.strip[data-channel='${ch}']`);
       if (!strip) return;
       const fader = strip.querySelector('.fader');
@@ -388,7 +388,7 @@
     }
     window.addEventListener('resize', () => redoAll());
     window.addEventListener('orientationchange', () => setTimeout(() => redoAll(), 40));
-  window.addEventListener('mixer-layout', redoAll);
+    window.addEventListener('mixer-layout', redoAll);
   }
   // Lock Play/Pause button width so label swap doesn't shift layout
   function lockPlayButtonWidth() {

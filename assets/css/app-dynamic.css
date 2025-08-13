@@ -51,7 +51,7 @@
     height: 0;
 }
 
-/* Puzzle modal button hover/glow styles */
+/* Puzzle modal button hover/glow styles (WITNESS / REJECT) */
 #puzzleModal a#pmCMND,
 #puzzleModal a#pmCNTRL {
     transition: box-shadow .2s ease, transform .2s ease, filter .2s ease;

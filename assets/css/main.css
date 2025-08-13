@@ -27,6 +27,50 @@ body {
     line-height: 1.45;
 }
 
+/* Portrait lock overlay (shown when user rotates phone to landscape) */
+.rotate-lock-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 24px;
+    z-index: 999999;
+    font-family: inherit;
+}
+
+.rotate-lock-overlay .icon {
+    font-size: 72px;
+    line-height: 1;
+    margin-bottom: 28px;
+    opacity: .85;
+}
+
+.rotate-lock-overlay p {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: .5px;
+}
+
+/* Only activate on small screens */
+@media (max-width: 900px) and (orientation: landscape) {
+    body.portrait-only .rotate-lock-overlay {
+        display: flex;
+    }
+
+    body.portrait-only main,
+    body.portrait-only header,
+    body.portrait-only footer {
+        filter: blur(4px);
+        pointer-events: none;
+        user-select: none;
+    }
+}
+
 a {
     color: var(--fg);
     text-decoration: none;

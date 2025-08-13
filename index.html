@@ -41,7 +41,7 @@
           <a role="menuitem" href="#main">Watch</a>
           <a role="menuitem" href="#about">About</a>
           <a role="menuitem" href="#support">Support</a>
-          <a role="menuitem" href="#contact">Contact</a>
+          <!-- <a role="menuitem" href="#contact">Contact</a> -->
         </div>
       </nav>
     </div>
@@ -50,6 +50,10 @@
   <main id="main" class="wrap">
     <!-- HERO: Featured video -->
     <section class="hero grid">
+      <div class="rotate-lock-overlay" aria-hidden="true">
+        <div class="icon">🔄</div>
+        <p>Please rotate your device<br>Use portrait orientation</p>
+      </div>
       <div class="player" id="playerWrap" data-video="dRs_bLfrtu8">
         <a class="poster" id="poster" href="https://www.youtube.com/watch?v=dRs_bLfrtu8" target="_blank" rel="noopener">
           <img src="https://i.ytimg.com/vi/dRs_bLfrtu8/maxresdefault.jpg" alt="Right In Two — teaser (Short)">
@@ -184,7 +188,7 @@
     </section>
 
 
-    <!-- CONTACT / EMAIL -->
+    <!-- CONTACT / EMAIL --
     <section id="contact" class="section cols">
       <div class="card pad">
         <h2 style="margin-top:0">Contact</h2>
@@ -198,28 +202,28 @@
       </div>
 
     </section>
-  </main>
+  </main>-->
 
-  <!-- Lightbox overlay -->
-  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
-    <button class="lightbox-close" aria-label="Close">×</button>
-    <button class="lightbox-arrow prev" aria-label="Previous">‹</button>
-    <img id="lightboxImg" alt="">
-    <button class="lightbox-arrow next" aria-label="Next">›</button>
-  </div>
-
-  <footer>
-    <div class="wrap foot">
-      <span class="muted">© <span id="year"></span> Band of Echoes</span>
-      <div style="display:flex; gap:12px;">
-        <a id="ytFooter" href="#" target="_blank" rel="noopener">YouTube</a>
-        <a id="ptFooter" href="#" target="_blank" rel="noopener">Patreon</a>
-      </div>
+    <!-- Lightbox overlay -->
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+      <button class="lightbox-close" aria-label="Close">×</button>
+      <button class="lightbox-arrow prev" aria-label="Previous">‹</button>
+      <img id="lightboxImg" alt="">
+      <button class="lightbox-arrow next" aria-label="Next">›</button>
     </div>
-  </footer>
 
-  <!-- JSON-LD (basic MusicGroup schema) -->
-  <script type="application/ld+json" id="schema">
+    <footer>
+      <div class="wrap foot">
+        <span class="muted">© <span id="year"></span> Band of Echoes</span>
+        <div style="display:flex; gap:12px;">
+          <a id="ytFooter" href="#" target="_blank" rel="noopener">YouTube</a>
+          <a id="ptFooter" href="#" target="_blank" rel="noopener">Patreon</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- JSON-LD (basic MusicGroup schema) -->
+    <script type="application/ld+json" id="schema">
   {
     "@context": "https://schema.org",
     "@type": "MusicGroup",
@@ -233,7 +237,7 @@
   }
   </script>
 
-  <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
 </body>
 
 </html>

@@ -117,7 +117,23 @@ const debugVals = () => { };
 
     items.forEach((el, i) => {
       const w = el.offsetWidth || repW || 300;
-      const maxR = 16;
+      // Biased rotation: mostly upright (near 0°), occasional inverted (~±180°)
+      const ROTATION_DISTRIBUTION = { uprightBias: 0.78, uprightSpread: 55, invertedSpread: 26 };
+      const wrap = (a) => ((a + 180) % 360 + 360) % 360 - 180; // [-180,180)
+      const randomBiased = () => {
+        const tri = () => (Math.random() + Math.random()) / 2; // triangular in [0,1]
+        if (Math.random() < ROTATION_DISTRIBUTION.uprightBias) {
+          // Centered near 0
+            const centered = (tri() * 2 - 1); // [-1,1]
+          return wrap(centered * ROTATION_DISTRIBUTION.uprightSpread);
+        } else {
+          // Inverted cluster near ±180
+          const sign = Math.random() < 0.5 ? 1 : -1;
+          const offset = (tri() * 2 - 1) * ROTATION_DISTRIBUTION.invertedSpread;
+          return wrap(sign * 180 + offset);
+        }
+      };
+      const randomRot = randomBiased;
       if (mobileMode) {
         // Force absolute positioning so layout boxes don't stack vertically
         if (el.style.position !== 'absolute') {
@@ -140,7 +156,7 @@ const debugVals = () => { };
         const ryLocal = tri() * spreadY;
         const rx = cx - w / 2 + rxLocal;
         const ry = cy - h / 2 + ryLocal;
-        const rot = (Math.random() * 2 - 1) * (maxR * 0.85);
+  const rot = randomRot();
         el.style.setProperty('--tx', `${rx}px`);
         el.style.setProperty('--ty', `${ry}px`);
         // Slight layering tweak: front-load z for later items for visual variation
@@ -153,7 +169,7 @@ const debugVals = () => { };
         if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
         if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
         const ry = Math.pow(Math.random(), 1.2) * maxY;
-        const rot = (Math.random() * 2 - 1) * maxR;
+  const rot = randomRot();
         el.style.setProperty('--tx', `${rx}px`);
         el.style.setProperty('--ty', `${ry}px`);
         el.style.setProperty('--rot', `${rot}deg`);
@@ -331,7 +347,7 @@ const debugVals = () => { };
       // restore origin so layout returns to normal
       el.style.transformOrigin = prevOrigin;
       try { trySnap(el); } catch (_) { }
-    triggerSolveDoubleCheck();
+      triggerSolveDoubleCheck();
     }
 
     knob.addEventListener('pointerdown', down);
@@ -416,7 +432,7 @@ const debugVals = () => { };
       el.releasePointerCapture?.(id);
       id = null; baseMap = null;
       try { trySnap(el); } catch (_) { }
-    triggerSolveDoubleCheck();
+      triggerSolveDoubleCheck();
     }
 
     el.addEventListener('pointerdown', down);
@@ -626,12 +642,12 @@ const debugVals = () => { };
   function checkSolved() {
     const DBG = !!window.PUZZLE_DEBUG;
     const fail = (reason, extra) => {
-      window.PUZZLE_LAST_FAIL = { ts: Date.now(), reason, ...(extra||{}) };
+      window.PUZZLE_LAST_FAIL = { ts: Date.now(), reason, ...(extra || {}) };
       if (DBG) {
         // eslint-disable-next-line no-console
-        console.debug('[puzzle][fail]', reason, extra||'');
+        console.debug('[puzzle][fail]', reason, extra || '');
         if (extra && extra.badTiles) {
-          extra.badTiles.forEach(t => { t.style.outline = '2px solid #d22'; setTimeout(()=>{ t.style.outline=''; }, 1200); });
+          extra.badTiles.forEach(t => { t.style.outline = '2px solid #d22'; setTimeout(() => { t.style.outline = ''; }, 1200); });
         }
       }
       return false;
@@ -639,12 +655,12 @@ const debugVals = () => { };
 
     const nine = [...document.querySelectorAll('.polaroid')].slice(0, 9);
     if (nine.length !== 9) return fail('not-enough-tiles', { count: nine.length });
-    if (!nine.every(n => n.dataset.flipped === '1')) { setSolved(false); return fail('not-all-flipped', { flipped: nine.map(n=>n.dataset.flipped) }); }
+    if (!nine.every(n => n.dataset.flipped === '1')) { setSolved(false); return fail('not-all-flipped', { flipped: nine.map(n => n.dataset.flipped) }); }
 
     // All 9 must be in a single snapped group
     const gid = nine[0].dataset.group;
     const gset = gid ? groups.get(gid) : null;
-  if (!gid || !gset || !nine.every(n => n.dataset.group === gid) || gset.size < 9) { setSolved(false); return fail('not-single-group', { gid, gsetSize: gset? gset.size:0, perGroup: nine.map(n=>n.dataset.group) }); }
+    if (!gid || !gset || !nine.every(n => n.dataset.group === gid) || gset.size < 9) { setSolved(false); return fail('not-single-group', { gid, gsetSize: gset ? gset.size : 0, perGroup: nine.map(n => n.dataset.group) }); }
 
     // Work in the puzzle's local frame (so global rotation doesn't matter)
     const rots = nine.map(n => parseFloat(getComputedStyle(n).getPropertyValue('--rot')) || 0);
@@ -656,25 +672,25 @@ const debugVals = () => { };
     const ang = -rAvg * Math.PI / 180, ca = Math.cos(ang), sa = Math.sin(ang);
     pts.forEach(p => { const dx = p.cx - mx, dy = p.cy - my; p.xn = dx * ca - dy * sa; p.yn = dx * sa + dy * ca; });
 
-  // Adaptive clustering: derive spacing and allow slightly larger tolerance; then merge to exactly 3 centers if needed.
-  const cluster = (vals, eps) => { const s = [...vals].sort((a,b)=>a-b); const reps=[], cnt=[]; for (const v of s){ if(!reps.length || Math.abs(v-reps[reps.length-1])>eps){ reps.push(v); cnt.push(1);} else { const i=reps.length-1; reps[i]=(reps[i]*cnt[i]+v)/(cnt[i]+1); cnt[i]++; } } return reps; };
-  const nearestIndex = (v,reps,eps)=>{ let best=-1,bd=Infinity; for(let i=0;i<reps.length;i++){ const d=Math.abs(v-reps[i]); if(d<bd){ bd=d; best=i; } } return (bd<=eps)?best:-1; };
-  const xsRaw = pts.map(p=>p.xn), ysRaw = pts.map(p=>p.yn);
-  function median(a){ const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; }
-  function medianSpacing(sortedVals){ const diffs=[]; for(let i=1;i<sortedVals.length;i++){ const d=sortedVals[i]-sortedVals[i-1]; if (d>4) diffs.push(d);} diffs.sort((a,b)=>a-b); const m=Math.floor(diffs.length/2); return diffs.length? diffs[m]: 0; }
-  const xsSorted=[...xsRaw].sort((a,b)=>a-b), ysSorted=[...ysRaw].sort((a,b)=>a-b);
-  const dxMed = medianSpacing(xsSorted) || (xsSorted[xsSorted.length-1]-xsSorted[0])/2 || 100;
-  const dyMed = medianSpacing(ysSorted) || (ysSorted[ysSorted.length-1]-ysSorted[0])/2 || 100;
-  // eps scaled to spacing; clamp reasonable bounds
-  const epsX = Math.min(Math.max(dxMed*0.22, 6), 48);
-  const epsY = Math.min(Math.max(dyMed*0.22, 6), 48);
-  let colReps = cluster(xsRaw, epsX);
-  let rowReps = cluster(ysRaw, epsY);
-  // If we got more than 3 reps, iteratively merge closest until 3.
-  function reduceToThree(reps){ reps=[...reps].sort((a,b)=>a-b); while(reps.length>3){ let bi=0, bg=Infinity; for(let i=1;i<reps.length;i++){ const g=reps[i]-reps[i-1]; if(g<bg){ bg=g; bi=i; } } const merged=(reps[bi]+reps[bi-1])/2; reps.splice(bi-1,2,merged); } return reps; }
-  if (colReps.length>3) colReps = reduceToThree(colReps);
-  if (rowReps.length>3) rowReps = reduceToThree(rowReps);
-  if (rowReps.length !== 3 || colReps.length !== 3) { setSolved(false); return fail('cluster-mismatch', { rowReps, colReps, epsX, epsY, dxMed, dyMed }); }
+    // Adaptive clustering: derive spacing and allow slightly larger tolerance; then merge to exactly 3 centers if needed.
+    const cluster = (vals, eps) => { const s = [...vals].sort((a, b) => a - b); const reps = [], cnt = []; for (const v of s) { if (!reps.length || Math.abs(v - reps[reps.length - 1]) > eps) { reps.push(v); cnt.push(1); } else { const i = reps.length - 1; reps[i] = (reps[i] * cnt[i] + v) / (cnt[i] + 1); cnt[i]++; } } return reps; };
+    const nearestIndex = (v, reps, eps) => { let best = -1, bd = Infinity; for (let i = 0; i < reps.length; i++) { const d = Math.abs(v - reps[i]); if (d < bd) { bd = d; best = i; } } return (bd <= eps) ? best : -1; };
+    const xsRaw = pts.map(p => p.xn), ysRaw = pts.map(p => p.yn);
+    function median(a) { const s = [...a].sort((x, y) => x - y); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+    function medianSpacing(sortedVals) { const diffs = []; for (let i = 1; i < sortedVals.length; i++) { const d = sortedVals[i] - sortedVals[i - 1]; if (d > 4) diffs.push(d); } diffs.sort((a, b) => a - b); const m = Math.floor(diffs.length / 2); return diffs.length ? diffs[m] : 0; }
+    const xsSorted = [...xsRaw].sort((a, b) => a - b), ysSorted = [...ysRaw].sort((a, b) => a - b);
+    const dxMed = medianSpacing(xsSorted) || (xsSorted[xsSorted.length - 1] - xsSorted[0]) / 2 || 100;
+    const dyMed = medianSpacing(ysSorted) || (ysSorted[ysSorted.length - 1] - ysSorted[0]) / 2 || 100;
+    // eps scaled to spacing; clamp reasonable bounds
+    const epsX = Math.min(Math.max(dxMed * 0.22, 6), 48);
+    const epsY = Math.min(Math.max(dyMed * 0.22, 6), 48);
+    let colReps = cluster(xsRaw, epsX);
+    let rowReps = cluster(ysRaw, epsY);
+    // If we got more than 3 reps, iteratively merge closest until 3.
+    function reduceToThree(reps) { reps = [...reps].sort((a, b) => a - b); while (reps.length > 3) { let bi = 0, bg = Infinity; for (let i = 1; i < reps.length; i++) { const g = reps[i] - reps[i - 1]; if (g < bg) { bg = g; bi = i; } } const merged = (reps[bi] + reps[bi - 1]) / 2; reps.splice(bi - 1, 2, merged); } return reps; }
+    if (colReps.length > 3) colReps = reduceToThree(colReps);
+    if (rowReps.length > 3) rowReps = reduceToThree(rowReps);
+    if (rowReps.length !== 3 || colReps.length !== 3) { setSolved(false); return fail('cluster-mismatch', { rowReps, colReps, epsX, epsY, dxMed, dyMed }); }
 
     // Check each tile maps to its assigned (r,c)
     let bad = [];
@@ -684,21 +700,21 @@ const debugVals = () => { };
       if (rr < 0 || cc < 0) { bad.push(p.n); continue; }
       if (p.rI !== rr || p.cI !== cc) { bad.push(p.n); }
     }
-    if (bad.length) { setSolved(false); return fail('tile-mismatch', { badTiles: bad, tiles: pts.map(p=>({id:p.n.id, rI:p.rI, cI:p.cI, xn:Math.round(p.xn), yn:Math.round(p.yn)})) }); }
+    if (bad.length) { setSolved(false); return fail('tile-mismatch', { badTiles: bad, tiles: pts.map(p => ({ id: p.n.id, rI: p.rI, cI: p.cI, xn: Math.round(p.xn), yn: Math.round(p.yn) })) }); }
 
-  // Orientation gate (lightweight): ensure no tile is ~180° inverted relative to the group's mean orientation.
-  // We purposefully do this AFTER grid validation so we don't block snapping or grouping.
-  const norm = d => { d = ((d % 360) + 360) % 360; if (d > 180) d -= 360; return d; }; // [-180,180)
-  const raw = rots.map(norm);
-  // First-order circular mean (NOT axial) so a lone 180° outlier is detected.
-  let sx = 0, sy = 0; raw.forEach(r => { const rad = r * Math.PI / 180; sx += Math.cos(rad); sy += Math.sin(rad); });
-  const meanDir = Math.atan2(sy, sx) * 180 / Math.PI;
-  const diff = (a,b)=>{ let d=a-b; while(d>180)d-=360; while(d<-180)d+=360; return d; };
-  let inverted = false;
-  for (const r of raw) { const delta = Math.abs(diff(r, meanDir)); if (delta > 120) { inverted = true; break; } }
-    if (inverted) { setSolved(false); return fail('orientation-inverted', { meanDir: Math.round(meanDir*10)/10, rots: raw.map(r=>Math.round(r*10)/10) }); }
+    // Orientation gate (lightweight): ensure no tile is ~180° inverted relative to the group's mean orientation.
+    // We purposefully do this AFTER grid validation so we don't block snapping or grouping.
+    const norm = d => { d = ((d % 360) + 360) % 360; if (d > 180) d -= 360; return d; }; // [-180,180)
+    const raw = rots.map(norm);
+    // First-order circular mean (NOT axial) so a lone 180° outlier is detected.
+    let sx = 0, sy = 0; raw.forEach(r => { const rad = r * Math.PI / 180; sx += Math.cos(rad); sy += Math.sin(rad); });
+    const meanDir = Math.atan2(sy, sx) * 180 / Math.PI;
+    const diff = (a, b) => { let d = a - b; while (d > 180) d -= 360; while (d < -180) d += 360; return d; };
+    let inverted = false;
+    for (const r of raw) { const delta = Math.abs(diff(r, meanDir)); if (delta > 120) { inverted = true; break; } }
+    if (inverted) { setSolved(false); return fail('orientation-inverted', { meanDir: Math.round(meanDir * 10) / 10, rots: raw.map(r => Math.round(r * 10) / 10) }); }
 
-    if (DBG) { console.debug('[puzzle][solved]', { rotations: raw.map(r=>Math.round(r*10)/10) }); }
+    if (DBG) { console.debug('[puzzle][solved]', { rotations: raw.map(r => Math.round(r * 10) / 10) }); }
     window.PUZZLE_LAST_FAIL = null;
     setSolved(true); return true;
   }
@@ -706,14 +722,14 @@ const debugVals = () => { };
   // Public debug helpers (no-op unless enabled)
   if (!window.dumpPuzzleState) {
     window.dumpPuzzleState = () => {
-      const nine = [...document.querySelectorAll('.polaroid')].slice(0,9);
-      const data = nine.map(n=>{
+      const nine = [...document.querySelectorAll('.polaroid')].slice(0, 9);
+      const data = nine.map(n => {
         const cs = getComputedStyle(n);
         return {
           id: n.id || null,
           flipped: n.dataset.flipped,
-            group: n.dataset.group,
-          rot: parseFloat(cs.getPropertyValue('--rot'))||0,
+          group: n.dataset.group,
+          rot: parseFloat(cs.getPropertyValue('--rot')) || 0,
           ux: cs.getPropertyValue('--ux'),
           uy: cs.getPropertyValue('--uy'),
           gridR: n.dataset.gridR, gridC: n.dataset.gridC
@@ -931,6 +947,17 @@ const debugVals = () => { };
       const old = document.getElementById('puzzleModal');
       if (old) old.remove();
 
+      // Phrase pool (extendable). Expose globally once for easy tweaking in console.
+      if (!window.PUZZLE_SOLVE_PHRASES) {
+        window.PUZZLE_SOLVE_PHRASES = [
+          'Look at you, skulking behind that screen of yours',
+          'Puzzled? Sure. Amused? Hardly.',
+          'My name is Chappie Johnson and I can\'t open this damn pickle jar'
+        ];
+      }
+      const phraseList = window.PUZZLE_SOLVE_PHRASES;
+      const solvePhrase = phraseList[Math.floor(Math.random() * phraseList.length)] || 'You found something';
+
       const overlay = document.createElement('div');
       overlay.id = 'puzzleModal';
       overlay.setAttribute('role', 'dialog');
@@ -941,11 +968,13 @@ const debugVals = () => { };
       box.style.cssText = 'position:relative;background:#0f0f0f;border:1px solid #333;color:#fff;padding:22px;border-radius:14px;box-shadow:0 20px 80px rgba(0,0,0,.7);width:min(480px,calc(100vw - 32px));text-align:center;';
       box.innerHTML = `
         <button id="pmClose" aria-label="Close" style="position:absolute;top:8px;right:8px;background:transparent;border:0;color:#bbb;font-size:22px;line-height:1;cursor:pointer">×</button>
-        <h3 style="margin:0 0 12px;font:600 20px/1.3 system-ui">What is it you’re looking for?</h3>
+        <h3 id="pmPhrase" style="margin:0 0 12px;font:600 20px/1.3 system-ui"></h3>
         <div style="display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;justify-content:center;align-items:center">
-          <a id="pmCMND" href="https://youtube.com/shorts/hkYhlXNTsJQ?feature=share" target="_blank" rel="noopener" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#e7e7e7;color:#111;font-weight:700">CMND</a>
-          <a id="pmCNTRL" href="theseAreNotTheTracksYoureLookingFor.html" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#1b1b1b;color:#e7e7e7;font-weight:700;border:1px solid #333">CNTRL</a>
-        </div>`;
+          <a id="pmCMND" href="https://youtube.com/shorts/hkYhlXNTsJQ?feature=share" target="_blank" rel="noopener" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#e7e7e7;color:#111;font-weight:700">WITNESS</a>
+          <a id="pmCNTRL" href="theseAreNotTheTracksYoureLookingFor.html" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#1b1b1b;color:#e7e7e7;font-weight:700;border:1px solid #333">REJECT</a>
+       </div>`;
+      const phraseEl = box.querySelector('#pmPhrase');
+      if (phraseEl) phraseEl.textContent = solvePhrase;
 
       overlay.appendChild(box);
       document.body.appendChild(overlay);
@@ -962,14 +991,14 @@ const debugVals = () => { };
       const linkCMND = box.querySelector('#pmCMND');
       const linkCNTRL = box.querySelector('#pmCNTRL');
 
-      // CMND: keep opening in new tab and reset once
+      // WITNESS: keep opening in new tab and reset once
       if (linkCMND) {
         linkCMND.setAttribute('target', '_blank');
         linkCMND.setAttribute('rel', 'noopener');
         linkCMND.addEventListener('click', () => { try { stopAllSiteAudio(); } catch (_) { } overlay.remove(); window.__doSolveResetOnce?.(); });
       }
 
-      // === CHANGED: CNTRL now opens the mixer in a modal instead of a new tab ===
+      // === CHANGED: REJECT now opens the mixer in a modal instead of a new tab ===
       if (linkCNTRL) {
         linkCNTRL.removeAttribute('target');
         linkCNTRL.removeAttribute('rel');
@@ -1050,5 +1079,44 @@ const debugVals = () => { };
       scatter();
       requestAnimationFrame(() => { cards9.forEach(c => { c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); });
     }, 460);
+  }
+})();
+
+// === Orientation Guard (portrait-only UX on small screens) ===
+// Lightweight, avoids screen.orientation.lock (not reliable on iOS Safari)
+// Shows the .rotate-lock-overlay when in landscape under ~900px edge.
+(function () {
+  function initOrientationGuard() {
+    const body = document.body;
+    if (!body) return;
+    body.classList.add('portrait-only');
+    const overlay = document.querySelector('.rotate-lock-overlay');
+    if (!overlay) return;
+    function isLandscape() {
+      // dual strategy: media query OR width>height heuristic
+      return window.matchMedia('(orientation: landscape)').matches || window.innerWidth > window.innerHeight;
+    }
+    function update() {
+      const withinScope = window.innerWidth <= 900 || window.innerHeight <= 900;
+      const show = isLandscape() && withinScope;
+      overlay.style.display = show ? 'flex' : 'none';
+      overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+      body.classList.toggle('orientation-blocked', show);
+      // Lock scrolling behind overlay
+      if (show) {
+        if (!body.dataset.prevOverflow) body.dataset.prevOverflow = body.style.overflow;
+        body.style.overflow = 'hidden';
+      } else if (body.dataset.prevOverflow !== undefined) {
+        body.style.overflow = body.dataset.prevOverflow;
+        delete body.dataset.prevOverflow;
+      }
+    }
+    ['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, update, { passive: true }));
+    setTimeout(update, 0);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initOrientationGuard);
+  } else {
+    initOrientationGuard();
   }
 })();
