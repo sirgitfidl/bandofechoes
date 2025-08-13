@@ -114,16 +114,25 @@
     }
 }
 
-/* --- Mobile viewport vertical squish (ensure entire mixer + title fits) --- */
+/* --- Mobile viewport vertical compression (content-aware, not transform scale) --- */
 @media (max-width: 700px) {
-    body.vh-squished {
-        /* Scale ONLY the vertical axis so width remains unchanged */
-        --vhSquish: 1; /* JS sets this to <1 when needed */
-        transform-origin: top center;
-        transform: scaleY(var(--vhSquish));
-        height: 100dvh; /* lock to viewport */
-        overflow: hidden; /* prevent scrolling of off-screen unscaled layout */
-    }
+    :root { --vhCompress: 1; }
+    body.vh-compress { overflow: hidden; }
+    body.vh-compress .page-title h1 { font-size: clamp(16px, calc(20px * var(--vhCompress)), 20px); }
+    body.vh-compress .page-title .sub { font-size: clamp(11px, calc(13px * var(--vhCompress)), 13px); }
+    body.vh-compress { padding-top: calc(16px * var(--vhCompress)); padding-bottom: calc(16px * var(--vhCompress)); }
+    body.vh-compress .mixer-wrap { padding: calc(16px * var(--vhCompress)) calc(20px * var(--vhCompress)); }
+    body.vh-compress .topbar { padding: calc(6px * var(--vhCompress)) 6px calc(10px * var(--vhCompress)); margin-bottom: calc(10px * var(--vhCompress)); }
+    body.vh-compress .strips { row-gap: calc(16px * var(--vhCompress)); }
+    body.vh-compress .strip { padding: calc(14px * var(--vhCompress)) 12px calc(12px * var(--vhCompress)); }
+    body.vh-compress .strip .name { font-size: clamp(12px, calc(14px * var(--vhCompress)), 14px); }
+    body.vh-compress .chip { padding: calc(5px * var(--vhCompress)) calc(10px * var(--vhCompress)); font-size: clamp(10px, calc(12px * var(--vhCompress)), 12px); }
+    body.vh-compress .group-banner { padding: calc(4px * var(--vhCompress)) calc(10px * var(--vhCompress)); font-size: clamp(8px, calc(10px * var(--vhCompress)), 10px); }
+    /* Fader heights: use base from responsive breakpoint (override existing sizes) */
+    body.vh-compress .fader { height: clamp(120px, calc(var(--vhCompress) * 220px), 220px); }
+    @media (max-width:1100px) { body.vh-compress .fader { height: clamp(120px, calc(var(--vhCompress) * 180px), 180px); } }
+    @media (max-width:700px) { body.vh-compress .fader { height: clamp(110px, calc(var(--vhCompress) * 160px), 160px); } }
+    @media (max-width:480px) { body.vh-compress .fader { height: clamp(100px, calc(var(--vhCompress) * 140px), 140px); } }
 }
 
 
