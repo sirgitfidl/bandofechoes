@@ -121,6 +121,8 @@
     /* scale applied inline via style="transform:scale(var(--mixScale))" by JS */
     body.scaled-fit { justify-content: flex-start; }
     body.scaled-fit .mix-all-wrap { margin-top: 0; }
+    /* Reduce fader height so full value range maps visually to full track */
+    body.scaled-fit .fader { height: 160px; }
 }
 
 

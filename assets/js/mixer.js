@@ -359,16 +359,18 @@
         const t = 1 - (val / 100);
         const parentRect = strip.getBoundingClientRect();
         // For vertical fader: CSS gives overall height ~220px; track (visible) ~210px with 5px padding top/bottom.
-        const total = r.height; // includes margins/padding
+        const total = r.height;
         const vertical = total >= r.width; // orientation heuristic
         let y;
         if (vertical) {
-          const topPad = 5; // matches visual
-          const trackHeight = total - topPad * 2; // ~210
-          const travel = trackHeight - capH; // limit so cap stays within track
-          y = (r.top - parentRect.top) + topPad + t * travel;
+          // Try to read track metrics: assume track inside slider has 10px total vertical inset when tall.
+          // Dynamically compute by sampling thumb center at min/max if possible (fallback constants).
+          const STYLE_TRACK_INSET = 10; // fallback (sum top+bottom)
+          const inset = STYLE_TRACK_INSET;
+          const trackHeight = total - inset;
+          const travel = trackHeight - capH;
+          y = (r.top - parentRect.top) + inset / 2 + t * travel;
         } else {
-          // Horizontal rotated fallback
           const usable = Math.max(0, r.height - capH);
           y = (r.top - parentRect.top) + (t * usable);
         }
