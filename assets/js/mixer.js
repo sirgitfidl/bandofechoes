@@ -456,6 +456,8 @@
         c = 1 - Math.min(0.9, (1 - raw) * 2);
         c = Math.max(0.48, c); // allow smaller than previous 0.62
       }
+      // Monotonic: once compressed, don't expand slightly later (avoids jump after fonts/images load)
+      if (last < 0.999 && c > last) c = last;
       if (Math.abs(c - last) > 0.012) {
         last = c;
         if (c < 0.999) {
@@ -466,6 +468,12 @@
           body.style.removeProperty('--vhCompress');
         }
         if (window.PUZZLE_DEBUG) console.debug('[mixer][compress]', { c, natH, vpH });
+      }
+      // Update header height var for fixed positioning compensation
+      const hdr = document.querySelector('.page-title');
+      if (hdr) {
+        const h = hdr.getBoundingClientRect().height;
+        body.style.setProperty('--headerH', h + 'px');
       }
     }
     let rafId = null;
