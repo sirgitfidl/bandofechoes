@@ -90,6 +90,40 @@ const debugVals = () => { };
   const collage = document.querySelector('.collage');
   let zCounter = 10000;
   // Scatter (initial random offsets/tilt)
+  // Biased rotation generator (favor upright, occasional inverted)
+  const ROT_DIST = { uprightBias: 0.78, uprightSpread: 55, invertedSpread: 26 };
+  const wrap180full = a => ((a + 180) % 360 + 360) % 360 - 180;
+  function biasedRotation() {
+    const tri = () => (Math.random() + Math.random()) / 2; // smoother center weighting
+    if (Math.random() < ROT_DIST.uprightBias) {
+      const centered = (tri() * 2 - 1); // [-1,1]
+      return wrap180full(centered * ROT_DIST.uprightSpread);
+    } else {
+      const sign = Math.random() < 0.5 ? 1 : -1;
+      const offset = (tri() * 2 - 1) * ROT_DIST.invertedSpread;
+      return wrap180full(sign * 180 + offset);
+    }
+  }
+
+  function preSeedRotations() {
+    const touched = [];
+    document.querySelectorAll('.polaroid').forEach(el => {
+      if (el.dataset.seededRot) return; // already done (e.g., during a live session)
+      const prevInline = el.style.transition;
+      // Temporarily kill transitions so the rotation set below doesn't animate
+      el.style.transition = 'none';
+      const r = biasedRotation();
+      el.style.setProperty('--rot', r + 'deg');
+      el.dataset.seededRot = '1';
+      el.dataset._baseRot = r;
+      touched.push({ el, prevInline });
+    });
+    // Force reflow so rotation styles commit without transition
+    if (touched.length) { void document.body.offsetHeight; }
+    // Restore original transition values so upcoming scatter position deltas animate normally
+    touched.forEach(t => { t.el.style.transition = t.prevInline; });
+  }
+
   function scatter() {
     if (!collage) return;
     const items = collage.querySelectorAll('.polaroid');
@@ -117,23 +151,7 @@ const debugVals = () => { };
 
     items.forEach((el, i) => {
       const w = el.offsetWidth || repW || 300;
-      // Biased rotation: mostly upright (near 0°), occasional inverted (~±180°)
-      const ROTATION_DISTRIBUTION = { uprightBias: 0.78, uprightSpread: 55, invertedSpread: 26 };
-      const wrap = (a) => ((a + 180) % 360 + 360) % 360 - 180; // [-180,180)
-      const randomBiased = () => {
-        const tri = () => (Math.random() + Math.random()) / 2; // triangular in [0,1]
-        if (Math.random() < ROTATION_DISTRIBUTION.uprightBias) {
-          // Centered near 0
-          const centered = (tri() * 2 - 1); // [-1,1]
-          return wrap(centered * ROTATION_DISTRIBUTION.uprightSpread);
-        } else {
-          // Inverted cluster near ±180
-          const sign = Math.random() < 0.5 ? 1 : -1;
-          const offset = (tri() * 2 - 1) * ROTATION_DISTRIBUTION.invertedSpread;
-          return wrap(sign * 180 + offset);
-        }
-      };
-      const randomRot = randomBiased;
+      const randomRot = biasedRotation; // still available if rotation not pre-seeded
       if (mobileMode) {
         // Force absolute positioning so layout boxes don't stack vertically
         if (el.style.position !== 'absolute') {
@@ -156,11 +174,16 @@ const debugVals = () => { };
         const ryLocal = tri() * spreadY;
         const rx = cx - w / 2 + rxLocal;
         const ry = cy - h / 2 + ryLocal;
-        const rot = randomRot();
+        // Only assign rotation if not already pre-seeded
+        if (!el.dataset.seededRot) {
+          const rot = randomRot();
+          el.style.setProperty('--rot', `${rot}deg`);
+          el.dataset.seededRot = '1';
+          el.dataset._baseRot = rot;
+        }
         el.style.setProperty('--tx', `${rx}px`);
         el.style.setProperty('--ty', `${ry}px`);
         // Slight layering tweak: front-load z for later items for visual variation
-        el.style.setProperty('--rot', `${rot}deg`);
       } else {
         // Desktop original scatter logic
         const maxX = Math.max(40, Math.min(220, w * 0.55));
@@ -169,10 +192,14 @@ const debugVals = () => { };
         if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
         if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
         const ry = Math.pow(Math.random(), 1.2) * maxY;
-        const rot = randomRot();
+        if (!el.dataset.seededRot) {
+          const rot = randomRot();
+          el.style.setProperty('--rot', `${rot}deg`);
+          el.dataset.seededRot = '1';
+          el.dataset._baseRot = rot;
+        }
         el.style.setProperty('--tx', `${rx}px`);
         el.style.setProperty('--ty', `${ry}px`);
-        el.style.setProperty('--rot', `${rot}deg`);
         // Reset any absolute positioning from mobile mode
         if (el.style.position === 'absolute' && !mobileMode) {
           el.style.position = '';
@@ -443,6 +470,7 @@ const debugVals = () => { };
   document.querySelectorAll('.polaroid').forEach(makeDraggable);
 
   // Initial scatter after layout
+  preSeedRotations();
   scatter();
   // Track mode to re-scatter only when crossing breakpoint so mobile cluster recenters
   let __lastScatterMode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop';
@@ -993,9 +1021,19 @@ const debugVals = () => { };
       // Phrase pool (extendable). Expose globally once for easy tweaking in console.
       if (!window.PUZZLE_SOLVE_PHRASES) {
         window.PUZZLE_SOLVE_PHRASES = [
-          'Look at you, skulking behind that screen of yours',
+          'Look at you, skulking behind that screen.',
           'Puzzled? Sure. Amused? Hardly.',
-          'My name is Chappie Johnson and I can\'t open this damn pickle jar'
+          'Well, well… what have we here?',
+          'Did you think no one would notice?',
+          'Curiosity isn\'t always flattering, you know.',
+          'You really shouldn\'t be here.',
+          'Looking for something?',
+          'Bold of you to wander this far.',
+          'This isn\'t on the tour.',
+          'Not lost. Just… somewhere you shouldn\'t be.',
+          'Oh, you\'re one of THOSE visitors.',
+          'Psst… pretend you never saw this.',
+          'Turn back now.'
         ];
       }
       const phraseList = window.PUZZLE_SOLVE_PHRASES;
@@ -1075,10 +1113,12 @@ const debugVals = () => { };
         c.dataset.group = ''; ensureGroup(c);
         c.dataset.flipped = '0'; delete c.dataset.didDrag;
         c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg');
+        delete c.dataset.seededRot; delete c.dataset._baseRot;
         c.style.transition = ''; // clear custom fades
         c.style.opacity = '0';
         updateFlipper(c); updateRotor(c);
       });
+      preSeedRotations();
       scatter();
       requestAnimationFrame(() => { cards9.forEach(c => { c.style.transition = 'opacity .45s ease'; c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); });
     }
@@ -1117,8 +1157,10 @@ const debugVals = () => { };
         c.dataset.group = ''; ensureGroup(c);
         c.dataset.flipped = '0'; delete c.dataset.didDrag;
         c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg');
+        delete c.dataset.seededRot; delete c.dataset._baseRot;
         updateFlipper(c); updateRotor(c);
       });
+      preSeedRotations();
       scatter();
       requestAnimationFrame(() => { cards9.forEach(c => { c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); });
     }, 460);
