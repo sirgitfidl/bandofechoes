@@ -63,13 +63,13 @@
         }
         knob.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); knob.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); });
         // Mobile healing: occasionally pointer events get lost after flip+rotate; tap on card back ensures rotor enabled
-        if(!el.__rotorHeal){
+        if (!el.__rotorHeal) {
             el.__rotorHeal = true;
             el.addEventListener('touchstart', () => {
-                if(el.dataset.flipped==='1' && membersOf(el).size<=1){
-                    knob.style.pointerEvents='auto';
+                if (el.dataset.flipped === '1' && membersOf(el).size <= 1) {
+                    knob.style.pointerEvents = 'auto';
                 }
-            }, {passive:true});
+            }, { passive: true });
         }
     }
     function addFlipper(el) { let b = el.querySelector('.flipper'); if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'flipper'; el.appendChild(b); } updateFlipper(el); }
