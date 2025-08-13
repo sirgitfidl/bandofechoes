@@ -416,6 +416,7 @@
   // === Mobile whole-console scale-to-fit (title + mixer) ===
   (function scaleToFit() {
     const MAX_W = 700; // Only scale below this width.
+    const TEST_FORCE_SCALE = 0.45; // TEST: force very small overall scale on mobile (remove later)
     let lastScale = 1;
     function measureAndScale() {
       const all = document.getElementById('mixAll');
@@ -428,6 +429,10 @@
       let scale = 1;
       if (window.innerWidth <= MAX_W && natH > vpH) {
         scale = Math.max(0.62, vpH / natH); // allow down to 62%
+      }
+      // Force a smaller scale for testing while under mobile width
+      if (window.innerWidth <= MAX_W) {
+        scale = Math.min(scale, TEST_FORCE_SCALE);
       }
       if (Math.abs(scale - lastScale) > 0.004) {
         lastScale = scale;
