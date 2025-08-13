@@ -23,7 +23,7 @@
     function unsnap(el) { const id = ensureGroup(el); const set = groups.get(id); if (!set || set.size <= 1) return; set.delete(el); const nid = newGroupId(); el.dataset.group = nid; groups.set(nid, new Set([el])); updateFlipper(el); updateRotor(el); set.forEach(n => { updateFlipper(n); updateRotor(n); }); }
     function getStyleNum(el, name) { const v = getComputedStyle(el).getPropertyValue(name); const n = parseFloat(v); return isNaN(n) ? 0 : n; }
     function withoutAnim(nodes, fn) { const list = []; nodes.forEach(n => { list.push([n, n.style.transition]); n.style.transition = 'none'; }); try { fn(); } finally { list.forEach(([n, t]) => { n.style.transition = t; }); } }
-    function updateFlipper(el) { let btn = el.querySelector('.flipper'); if (!btn) return; btn.style.pointerEvents = 'auto'; btn.onpointerdown = btn.onmousedown = (ev) => { ev.preventDefault(); ev.stopPropagation(); }; const grouped = membersOf(el).size > 1; const isBack = el.dataset.flipped === '1'; if (grouped) { btn.textContent = '⎌'; btn.title = 'De-snap'; btn.setAttribute('aria-label', 'De-snap'); btn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); unsnap(el); setTimeout(() => { delete el.dataset.didDrag; }, 0); checkSolvedSoon(); updateFlipper(el); }; } else { btn.textContent = '⇄'; btn.title = isBack ? 'Flip to front' : 'Flip to back'; btn.setAttribute('aria-label', btn.title); btn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); el.dataset.flipped = isBack ? '0' : '1'; el.dataset.didDrag = '1'; setTimeout(() => { delete el.dataset.didDrag; }, 120); updateFlipper(el); checkSolvedSoon(); }; } }
+    function updateFlipper(el) { let btn = el.querySelector('.flipper'); if (!btn) return; btn.style.pointerEvents = 'auto'; btn.onpointerdown = btn.onmousedown = (ev) => { ev.preventDefault(); ev.stopPropagation(); }; const grouped = membersOf(el).size > 1; const isBack = el.dataset.flipped === '1'; if (grouped) { btn.textContent = '⎌'; btn.title = 'De-snap'; btn.setAttribute('aria-label', 'De-snap'); btn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); unsnap(el); setTimeout(() => { delete el.dataset.didDrag; }, 0); checkSolvedSoon(); updateFlipper(el); updateRotor(el); }; } else { btn.textContent = '⇄'; btn.title = isBack ? 'Flip to front' : 'Flip to back'; btn.setAttribute('aria-label', btn.title); btn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); el.dataset.flipped = isBack ? '0' : '1'; el.dataset.didDrag = '1'; setTimeout(() => { delete el.dataset.didDrag; }, 120); updateFlipper(el); updateRotor(el); checkSolvedSoon(); }; } }
     function updateRotor(el) { const knob = el.querySelector('.rotor'); if (!knob) return; const grouped = membersOf(el).size > 1; if (!el.dataset.peInit) { el.dataset.peInit = '1'; knob.style.pointerEvents = 'none'; el.addEventListener('mouseenter', () => { if (membersOf(el).size <= 1) knob.style.pointerEvents = 'auto'; }); el.addEventListener('mouseleave', () => { knob.style.pointerEvents = 'none'; }); } if (grouped) { knob.setAttribute('disabled', ''); knob.style.opacity = '0.35'; knob.style.pointerEvents = 'none'; knob.title = 'Rotate (disabled while snapped)'; } else { knob.removeAttribute('disabled'); knob.style.opacity = ''; knob.style.pointerEvents = 'auto'; knob.title = 'Rotate'; } }
     function addRotor(el) {
         let knob = el.querySelector('.rotor'); if (!knob) { knob = document.createElement('button'); knob.type = 'button'; knob.className = 'rotor'; knob.textContent = '⟲'; knob.title = 'Rotate'; knob.setAttribute('aria-label', 'Rotate photo'); el.appendChild(knob); }
@@ -58,8 +58,19 @@
             id = null; el.classList.remove('rotating');
             try { trySnap(el); } catch (_) { }
             triggerSolveDoubleCheck();
+            // Re-run rotor state in case grouping or snapping changed availability
+            updateRotor(el);
         }
         knob.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); knob.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); });
+        // Mobile healing: occasionally pointer events get lost after flip+rotate; tap on card back ensures rotor enabled
+        if(!el.__rotorHeal){
+            el.__rotorHeal = true;
+            el.addEventListener('touchstart', () => {
+                if(el.dataset.flipped==='1' && membersOf(el).size<=1){
+                    knob.style.pointerEvents='auto';
+                }
+            }, {passive:true});
+        }
     }
     function addFlipper(el) { let b = el.querySelector('.flipper'); if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'flipper'; el.appendChild(b); } updateFlipper(el); }
     function makeDraggable(el) {
