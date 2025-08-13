@@ -355,13 +355,23 @@
 
       const place = () => {
         const r = fader.getBoundingClientRect();
-        const usable = Math.max(0, r.height - capH);
         const val = Number(fader.value) || 0; // 0..100
         const t = 1 - (val / 100);
-        // Position relative to strip via left:50%; only translate vertically
-        // Compute vertical offset relative to fader top inside its strip
         const parentRect = strip.getBoundingClientRect();
-        const y = (r.top - parentRect.top) + (t * usable);
+        // For vertical fader: CSS gives overall height ~220px; track (visible) ~210px with 5px padding top/bottom.
+        const total = r.height; // includes margins/padding
+        const vertical = total >= r.width; // orientation heuristic
+        let y;
+        if (vertical) {
+          const topPad = 5; // matches visual
+          const trackHeight = total - topPad * 2; // ~210
+          const travel = trackHeight - capH; // limit so cap stays within track
+          y = (r.top - parentRect.top) + topPad + t * travel;
+        } else {
+          // Horizontal rotated fallback
+          const usable = Math.max(0, r.height - capH);
+          y = (r.top - parentRect.top) + (t * usable);
+        }
         cap.style.transform = `translate(-50%, ${Math.round(y)}px) rotate(90deg)`;
       };
 
