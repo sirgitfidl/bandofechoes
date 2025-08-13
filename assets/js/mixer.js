@@ -421,6 +421,7 @@
     function measureAndScale() {
       const all = document.getElementById('mixAll');
       if (!all) return;
+      document.body.classList.add('scaled-fit');
       all.classList.add('scaled');
       // Reset scale to get natural height
       all.style.transform = 'none';
@@ -434,14 +435,16 @@
       if (scale < appliedScale - 0.003) {
         appliedScale = scale;
         all.style.transformOrigin = 'top center';
-        all.style.transform = (appliedScale < 1) ? `scale(${appliedScale.toFixed(4)})` : 'none';
+  const yOffset = 0; // keep at top; adjust if needed later
+  all.style.transform = (appliedScale < 1) ? `translateY(${yOffset}px) scale(${appliedScale.toFixed(4)})` : 'none';
         // Keep user at top if initial shrink; prevents hidden title
         if (!initialized) {
           window.scrollTo({ top: 0, behavior: 'instant' });
         }
       } else {
         // Re-apply previously chosen scale if we decided not to enlarge
-        all.style.transform = (appliedScale < 1) ? `scale(${appliedScale.toFixed(4)})` : 'none';
+  const yOffset2 = 0;
+  all.style.transform = (appliedScale < 1) ? `translateY(${yOffset2}px) scale(${appliedScale.toFixed(4)})` : 'none';
       }
       // Reveal after first stable measurement
       if (all.classList.contains('pre-fit')) {

@@ -119,6 +119,8 @@
     .mix-all-wrap { position: relative; }
     .mix-all-wrap.scaled { transform-origin: top center; }
     /* scale applied inline via style="transform:scale(var(--mixScale))" by JS */
+    body.scaled-fit { justify-content: flex-start; }
+    body.scaled-fit .mix-all-wrap { margin-top: 0; }
 }
 
 
