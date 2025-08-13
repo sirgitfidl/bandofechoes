@@ -428,41 +428,48 @@
   // Background prefetch so first Play is nearly instant
   prefetchStems().catch(console.warn);
 
-  // === Mobile compression (no transform scaling to preserve slider geometry) ===
+  // === Mobile compression (custom property scaling, preserves slider geometry) ===
   (function compressionFit() {
-    const MAX_W = 700;
+    const MAX_W = 760; // apply on phones / small tablets
     let last = 1;
+    function measureTotalHeight() {
+      const hdr = document.querySelector('.page-title');
+      const wrap = document.querySelector('.mixer-wrap');
+      if (!wrap) return 0;
+      const rWrap = wrap.getBoundingClientRect();
+      let totalTop = rWrap.top, totalBottom = rWrap.bottom;
+      if (hdr) {
+        const rh = hdr.getBoundingClientRect();
+        totalTop = Math.min(totalTop, rh.top);
+        totalBottom = Math.max(totalBottom, rh.bottom);
+      }
+      return totalBottom - totalTop;
+    }
     function apply() {
-      const wrap = document.getElementById('mixAll');
-      if (!wrap) return;
-      wrap.classList.add('scaled');
       const body = document.body;
-      body.classList.remove('scaled-fit'); // legacy class cleanup
-      // Measure natural height without transform scaling
-      const natH = wrap.getBoundingClientRect().height;
+      const natH = measureTotalHeight();
       const vpH = window.innerHeight;
       let c = 1;
       if (window.innerWidth <= MAX_W && natH > vpH) {
-        c = Math.max(0.65, Math.min(1, vpH / natH));
+        c = Math.max(0.62, Math.min(1, vpH / natH));
       }
-      if (Math.abs(c - last) > 0.01) {
+      if (Math.abs(c - last) > 0.012) {
         last = c;
-        if (c < 1) {
+        if (c < 0.999) {
           body.classList.add('vh-compress');
           body.style.setProperty('--vhCompress', c.toFixed(4));
         } else {
           body.classList.remove('vh-compress');
           body.style.removeProperty('--vhCompress');
         }
-      }
-      if (wrap.classList.contains('pre-fit')) {
-        requestAnimationFrame(() => wrap.classList.remove('pre-fit'));
+        if (window.PUZZLE_DEBUG) console.debug('[mixer][compress]', { c, natH, vpH });
       }
     }
-    let rid = null; const queue = () => { if (rid) cancelAnimationFrame(rid); rid = requestAnimationFrame(apply); };
+    let rafId = null;
+    const queue = () => { if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(apply); };
     window.addEventListener('resize', queue, { passive: true });
-    window.addEventListener('orientationchange', () => setTimeout(apply, 50));
+    window.addEventListener('orientationchange', () => setTimeout(apply, 60));
+    window.addEventListener('load', () => setTimeout(apply, 60));
     setTimeout(apply, 40);
-    window.addEventListener('load', () => setTimeout(apply, 40));
   })();
 })();

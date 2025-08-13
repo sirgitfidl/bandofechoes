@@ -114,23 +114,22 @@
     }
 }
 
-/* --- Mobile whole-console scale-to-fit (wrap header + mixer) --- */
-@media (max-width: 700px) {
-    :root { --vhCompress: 1; }
-    body.vh-compress { justify-content: flex-start; }
-    body.vh-compress .mix-all-wrap { margin-top: 0; }
-    body.vh-compress .page-title h1 { font-size: clamp(16px, calc(20px * var(--vhCompress)), 20px); }
-    body.vh-compress .page-title .sub { font-size: clamp(11px, calc(13px * var(--vhCompress)), 13px); }
-    body.vh-compress { padding-top: calc(16px * var(--vhCompress)); padding-bottom: calc(16px * var(--vhCompress)); }
-    body.vh-compress .mixer-wrap { padding: calc(16px * var(--vhCompress)) calc(20px * var(--vhCompress)); }
-    body.vh-compress .topbar { padding: calc(6px * var(--vhCompress)) 6px calc(10px * var(--vhCompress)); margin-bottom: calc(10px * var(--vhCompress)); }
-    body.vh-compress .strips { row-gap: calc(16px * var(--vhCompress)); }
-    body.vh-compress .strip { padding: calc(14px * var(--vhCompress)) 12px calc(12px * var(--vhCompress)); }
-    body.vh-compress .strip .name { font-size: clamp(12px, calc(14px * var(--vhCompress)), 14px); }
-    body.vh-compress .chip { padding: calc(5px * var(--vhCompress)) calc(10px * var(--vhCompress)); font-size: clamp(10px, calc(12px * var(--vhCompress)), 12px); }
-    body.vh-compress .group-banner { padding: calc(4px * var(--vhCompress)) calc(10px * var(--vhCompress)); font-size: clamp(8px, calc(10px * var(--vhCompress)), 10px); }
-    body.vh-compress .fader { height: clamp(140px, calc(220px * var(--vhCompress)), 220px); }
+/* Viewport height compression (driven by JS setting body.vh-compress + --vhCompress) */
+body.vh-compress {
+    --c: var(--vhCompress, 1);
 }
-
+body.vh-compress .page-title h1 { font-size: calc(20px * var(--c)); }
+body.vh-compress .page-title .sub { font-size: calc(13px * var(--c)); }
+body.vh-compress .mixer-wrap { padding: calc(16px * var(--c)) calc(20px * var(--c)); }
+body.vh-compress .group-banner { font-size: calc(10px * var(--c)); padding: calc(4px * var(--c)) calc(10px * var(--c)); }
+body.vh-compress .chip { font-size: calc(12px * var(--c)); padding: calc(6px * var(--c)) calc(10px * var(--c)); }
+body.vh-compress .btn { padding: calc(8px * var(--c)) calc(12px * var(--c)); font-size: calc(14px * var(--c)); }
+body.vh-compress .fader { height: calc(220px * var(--c)); }
+body.vh-compress .strip { padding: calc(14px * var(--c)) calc(12px * var(--c)) calc(12px * var(--c)); gap: calc(10px * var(--c)); }
+body.vh-compress .strip .name { font-size: calc(14px * var(--c)); }
+body.vh-compress .meter { height: calc(6px * var(--c)); }
+body.vh-compress .meter > span { transition: width .08s linear; }
+body.vh-compress .progress { height: calc(10px * var(--c)); }
+body.vh-compress .time { font-size: calc(14px * var(--c)); }
 
 /* Progress and fader cap overlays (SVG backgrounds) are injected by JS and do not need static CSS here. */
