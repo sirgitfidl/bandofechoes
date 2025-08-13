@@ -413,45 +413,37 @@
   // Background prefetch so first Play is nearly instant
   prefetchStems().catch(console.warn);
 
-  // === Mobile vertical compression ensuring title + mixer fully visible ===
-  (function verticalCompression() {
-    const MAX_W = 700; // apply under this width
-    let last = 1;
-    function calc() {
-      const body = document.body;
-      if (window.innerWidth > MAX_W) {
-        if (body.classList.contains('vh-compress')) {
-          body.classList.remove('vh-compress');
-          body.style.removeProperty('--vhCompress');
-        }
-        return;
+  // === Mobile whole-console scale-to-fit (title + mixer) ===
+  (function scaleToFit() {
+    const MAX_W = 700; // Only scale below this width.
+    let lastScale = 1;
+    function measureAndScale() {
+      const all = document.getElementById('mixAll');
+      if (!all) return;
+      all.classList.add('scaled');
+      // Reset scale to get natural height
+      all.style.transform = 'none';
+      const natH = all.getBoundingClientRect().height;
+      const vpH = window.innerHeight;
+      let scale = 1;
+      if (window.innerWidth <= MAX_W && natH > vpH) {
+        scale = Math.max(0.62, vpH / natH); // allow down to 62%
       }
-      const title = document.querySelector('.page-title');
-      const wrap = document.querySelector('.mixer-wrap');
-      if (!title || !wrap) return;
-      // Measure natural total height span from top of title to bottom of wrap.
-      const tRect = title.getBoundingClientRect();
-      const wRect = wrap.getBoundingClientRect();
-      const natural = (wRect.bottom - tRect.top);
-      const vp = window.innerHeight;
-      let f = 1;
-      if (natural > vp) f = Math.max(0.70, vp / natural); // allow down to 70% before overflow
-      if (Math.abs(f - last) > 0.004) {
-        last = f;
-        if (f < 1) {
-          body.classList.add('vh-compress');
-          body.style.setProperty('--vhCompress', f.toFixed(4));
+      if (Math.abs(scale - lastScale) > 0.004) {
+        lastScale = scale;
+        if (scale < 1) {
+          all.style.transformOrigin = 'top center';
+          all.style.transform = `scale(${scale.toFixed(4)})`;
         } else {
-          body.classList.remove('vh-compress');
-          body.style.removeProperty('--vhCompress');
+          all.style.transform = 'none';
         }
       }
     }
-    let rId = null;
-    function queue() { if (rId) cancelAnimationFrame(rId); rId = requestAnimationFrame(calc); }
+    let rafId = null;
+    function queue() { if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(measureAndScale); }
     window.addEventListener('resize', queue, { passive: true });
-    window.addEventListener('orientationchange', () => setTimeout(calc, 50));
-    setTimeout(calc, 40); // initial after layout
-    window.addEventListener('load', () => setTimeout(calc, 40));
+    window.addEventListener('orientationchange', () => setTimeout(measureAndScale, 50));
+    setTimeout(measureAndScale, 30);
+    window.addEventListener('load', () => setTimeout(measureAndScale, 30));
   })();
 })();

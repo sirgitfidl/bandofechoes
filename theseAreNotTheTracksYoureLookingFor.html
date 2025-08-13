@@ -10,13 +10,14 @@
 </head>
 
 <body>
-  <!-- Title block above the console -->
-  <header class="page-title" aria-label="Mix Title">
-    <h1>Band of Echoes — “Right In Two”</h1>
-    <div class="sub">Interactive Stem Mixer</div>
-  </header>
+  <div class="mix-all-wrap" id="mixAll">
+    <!-- Title block above the console -->
+    <header class="page-title" aria-label="Mix Title">
+      <h1>Band of Echoes — “Right In Two”</h1>
+      <div class="sub">Interactive Stem Mixer</div>
+    </header>
 
-  <div class="mixer-wrap" role="application" aria-label="Stem Mixer for 'Right In Two'">
+    <div class="mixer-wrap" role="application" aria-label="Stem Mixer for 'Right In Two'">
     <div class="topbar">
       <div class="transport">
         <button id="rewBtn" class="btn" title="Rewind to start" aria-label="Rewind to start">⟲</button>
@@ -97,6 +98,7 @@
     <div id="loadingOverlay" aria-live="polite" aria-busy="false" hidden>
       <div class="spinner" role="progressbar" aria-label="Loading stems"></div>
       <div class="loading-text"><span id="loadingMsg">Loading stems…</span></div>
+    </div>
     </div>
   </div>
 
