@@ -338,7 +338,7 @@
 
     const placeFns = new Map();
 
-    channels.forEach((ch) => {
+  channels.forEach((ch) => {
       const strip = document.querySelector(`.strip[data-channel='${ch}']`);
       if (!strip) return;
       const fader = strip.querySelector('.fader');
@@ -353,14 +353,19 @@
       // Per-channel color: red for master, silver for others
       cap.style.background = ((ch === 'master') ? bgMaster : bgTrack) + ' center / contain no-repeat';
 
-      const place = () => {
+      const place = (recalcX = false) => {
         const stripRect = strip.getBoundingClientRect();
         const r = fader.getBoundingClientRect();
+        // Recalculate baseX only if not set or explicitly requested (resize/orientation)
+        if (recalcX || !cap.dataset.baseX) {
+          const baseX = (r.left - stripRect.left) + (r.width / 2) - (capW / 2);
+          cap.dataset.baseX = String(baseX);
+        }
         const usable = Math.max(0, r.height - capH);
         const val = Number(fader.value) || 0; // 0..100
         const t = 1 - (val / 100);
         const y = (r.top - stripRect.top) + (t * usable);
-        const x = (r.left - stripRect.left) + (r.width / 2) - (capW / 2);
+        const x = parseFloat(cap.dataset.baseX);
         cap.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) rotate(90deg)`;
       };
 
@@ -370,9 +375,11 @@
       fader.addEventListener('change', place);
     });
 
-    window.addEventListener('resize', () => {
-      channels.forEach(ch => { const fn = placeFns.get(ch); if (fn) fn(); });
-    });
+    function redoAll(recalcX) {
+      channels.forEach(ch => { const fn = placeFns.get(ch); if (fn) fn(recalcX); });
+    }
+    window.addEventListener('resize', () => redoAll(true));
+    window.addEventListener('orientationchange', () => setTimeout(() => redoAll(true), 40));
   }
   // Lock Play/Pause button width so label swap doesn't shift layout
   function lockPlayButtonWidth() {
