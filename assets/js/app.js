@@ -124,7 +124,7 @@ const debugVals = () => { };
         const tri = () => (Math.random() + Math.random()) / 2; // triangular in [0,1]
         if (Math.random() < ROTATION_DISTRIBUTION.uprightBias) {
           // Centered near 0
-            const centered = (tri() * 2 - 1); // [-1,1]
+          const centered = (tri() * 2 - 1); // [-1,1]
           return wrap(centered * ROTATION_DISTRIBUTION.uprightSpread);
         } else {
           // Inverted cluster near ±180
@@ -156,7 +156,7 @@ const debugVals = () => { };
         const ryLocal = tri() * spreadY;
         const rx = cx - w / 2 + rxLocal;
         const ry = cy - h / 2 + ryLocal;
-  const rot = randomRot();
+        const rot = randomRot();
         el.style.setProperty('--tx', `${rx}px`);
         el.style.setProperty('--ty', `${ry}px`);
         // Slight layering tweak: front-load z for later items for visual variation
@@ -169,7 +169,7 @@ const debugVals = () => { };
         if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4);
         if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1));
         const ry = Math.pow(Math.random(), 1.2) * maxY;
-  const rot = randomRot();
+        const rot = randomRot();
         el.style.setProperty('--tx', `${rx}px`);
         el.style.setProperty('--ty', `${ry}px`);
         el.style.setProperty('--rot', `${rot}deg`);
@@ -871,6 +871,47 @@ const debugVals = () => { };
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
+    // === Disable page scroll & zoom while console modal is open ===
+    const cleanupFns = [];
+    // Lock body scroll (already done below, but ensure applied early)
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    cleanupFns.push(() => { document.body.style.overflow = prevOverflow; });
+
+    // Suppress multi-touch (pinch) and double-tap zoom
+    const preventMultiTouch = (e) => { if (e.touches && e.touches.length > 1) { e.preventDefault(); } };
+    document.addEventListener('touchmove', preventMultiTouch, { passive: false });
+    cleanupFns.push(() => document.removeEventListener('touchmove', preventMultiTouch));
+    const preventGesture = (e) => { e.preventDefault(); };
+    document.addEventListener('gesturestart', preventGesture, { passive: false });
+    cleanupFns.push(() => document.removeEventListener('gesturestart', preventGesture));
+
+    // Prevent Ctrl/Meta + wheel zoom (desktop)
+    const preventCtrlWheel = (e) => { if (e.ctrlKey) { e.preventDefault(); } };
+    window.addEventListener('wheel', preventCtrlWheel, { passive: false });
+    cleanupFns.push(() => window.removeEventListener('wheel', preventCtrlWheel));
+
+    // Harden via viewport meta (set user-scalable=no, maximum-scale=1)
+    let createdMeta = false;
+    let vp = document.querySelector('meta[name="viewport"]');
+    const prevMetaContent = vp ? vp.getAttribute('content') : null;
+    if (!vp) { vp = document.createElement('meta'); vp.name = 'viewport'; document.head.appendChild(vp); createdMeta = true; }
+    vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+    cleanupFns.push(() => {
+      if (!vp) return;
+      if (createdMeta) { vp.remove(); }
+      else if (prevMetaContent != null) { vp.setAttribute('content', prevMetaContent); }
+    });
+
+    // Additional safety: block key-based zoom (+/-) while focused outside inputs
+    const preventKeyZoom = (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      const k = e.key;
+      if (k === '+' || k === '-' || k === '=' || k === '_' ) { e.preventDefault(); }
+    };
+    window.addEventListener('keydown', preventKeyZoom, true);
+    cleanupFns.push(() => window.removeEventListener('keydown', preventKeyZoom, true));
+
     // Fit the inner box to the *visual* viewport on mobile (iOS URL bar shrink/expand)
     const fitBox = () => {
       const vv = window.visualViewport;
@@ -893,6 +934,8 @@ const debugVals = () => { };
       document.body.style.overflow = '';
       (prevFocus || document.body)?.focus?.();
       document.removeEventListener('keydown', onKey);
+  // Restore zoom/scroll environment
+  cleanupFns.forEach(fn => { try { fn(); } catch (_) { } });
     }
     function dismiss() {
       if (closing) return; closing = true;
