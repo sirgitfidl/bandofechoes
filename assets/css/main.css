@@ -601,8 +601,8 @@ body.scrolled header {
 /* flip button */
 .polaroid .flipper {
     position: absolute;
-    left: -6px;
-    bottom: -6px;
+    left: -10px;
+    bottom: -10px;
     width: 28px;
     height: 28px;
     border-radius: 999px;
@@ -619,6 +619,8 @@ body.scrolled header {
     cursor: pointer;
     touch-action: none;
     user-select: none;
+    z-index: 5;
+    /* keep above polaroid inner content */
 }
 
 .polaroid:hover .flipper,
