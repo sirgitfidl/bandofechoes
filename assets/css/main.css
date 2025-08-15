@@ -538,8 +538,6 @@ body.scrolled header {
 .polaroid.rotating {
     transition: none !important;
 }
-
-.polaroid:hover,
 .polaroid:focus-visible {
     transform: translate3d(calc(var(--tx) + var(--ux)), calc(var(--ty) + var(--uy)), 0) rotate(var(--rot)) scale(calc(var(--ps, 1) * 1.02));
     filter: brightness(1.03);
@@ -656,14 +654,11 @@ body.scrolled header {
     pointer-events: none;
 }
 
-/* On touch devices, persist controls after tap when JS adds .touch-show-controls */
-@media (hover: none) and (pointer: coarse) {
-
-    .polaroid.touch-show-controls .rotor,
-    .polaroid.touch-show-controls .flipper {
-        opacity: .9;
-        pointer-events: auto;
-    }
+/* Persist controls when JS adds .touch-show-controls (used on touch devices) */
+.polaroid.touch-show-controls .rotor,
+.polaroid.touch-show-controls .flipper {
+    opacity: .9;
+    pointer-events: auto;
 }
 
 /* flip structure */

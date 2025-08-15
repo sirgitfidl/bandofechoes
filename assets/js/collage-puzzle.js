@@ -1,10 +1,25 @@
 // Collage + Puzzle module extracted from app.js
 (function () {
-    // Detect coarse touch devices (mobile/tablet) to persist controls after tap
-    const IS_COARSE_TOUCH = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    // Detect touch-capable devices broadly (covers iOS/Android/tablets)
+    const IS_TOUCH_DEVICE = (() => {
+        try {
+            if (typeof navigator !== 'undefined') {
+                if (navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0) return true;
+            }
+            if (typeof window !== 'undefined') {
+                if ('ontouchstart' in window) return true;
+                if (window.matchMedia) {
+                    // Fallback: any-pointer coarse OR any-hover none
+                    if (window.matchMedia('(any-pointer: coarse)').matches) return true;
+                    if (window.matchMedia('(any-hover: none)').matches) return true;
+                }
+            }
+        } catch (_) { }
+        return false;
+    })();
     let __lastTouchControlsEl = null;
     function setTouchControlsTarget(el) {
-        if (!IS_COARSE_TOUCH) return;
+        if (!IS_TOUCH_DEVICE) return;
         if (el === __lastTouchControlsEl) return;
         if (__lastTouchControlsEl) __lastTouchControlsEl.classList.remove('touch-show-controls');
         if (el) el.classList.add('touch-show-controls');
@@ -217,7 +232,7 @@
             if (membersOf(el).size > 1) { e.preventDefault(); e.stopPropagation(); return; }
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             e.preventDefault(); e.stopPropagation();
-            if (e.pointerType === 'touch') setTouchControlsTarget(el);
+            setTouchControlsTarget(el);
             id = e.pointerId; acc = 0; baseRot = getStyleNum(el, '--rot');
             // Respect existing CSS transform-origin (50% 60%) to avoid visual jump; compute pivot accordingly
             const r = el.getBoundingClientRect();
@@ -251,7 +266,7 @@
         }
         knob.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); knob.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); });
         // Touch UX: tapping the card should persist controls visibility for this card
-        if (IS_COARSE_TOUCH && !el.__touchPersist) {
+    if (IS_TOUCH_DEVICE && !el.__touchPersist) {
             el.__touchPersist = true;
             el.addEventListener('touchstart', () => { setTouchControlsTarget(el); }, { passive: true });
         }
@@ -265,7 +280,7 @@
     function makeDraggable(el) {
         let id = null, sx = 0, sy = 0, moved = false, raf = null, lastDX = 0, lastDY = 0, startOnFlipper = false, startGrouped = false, startIsBack = false;
         const num = v => parseFloat(String(v).replace('px', '')) || 0; let baseMap = null;
-    function down(e) { if (e.pointerType === 'mouse' && e.button !== 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; startOnFlipper = !!(e.target && e.target.closest && e.target.closest('.flipper')); startGrouped = membersOf(el).size > 1; startIsBack = el.dataset.flipped === '1'; if (e.pointerType === 'touch') setTouchControlsTarget(el); const group = membersOf(el); baseMap = new Map(); group.forEach(n => { const cs = getComputedStyle(n); baseMap.set(n, { ux: num(cs.getPropertyValue('--ux')), uy: num(cs.getPropertyValue('--uy')) }); zCounter += 1; n.style.zIndex = String(zCounter); n.classList.add('dragging'); }); el.setPointerCapture?.(id); }
+    function down(e) { if (e.pointerType === 'mouse' && e.button !== 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; startOnFlipper = !!(e.target && e.target.closest && e.target.closest('.flipper')); startGrouped = membersOf(el).size > 1; startIsBack = el.dataset.flipped === '1'; setTouchControlsTarget(el); const group = membersOf(el); baseMap = new Map(); group.forEach(n => { const cs = getComputedStyle(n); baseMap.set(n, { ux: num(cs.getPropertyValue('--ux')), uy: num(cs.getPropertyValue('--uy')) }); zCounter += 1; n.style.zIndex = String(zCounter); n.classList.add('dragging'); }); el.setPointerCapture?.(id); }
         function move(e) { if (id === null || e.pointerId !== id) return; if (e.pointerType === 'mouse' && e.buttons === 0) return; lastDX = e.clientX - sx; lastDY = e.clientY - sy; if (!moved && (Math.abs(lastDX) > 3 || Math.abs(lastDY) > 3)) moved = true; if (!raf) { raf = requestAnimationFrame(() => { if (!baseMap) { raf = null; return; } baseMap.forEach((b, n) => { n.style.setProperty('--ux', (b.ux + lastDX) + 'px'); n.style.setProperty('--uy', (b.uy + lastDY) + 'px'); }); raf = null; }); } }
     function up(e) { if (id === null || e.pointerId !== id) return; if (baseMap) { baseMap.forEach((_, n) => { n.classList.remove('dragging'); if (moved) { n.dataset.didDrag = '1'; setTimeout(() => { delete n.dataset.didDrag; }, 120); } }); } el.releasePointerCapture?.(id); if (!moved && startOnFlipper) { if (startGrouped) { unsnap(el); setTimeout(() => { delete el.dataset.didDrag; }, 0); checkSolvedSoon(); updateFlipper(el); updateRotor(el); } else { el.dataset.flipped = startIsBack ? '0' : '1'; el.dataset.didDrag = '1'; setTimeout(() => { delete el.dataset.didDrag; }, 120); updateFlipper(el); updateRotor(el); checkSolvedSoon(); } if (e.pointerType === 'touch') setTouchControlsTarget(el); id = null; baseMap = null; moved = false; startOnFlipper = false; return; } id = null; baseMap = null; try { trySnap(el); } catch (_) { } triggerSolveDoubleCheck(); if (e.pointerType === 'touch') setTouchControlsTarget(el); }
         // Expose a method so children (e.g., flipper) can begin dragging on long-press
@@ -397,7 +412,7 @@
 
     document.querySelectorAll('.polaroid').forEach(addRotor); document.querySelectorAll('.polaroid').forEach(addFlipper); document.querySelectorAll('.polaroid').forEach(makeDraggable);
     // Global touch handler for control persistence
-    if (IS_COARSE_TOUCH) {
+    if (IS_TOUCH_DEVICE) {
         document.addEventListener('touchstart', (e) => {
             const t = e.target;
             const card = t && t.closest && t.closest('.polaroid');
