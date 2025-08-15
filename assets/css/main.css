@@ -657,6 +657,15 @@ body.scrolled header {
     pointer-events: none;
 }
 
+/* On touch devices, persist controls after tap when JS adds .touch-show-controls */
+@media (hover: none) and (pointer: coarse) {
+    .polaroid.touch-show-controls .rotor,
+    .polaroid.touch-show-controls .flipper {
+        opacity: .9;
+        pointer-events: auto;
+    }
+}
+
 /* flip structure */
 .polaroid-inner {
     position: relative;

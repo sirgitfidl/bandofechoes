@@ -1,5 +1,15 @@
 // Collage + Puzzle module extracted from app.js
 (function () {
+    // Detect coarse touch devices (mobile/tablet) to persist controls after tap
+    const IS_COARSE_TOUCH = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    let __lastTouchControlsEl = null;
+    function setTouchControlsTarget(el) {
+        if (!IS_COARSE_TOUCH) return;
+        if (el === __lastTouchControlsEl) return;
+        if (__lastTouchControlsEl) __lastTouchControlsEl.classList.remove('touch-show-controls');
+        if (el) el.classList.add('touch-show-controls');
+        __lastTouchControlsEl = el || null;
+    }
     const ROT_DIST = { uprightBias: 0.78, uprightSpread: 55, invertedSpread: 26 };
     const GROUP_ROTOR_OFFSET = 12; // px inward from the top-right corner
     const wrap180full = a => ((a + 180) % 360 + 360) % 360 - 180;
@@ -160,6 +170,8 @@
         const nid = newGroupId();
         el.dataset.group = nid;
         groups.set(nid, new Set([el]));
+    // Keep controls visible on the tile we acted on (touch-only)
+    setTouchControlsTarget(el);
         updateFlipper(el); updateRotor(el);
         // Split the remaining original group into edge-connected components
         splitDisconnectedGroup(id);
@@ -205,6 +217,7 @@
             if (membersOf(el).size > 1) { e.preventDefault(); e.stopPropagation(); return; }
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             e.preventDefault(); e.stopPropagation();
+            if (e.pointerType === 'touch') setTouchControlsTarget(el);
             id = e.pointerId; acc = 0; baseRot = getStyleNum(el, '--rot');
             // Respect existing CSS transform-origin (50% 60%) to avoid visual jump; compute pivot accordingly
             const r = el.getBoundingClientRect();
@@ -235,15 +248,10 @@
             updateRotor(el);
         }
         knob.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); knob.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); });
-        // Mobile healing: occasionally pointer events get lost after flip+rotate; tap on card back ensures rotor enabled
-        if (!el.__rotorHeal) {
-            el.__rotorHeal = true;
-            el.addEventListener('touchstart', () => {
-                // No-op: rely on CSS hover/visibility; this hook remains for potential future mobile healing
-                if (el.dataset.flipped === '1' && membersOf(el).size <= 1) {
-                    /* intentionally left blank */
-                }
-            }, { passive: true });
+        // Touch UX: tapping the card should persist controls visibility for this card
+        if (IS_COARSE_TOUCH && !el.__touchPersist) {
+            el.__touchPersist = true;
+            el.addEventListener('touchstart', () => { setTouchControlsTarget(el); }, { passive: true });
         }
     }
     function addFlipper(el) {
@@ -255,7 +263,7 @@
     function makeDraggable(el) {
         let id = null, sx = 0, sy = 0, moved = false, raf = null, lastDX = 0, lastDY = 0, startOnFlipper = false, startGrouped = false, startIsBack = false;
         const num = v => parseFloat(String(v).replace('px', '')) || 0; let baseMap = null;
-        function down(e) { if (e.pointerType === 'mouse' && e.button !== 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; startOnFlipper = !!(e.target && e.target.closest && e.target.closest('.flipper')); startGrouped = membersOf(el).size > 1; startIsBack = el.dataset.flipped === '1'; const group = membersOf(el); baseMap = new Map(); group.forEach(n => { const cs = getComputedStyle(n); baseMap.set(n, { ux: num(cs.getPropertyValue('--ux')), uy: num(cs.getPropertyValue('--uy')) }); zCounter += 1; n.style.zIndex = String(zCounter); n.classList.add('dragging'); }); el.setPointerCapture?.(id); }
+    function down(e) { if (e.pointerType === 'mouse' && e.button !== 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; startOnFlipper = !!(e.target && e.target.closest && e.target.closest('.flipper')); startGrouped = membersOf(el).size > 1; startIsBack = el.dataset.flipped === '1'; if (e.pointerType === 'touch') setTouchControlsTarget(el); const group = membersOf(el); baseMap = new Map(); group.forEach(n => { const cs = getComputedStyle(n); baseMap.set(n, { ux: num(cs.getPropertyValue('--ux')), uy: num(cs.getPropertyValue('--uy')) }); zCounter += 1; n.style.zIndex = String(zCounter); n.classList.add('dragging'); }); el.setPointerCapture?.(id); }
         function move(e) { if (id === null || e.pointerId !== id) return; if (e.pointerType === 'mouse' && e.buttons === 0) return; lastDX = e.clientX - sx; lastDY = e.clientY - sy; if (!moved && (Math.abs(lastDX) > 3 || Math.abs(lastDY) > 3)) moved = true; if (!raf) { raf = requestAnimationFrame(() => { if (!baseMap) { raf = null; return; } baseMap.forEach((b, n) => { n.style.setProperty('--ux', (b.ux + lastDX) + 'px'); n.style.setProperty('--uy', (b.uy + lastDY) + 'px'); }); raf = null; }); } }
         function up(e) { if (id === null || e.pointerId !== id) return; if (baseMap) { baseMap.forEach((_, n) => { n.classList.remove('dragging'); if (moved) { n.dataset.didDrag = '1'; setTimeout(() => { delete n.dataset.didDrag; }, 120); } }); } el.releasePointerCapture?.(id); if (!moved && startOnFlipper) { if (startGrouped) { unsnap(el); setTimeout(() => { delete el.dataset.didDrag; }, 0); checkSolvedSoon(); updateFlipper(el); updateRotor(el); } else { el.dataset.flipped = startIsBack ? '0' : '1'; el.dataset.didDrag = '1'; setTimeout(() => { delete el.dataset.didDrag; }, 120); updateFlipper(el); updateRotor(el); checkSolvedSoon(); } id = null; baseMap = null; moved = false; startOnFlipper = false; return; } id = null; baseMap = null; try { trySnap(el); } catch (_) { } triggerSolveDoubleCheck(); }
         // Expose a method so children (e.g., flipper) can begin dragging on long-press
@@ -376,7 +384,7 @@
     function setSolved(v) {
         if (v === solved) return; solved = v; document.body.classList.toggle('puzzle-solved', v); if (!window.__solveTimers) window.__solveTimers = []; window.__solveTimers.forEach(t => clearTimeout(t)); window.__solveTimers = []; if (!v) return; const cards9 = Array.from(document.querySelectorAll('.polaroid')).slice(0, 9); const applyGlow = on => { cards9.forEach(c => { if (on) { if (!c.dataset._prevShadow) c.dataset._prevShadow = c.style.boxShadow || ''; if (!c.dataset._prevFilter) c.dataset._prevFilter = c.style.filter || ''; c.style.boxShadow = '0 14px 36px rgba(0,0,0,.45), 0 0 0 3px rgba(212,175,55,.9), 0 0 36px rgba(212,175,55,.55)'; c.style.filter = 'brightness(1.06)'; } else { c.style.boxShadow = c.dataset._prevShadow || ''; c.style.filter = c.dataset._prevFilter || ''; delete c.dataset._prevShadow; delete c.dataset._prevFilter; } }); };
         const phraseList = window.PUZZLE_SOLVE_PHRASES; const solvePhrase = phraseList[Math.floor(Math.random() * phraseList.length)] || 'You found something'; const buildModal = () => { const old = document.getElementById('puzzleModal'); if (old) old.remove(); const overlay = document.createElement('div'); overlay.id = 'puzzleModal'; overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true'); overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:2147483647;opacity:0;transition:opacity 1.5s ease;'; const box = document.createElement('div'); box.style.cssText = 'position:relative;background:#0f0f0f;border:1px solid #333;color:#fff;padding:22px;border-radius:14px;box-shadow:0 20px 80px rgba(0,0,0,.7);width:min(480px,calc(100vw - 32px));text-align:center;'; box.innerHTML = `<button id="pmClose" aria-label="Close" style="position:absolute;top:8px;right:8px;background:transparent;border:0;color:#bbb;font-size:22px;line-height:1;cursor:pointer">×</button><h3 id="pmPhrase" style="margin:0 0 12px;font:600 20px/1.3 system-ui"></h3><div style="display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;justify-content:center;align-items:center"><a id="pmCMND" href="https://youtube.com/shorts/hkYhlXNTsJQ?feature=share" target="_blank" rel="noopener" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#e7e7e7;color:#111;font-weight:700">WITNESS</a><a id="pmCNTRL" href="theseAreNotTheTracksYoureLookingFor.html" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#1b1b1b;color:#e7e7e7;font-weight:700;border:1px solid #333">REJECT</a></div>`; const phraseEl = box.querySelector('#pmPhrase'); if (phraseEl) phraseEl.textContent = solvePhrase; overlay.appendChild(box); document.body.appendChild(overlay); const dismiss = () => { overlay.remove(); window.__doSolveResetOnce?.(); }; box.querySelector('#pmClose').addEventListener('click', dismiss); overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); }); const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); dismiss(); document.removeEventListener('keydown', onKey); } }; document.addEventListener('keydown', onKey); const linkCMND = box.querySelector('#pmCMND'); const linkCNTRL = box.querySelector('#pmCNTRL'); if (linkCMND) { linkCMND.setAttribute('target', '_blank'); linkCMND.setAttribute('rel', 'noopener'); linkCMND.addEventListener('click', () => { try { stopAllSiteAudio(); } catch (_) { } overlay.remove(); window.__doSolveResetOnce?.(); }); } if (linkCNTRL) { linkCNTRL.removeAttribute('target'); linkCNTRL.removeAttribute('rel'); linkCNTRL.addEventListener('click', ev => { ev.preventDefault(); try { stopAllSiteAudio(); } catch (_) { } overlay.remove(); window.__doSolveResetOnce?.(); openMixerModal(); }); } overlay.style.opacity = '0'; void overlay.offsetWidth; requestAnimationFrame(() => { requestAnimationFrame(() => { overlay.style.opacity = '1'; }); }); };
-        window.__didAutoReset = false; function doResetOnce() { if (window.__didAutoReset) return; window.__didAutoReset = true; if (window.__solveTimers) { window.__solveTimers.forEach(t => clearTimeout(t)); window.__solveTimers = []; } clearAllGroupRotors(); groups.clear(); groupSeq = 1; cards9.forEach(c => { unlinkAll(c); c.classList.remove('dragging', 'rotating'); c.dataset.group = ''; ensureGroup(c); c.dataset.flipped = '0'; delete c.dataset.didDrag; c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg'); delete c.dataset.seededRot; delete c.dataset._baseRot; c.style.transition = ''; c.style.opacity = '0'; updateFlipper(c); updateRotor(c); }); preSeedRotations(); scatter(); requestAnimationFrame(() => { cards9.forEach(c => { c.style.transition = 'opacity .45s ease'; c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); }); }
+    window.__didAutoReset = false; function doResetOnce() { if (window.__didAutoReset) return; window.__didAutoReset = true; if (window.__solveTimers) { window.__solveTimers.forEach(t => clearTimeout(t)); window.__solveTimers = []; } clearAllGroupRotors(); groups.clear(); groupSeq = 1; if (__lastTouchControlsEl) { __lastTouchControlsEl.classList.remove('touch-show-controls'); __lastTouchControlsEl = null; } cards9.forEach(c => { unlinkAll(c); c.classList.remove('dragging', 'rotating'); c.dataset.group = ''; ensureGroup(c); c.dataset.flipped = '0'; delete c.dataset.didDrag; c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg'); delete c.dataset.seededRot; delete c.dataset._baseRot; c.style.transition = ''; c.style.opacity = '0'; updateFlipper(c); updateRotor(c); }); preSeedRotations(); scatter(); requestAnimationFrame(() => { cards9.forEach(c => { c.style.transition = 'opacity .45s ease'; c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); }); }
         window.__doSolveResetOnce = doResetOnce; applyGlow(true); const t1 = setTimeout(() => { applyGlow(false); }, 1000); const t3 = setTimeout(() => { cards9.forEach(c => { c.style.transition = 'opacity 5s ease'; c.style.opacity = '0'; }); const t4 = setTimeout(() => { doResetOnce(); }, 5000); window.__solveTimers.push(t4); }, 1000); const t2 = setTimeout(() => { buildModal(); }, 1200); window.__solveTimers.push(t1, t2, t3);
     }
     function resetAfterSolveWithFade() { document.body.classList.remove('puzzle-solved'); const modal = document.getElementById('puzzleModal'); if (modal) modal.remove(); const cards9 = Array.from(document.querySelectorAll('.polaroid')).slice(0, 9); cards9.forEach(c => { c.style.transition = 'opacity .45s ease'; c.style.opacity = '0'; }); setTimeout(() => { clearAllGroupRotors(); groups.clear(); groupSeq = 1; cards9.forEach(c => { unlinkAll(c); c.classList.remove('dragging', 'rotating'); c.dataset.group = ''; ensureGroup(c); c.dataset.flipped = '0'; delete c.dataset.didDrag; c.style.setProperty('--ux', '0px'); c.style.setProperty('--uy', '0px'); c.style.setProperty('--rot', '0deg'); delete c.dataset.seededRot; delete c.dataset._baseRot; updateFlipper(c); updateRotor(c); }); preSeedRotations(); scatter(); requestAnimationFrame(() => { cards9.forEach(c => { c.style.opacity = '1'; setTimeout(() => { c.style.transition = ''; }, 500); }); }); }, 460); }
@@ -386,6 +394,16 @@
     if (!window.forcePuzzleCheck) { window.forcePuzzleCheck = () => { const ok = checkSolved(); console.debug('[puzzle][forceCheck]', { ok, lastFail: window.PUZZLE_LAST_FAIL }); return ok; }; }
 
     document.querySelectorAll('.polaroid').forEach(addRotor); document.querySelectorAll('.polaroid').forEach(addFlipper); document.querySelectorAll('.polaroid').forEach(makeDraggable);
+    // Global touch handler for control persistence
+    if (IS_COARSE_TOUCH) {
+        document.addEventListener('touchstart', (e) => {
+            const t = e.target;
+            if (!(t && t.closest && t.closest('.polaroid'))) {
+                // Tapped outside any card: clear persisted controls
+                setTouchControlsTarget(null);
+            }
+        }, { passive: true, capture: true });
+    }
     // Hover elevate: bring hovered tile's entire group to front and ensure hovered member is topmost
     document.querySelectorAll('.polaroid').forEach(el => {
         el.addEventListener('mouseenter', () => {
