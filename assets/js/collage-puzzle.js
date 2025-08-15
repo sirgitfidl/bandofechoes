@@ -64,6 +64,59 @@
             }
         });
     }
+    // After a change, split a group's members into edge-connected components using side links
+    function splitDisconnectedGroup(gid) {
+        const set = groups.get(gid);
+        if (!set || set.size <= 1) return [gid];
+        const nodes = Array.from(set);
+        const inSet = new Set(nodes);
+        const seen = new Set();
+        const comps = [];
+        function neighbors(node) {
+            const s = getSides(node);
+            const out = [];
+            const dirs = ['left', 'right', 'top', 'bottom'];
+            for (const d of dirs) {
+                const ln = s[d];
+                if (ln && ln.node && inSet.has(ln.node)) out.push(ln.node);
+            }
+            return out;
+        }
+        for (const n of nodes) {
+            if (seen.has(n)) continue;
+            const comp = new Set();
+            const stack = [n];
+            seen.add(n);
+            while (stack.length) {
+                const cur = stack.pop();
+                comp.add(cur);
+                for (const nb of neighbors(cur)) {
+                    if (!seen.has(nb)) { seen.add(nb); stack.push(nb); }
+                }
+            }
+            comps.push(comp);
+        }
+        if (comps.length <= 1) return [gid];
+        // Assign components to groups: keep original gid for the largest component
+        comps.sort((a, b) => b.size - a.size);
+        const kept = comps[0];
+        const newIds = [gid];
+        // Update original group's members and set
+        groups.set(gid, kept);
+        kept.forEach(n => { n.dataset.group = gid; });
+        // Create new groups for remaining components
+        for (let i = 1; i < comps.length; i++) {
+            const nid = newGroupId();
+            newIds.push(nid);
+            groups.set(nid, comps[i]);
+            comps[i].forEach(n => { n.dataset.group = nid; updateFlipper(n); updateRotor(n); });
+            ensureGroupRotor(nid);
+        }
+        // Refresh UI for kept component
+        kept.forEach(n => { updateFlipper(n); updateRotor(n); });
+        ensureGroupRotor(gid);
+        return newIds;
+    }
     // Rotate an entire group by a given angle around the group's center
     function rotateGroupBy(gset, dAng) {
         if (!gset || gset.size <= 0) return;
@@ -108,15 +161,43 @@
         el.dataset.group = nid;
         groups.set(nid, new Set([el]));
         updateFlipper(el); updateRotor(el);
-        set.forEach(n => { updateFlipper(n); updateRotor(n); });
-        // Update group rotors for the changed groups
+        // Split the remaining original group into edge-connected components
+        splitDisconnectedGroup(id);
+        // Refresh UI for whatever remains in the original group (handles the 2-piece -> 1-piece case)
+        const rem = groups.get(id);
+        if (rem) rem.forEach(n => { updateFlipper(n); updateRotor(n); });
+        // Update group rotors for the changed groups (group rotation is disabled; these are no-ops)
         ensureGroupRotor(id);
         removeGroupRotor(nid);
     }
     function getStyleNum(el, name) { const v = getComputedStyle(el).getPropertyValue(name); const n = parseFloat(v); return isNaN(n) ? 0 : n; }
     function withoutAnim(nodes, fn) { const list = []; nodes.forEach(n => { list.push([n, n.style.transition]); n.style.transition = 'none'; }); try { fn(); } finally { list.forEach(([n, t]) => { n.style.transition = t; }); } }
-    function updateFlipper(el) { let btn = el.querySelector('.flipper'); if (!btn) return; btn.style.pointerEvents = 'auto'; btn.onpointerdown = btn.onmousedown = (ev) => { ev.preventDefault(); ev.stopPropagation(); }; const grouped = membersOf(el).size > 1; const isBack = el.dataset.flipped === '1'; if (grouped) { btn.textContent = '✂'; btn.title = 'De-snap'; btn.setAttribute('aria-label', 'De-snap'); btn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); unsnap(el); setTimeout(() => { delete el.dataset.didDrag; }, 0); checkSolvedSoon(); updateFlipper(el); updateRotor(el); }; } else { btn.textContent = '⇄'; btn.title = isBack ? 'Flip to front' : 'Flip to back'; btn.setAttribute('aria-label', btn.title); btn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); el.dataset.flipped = isBack ? '0' : '1'; el.dataset.didDrag = '1'; setTimeout(() => { delete el.dataset.didDrag; }, 120); updateFlipper(el); updateRotor(el); checkSolvedSoon(); }; } }
-    function updateRotor(el) { const knob = el.querySelector('.rotor'); if (!knob) return; const grouped = membersOf(el).size > 1; if (!el.dataset.peInit) { el.dataset.peInit = '1'; knob.style.pointerEvents = 'none'; el.addEventListener('mouseenter', () => { if (membersOf(el).size <= 1) knob.style.pointerEvents = 'auto'; }); el.addEventListener('mouseleave', () => { knob.style.pointerEvents = 'none'; }); } if (grouped) { knob.setAttribute('disabled', ''); knob.style.pointerEvents = 'none'; knob.style.opacity = '0'; knob.style.display = 'none'; knob.setAttribute('aria-hidden', 'true'); knob.title = 'Rotate (disabled while snapped)'; } else { knob.removeAttribute('disabled'); knob.style.display = ''; knob.style.opacity = ''; knob.style.pointerEvents = 'auto'; knob.removeAttribute('aria-hidden'); knob.title = 'Rotate'; } }
+    function updateFlipper(el) {
+        let btn = el.querySelector('.flipper'); if (!btn) return; const grouped = membersOf(el).size > 1; const isBack = el.dataset.flipped === '1';
+        // Icon + accessibility
+        btn.classList.toggle('is-cut', grouped);
+        if (grouped) { btn.textContent = '✂'; btn.title = 'De-snap'; btn.setAttribute('aria-label', 'De-snap'); }
+        else { btn.textContent = '⇄'; btn.title = isBack ? 'Flip to front' : 'Flip to back'; btn.setAttribute('aria-label', btn.title); }
+        // Clear old handlers
+        btn.onclick = null; btn.onpointerdown = null; btn.onpointerup = null; btn.onpointercancel = null; btn.onpointerleave = null; btn.onmousedown = null;
+        // Start dragging immediately on press; click behavior is handled by makeDraggable's pointerup when no movement
+        btn.onpointerdown = (ev) => { ev.preventDefault(); ev.stopPropagation(); if (typeof el.__dragDown === 'function') { el.__dragDown(ev); } };
+        btn.onmousedown = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+    }
+    function updateRotor(el) {
+        const knob = el.querySelector('.rotor'); if (!knob) return;
+        const grouped = membersOf(el).size > 1;
+        // Rely on CSS hover for visibility/pointer-events; just toggle disabled state
+        if (grouped) {
+            knob.setAttribute('disabled', '');
+            knob.setAttribute('aria-hidden', 'true');
+            knob.title = 'Rotate (disabled while snapped)';
+        } else {
+            knob.removeAttribute('disabled');
+            knob.removeAttribute('aria-hidden');
+            knob.title = 'Rotate';
+        }
+    }
     function addRotor(el) {
         let knob = el.querySelector('.rotor'); if (!knob) { knob = document.createElement('button'); knob.type = 'button'; knob.className = 'rotor'; knob.textContent = '⟲'; knob.title = 'Rotate'; knob.setAttribute('aria-label', 'Rotate photo'); el.appendChild(knob); }
         updateRotor(el); let id = null, prev = 0, baseRot = 0, acc = 0, raf = null; const angleAt = (e, pivot) => Math.atan2(e.clientY - pivot.y, e.clientX - pivot.x) * 180 / Math.PI;
@@ -158,8 +239,9 @@
         if (!el.__rotorHeal) {
             el.__rotorHeal = true;
             el.addEventListener('touchstart', () => {
+                // No-op: rely on CSS hover/visibility; this hook remains for potential future mobile healing
                 if (el.dataset.flipped === '1' && membersOf(el).size <= 1) {
-                    knob.style.pointerEvents = 'auto';
+                    /* intentionally left blank */
                 }
             }, { passive: true });
         }
@@ -171,7 +253,13 @@
         updateFlipper(el);
     }
     function makeDraggable(el) {
-        let id = null, sx = 0, sy = 0, moved = false, raf = null, lastDX = 0, lastDY = 0; const num = v => parseFloat(String(v).replace('px', '')) || 0; let baseMap = null; function down(e) { if (e.pointerType === 'mouse' && e.button !== 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; const group = membersOf(el); baseMap = new Map(); group.forEach(n => { const cs = getComputedStyle(n); baseMap.set(n, { ux: num(cs.getPropertyValue('--ux')), uy: num(cs.getPropertyValue('--uy')) }); zCounter += 1; n.style.zIndex = String(zCounter); n.classList.add('dragging'); }); el.setPointerCapture?.(id); } function move(e) { if (id === null || e.pointerId !== id) return; if (e.pointerType === 'mouse' && e.buttons === 0) return; lastDX = e.clientX - sx; lastDY = e.clientY - sy; if (!moved && (Math.abs(lastDX) > 3 || Math.abs(lastDY) > 3)) moved = true; if (!raf) { raf = requestAnimationFrame(() => { if (!baseMap) { raf = null; return; } baseMap.forEach((b, n) => { n.style.setProperty('--ux', (b.ux + lastDX) + 'px'); n.style.setProperty('--uy', (b.uy + lastDY) + 'px'); }); raf = null; }); } } function up(e) { if (id === null || e.pointerId !== id) return; if (baseMap) { baseMap.forEach((_, n) => { n.classList.remove('dragging'); if (moved) { n.dataset.didDrag = '1'; setTimeout(() => { delete n.dataset.didDrag; }, 120); } }); } el.releasePointerCapture?.(id); id = null; baseMap = null; try { trySnap(el); } catch (_) { } triggerSolveDoubleCheck(); }
+        let id = null, sx = 0, sy = 0, moved = false, raf = null, lastDX = 0, lastDY = 0, startOnFlipper = false, startGrouped = false, startIsBack = false;
+        const num = v => parseFloat(String(v).replace('px', '')) || 0; let baseMap = null;
+        function down(e) { if (e.pointerType === 'mouse' && e.button !== 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; startOnFlipper = !!(e.target && e.target.closest && e.target.closest('.flipper')); startGrouped = membersOf(el).size > 1; startIsBack = el.dataset.flipped === '1'; const group = membersOf(el); baseMap = new Map(); group.forEach(n => { const cs = getComputedStyle(n); baseMap.set(n, { ux: num(cs.getPropertyValue('--ux')), uy: num(cs.getPropertyValue('--uy')) }); zCounter += 1; n.style.zIndex = String(zCounter); n.classList.add('dragging'); }); el.setPointerCapture?.(id); }
+        function move(e) { if (id === null || e.pointerId !== id) return; if (e.pointerType === 'mouse' && e.buttons === 0) return; lastDX = e.clientX - sx; lastDY = e.clientY - sy; if (!moved && (Math.abs(lastDX) > 3 || Math.abs(lastDY) > 3)) moved = true; if (!raf) { raf = requestAnimationFrame(() => { if (!baseMap) { raf = null; return; } baseMap.forEach((b, n) => { n.style.setProperty('--ux', (b.ux + lastDX) + 'px'); n.style.setProperty('--uy', (b.uy + lastDY) + 'px'); }); raf = null; }); } }
+        function up(e) { if (id === null || e.pointerId !== id) return; if (baseMap) { baseMap.forEach((_, n) => { n.classList.remove('dragging'); if (moved) { n.dataset.didDrag = '1'; setTimeout(() => { delete n.dataset.didDrag; }, 120); } }); } el.releasePointerCapture?.(id); if (!moved && startOnFlipper) { if (startGrouped) { unsnap(el); setTimeout(() => { delete el.dataset.didDrag; }, 0); checkSolvedSoon(); updateFlipper(el); updateRotor(el); } else { el.dataset.flipped = startIsBack ? '0' : '1'; el.dataset.didDrag = '1'; setTimeout(() => { delete el.dataset.didDrag; }, 120); updateFlipper(el); updateRotor(el); checkSolvedSoon(); } id = null; baseMap = null; moved = false; startOnFlipper = false; return; } id = null; baseMap = null; try { trySnap(el); } catch (_) { } triggerSolveDoubleCheck(); }
+        // Expose a method so children (e.g., flipper) can begin dragging on long-press
+        el.__dragDown = (origEvent) => { try { down(origEvent); } catch (_) { } };
         el.addEventListener('pointerdown', down); document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
         // While dragging, keep any group rotor aligned
         const moveWrapper = () => {
@@ -266,7 +354,11 @@
             }
             if (snapped) break;
         }
-        if (snapped) { membersOf(anchor).forEach(n => { updateFlipper(n); updateRotor(n); }); }
+        if (snapped) {
+            membersOf(anchor).forEach(n => { updateFlipper(n); updateRotor(n); });
+            // Try additional attachments in the same drop (e.g., middle tile connects to both neighbors)
+            try { trySnap(anchor); } catch (_) { }
+        }
     }
 
     // puzzle image slices
