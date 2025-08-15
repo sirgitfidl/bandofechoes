@@ -4,7 +4,6 @@
     --fg: #e7e7e7;
     --muted: #9a9a9a;
     --accent: #d4af37;
-    /* subtle gold */
     --card: #141414;
     --border: #262626;
     --maxw: 1120px;
@@ -659,6 +658,7 @@ body.scrolled header {
 
 /* On touch devices, persist controls after tap when JS adds .touch-show-controls */
 @media (hover: none) and (pointer: coarse) {
+
     .polaroid.touch-show-controls .rotor,
     .polaroid.touch-show-controls .flipper {
         opacity: .9;

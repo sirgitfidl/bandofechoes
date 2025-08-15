@@ -398,7 +398,23 @@
     if (IS_COARSE_TOUCH) {
         document.addEventListener('touchstart', (e) => {
             const t = e.target;
-            if (!(t && t.closest && t.closest('.polaroid'))) {
+            const card = t && t.closest && t.closest('.polaroid');
+            if (card) {
+                if (card !== __lastTouchControlsEl) {
+                    // Switch sticky controls to the touched card and bring its group to front
+                    setTouchControlsTarget(card);
+                    try {
+                        const gid = card.dataset.group;
+                        if (gid) {
+                            const s = groups.get(gid);
+                            if (s) {
+                                s.forEach(n => { zCounter++; n.style.zIndex = String(zCounter); });
+                                zCounter++; card.style.zIndex = String(zCounter);
+                            }
+                        }
+                    } catch (_) { }
+                }
+            } else {
                 // Tapped outside any card: clear persisted controls
                 setTouchControlsTarget(null);
             }
