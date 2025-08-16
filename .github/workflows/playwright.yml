@@ -28,8 +28,21 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
+      - name: Start static server
+        run: |
+          npx http-server -p 3000 -c- . &
+          echo $! > server.pid
+      - name: Wait for server
+        run: |
+          npx --yes wait-on http://localhost:3000
+      - name: Run Playwright tests (against local server)
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: npm run test:ci
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then kill $(cat server.pid) || true; fi
 
       - name: Upload Playwright report (always)
         if: always()
