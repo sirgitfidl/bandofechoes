@@ -5,14 +5,18 @@ const isCI = !!process.env.CI;
 
 export default defineConfig({
     testDir: './tests',
-    timeout: 30 * 1000,
-    expect: { timeout: 5000 },
+    // Give CI a much larger per-test timeout; keep local fast
+    timeout: isCI ? 180 * 1000 : 30 * 1000,
+    expect: { timeout: isCI ? 15_000 : 5_000 },
     fullyParallel: true,
     // Keep CI conservative to improve stability
     workers: isCI ? 4 : undefined,
     reporter: [['list']],
     use: {
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+        // So individual actions/navigations have more time in CI
+        actionTimeout: isCI ? 15_000 : undefined,
+        navigationTimeout: isCI ? 45_000 : undefined,
         trace: 'retain-on-failure',
         video: 'retain-on-failure',
         screenshot: 'only-on-failure',
@@ -31,7 +35,8 @@ export default defineConfig({
         : {
             command: 'npm run serve',
             url: 'http://localhost:3000',
-            reuseExistingServer: !isCI,
-            timeout: 60_000,
+              reuseExistingServer: !isCI,
+              // Allow longer boot in CI
+              timeout: isCI ? 120_000 : 60_000,
         },
 });
