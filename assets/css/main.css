@@ -538,6 +538,7 @@ body.scrolled header {
 .polaroid.rotating {
     transition: none !important;
 }
+
 .polaroid:focus-visible {
     transform: translate3d(calc(var(--tx) + var(--ux)), calc(var(--ty) + var(--uy)), 0) rotate(var(--rot)) scale(calc(var(--ps, 1) * 1.02));
     filter: brightness(1.03);

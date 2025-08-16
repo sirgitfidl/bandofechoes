@@ -108,6 +108,19 @@ body {
     font-size: 14px
 }
 
+/* Inline close button next to time readout */
+.btn.close {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 28px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+}
+
 .progress {
     flex: 1;
     min-width: 320px;

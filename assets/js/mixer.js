@@ -381,6 +381,22 @@
       place();
       fader.addEventListener('input', place);
       fader.addEventListener('change', place);
+
+      // Double-click cap to snap to 0.0 dB (our taper's 0 dB = value 70)
+      strip.addEventListener('dblclick', (e) => {
+        if (!cap) return;
+        const r = cap.getBoundingClientRect();
+        const x = e.clientX, y = e.clientY;
+        const inside = x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+        if (!inside) return;
+        const snapVal = 70;
+        fader.value = String(snapVal);
+        if (ch === 'master') state.masterFader = snapVal; else state.faderValues.set(ch, snapVal);
+        applyGains();
+        place();
+        e.preventDefault();
+        e.stopPropagation();
+      });
     });
 
     function redoAll() {
@@ -428,6 +444,51 @@
 
   // Background prefetch so first Play is nearly instant
   prefetchStems().catch(console.warn);
+
+  // Report layout metrics to parent (for modal close button positioning)
+  (function reportLayoutToParent() {
+    function postMetrics() {
+      try {
+        const titleEl = document.querySelector('.page-title');
+        // Prefer the inner console panel (typically narrower than the full wrap)
+        const consoleEl = document.querySelector('.strips') || document.querySelector('.mixer-panel') || document.querySelector('.mixer') || document.querySelector('.mixer-wrap');
+        const tr = titleEl ? titleEl.getBoundingClientRect() : null;
+        const wr = consoleEl ? consoleEl.getBoundingClientRect() : null;
+        const payload = { __mixerMsg: true, type: 'MIXER_METRICS' };
+        if (tr) payload.titleRect = { top: tr.top, height: tr.height };
+        if (wr) payload.mixerRect = { left: wr.left, right: wr.right, width: wr.width, top: wr.top };
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(payload, '*');
+        }
+      } catch (_) { /* noop */ }
+    }
+    window.addEventListener('load', () => setTimeout(postMetrics, 0));
+    window.addEventListener('resize', () => setTimeout(postMetrics, 0));
+    window.addEventListener('mixer-layout', () => setTimeout(postMetrics, 0));
+    // Initial fire
+    setTimeout(postMetrics, 40);
+  })();
+
+  // Close button inside mixer (requests parent to close modal)
+  (function bindCloseButton() {
+    const btn = document.getElementById('closeMixerBtn');
+    if (!btn) return;
+    const sendClose = () => {
+      // 1) Always try postMessage (safe cross-origin)
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ __mixerMsg: true, type: 'MIXER_CLOSE' }, '*');
+          try { window.parent.dispatchEvent(new Event('MIXER_CLOSE')); } catch (_) { }
+        }
+      } catch (_) { }
+      // 2) Best-effort direct API (same-origin only); keep separate so cross-origin errors don't block postMessage
+      try {
+        if (window.parent && window.parent.__closeMixerModal) { window.parent.__closeMixerModal(); }
+      } catch (_) { }
+    };
+    btn.addEventListener('click', sendClose);
+    btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sendClose(); } });
+  })();
 
   // === Mobile compression (custom property scaling, preserves slider geometry) ===
   (function compressionFit() {

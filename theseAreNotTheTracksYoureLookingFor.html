@@ -24,6 +24,7 @@
         <input id="progress" class="progress" type="range" min="0" max="1000" value="0" step="1"
           aria-label="Playback position" />
         <span class="time" id="timeReadout">00:00 / 00:00</span>
+        <button id="closeMixerBtn" class="btn close" aria-label="Close mixer" title="Close">×</button>
       </div>
     </div>
 
@@ -100,7 +101,14 @@
     </div>
   </div>
 
-  <script src="assets/js/mixer.js" defer></script>
+  <script>
+    (function () {
+      var s = document.createElement('script');
+      s.defer = true;
+      s.src = 'assets/js/mixer.js?v=' + Date.now();
+      document.head.appendChild(s);
+    })();
+  </script>
 </body>
 
 </html>
