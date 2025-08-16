@@ -1,7 +1,7 @@
 // Puzzle solve phrases (separate module)
 // Edit / add phrases here. They will be picked up by collage-puzzle.js when the puzzle is solved.
 (function () {
-    const phrases = [
+    const PHRASES = [
         'Look at you, skulking behind that screen.',
         'Puzzled? Sure. Amused? Hardly.',
         'Well, well… what have we here?',
@@ -17,6 +17,6 @@
         'Turn back now.'
     ];
     if (!Array.isArray(window.PUZZLE_SOLVE_PHRASES) || !window.PUZZLE_SOLVE_PHRASES.length) {
-        window.PUZZLE_SOLVE_PHRASES = phrases.slice();
+        window.PUZZLE_SOLVE_PHRASES = PHRASES.slice();
     }
 })();

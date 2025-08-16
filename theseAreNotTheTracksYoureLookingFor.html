@@ -11,20 +11,24 @@
 
 <body>
   <!-- Title block above the console -->
-  <header class="page-title" aria-label="Mix Title">
+  <header class="page-title" aria-label="Mix Title" data-testid="mixer-title">
     <h1>Band of Echoes — “Right In Two”</h1>
     <div class="sub">Interactive Stem Mixer</div>
   </header>
 
-  <div class="mixer-wrap" role="application" aria-label="Stem Mixer for 'Right In Two'">
+  <div class="mixer-wrap" role="application" aria-label="Stem Mixer for 'Right In Two'" data-testid="mixer-wrap">
     <div class="topbar">
-      <div class="transport">
-        <button id="rewBtn" class="btn" title="Rewind to start" aria-label="Rewind to start">⟲</button>
-        <button id="playBtn" class="btn primary" aria-pressed="false" aria-label="Play or Pause">Play</button>
+      <div class="transport" data-testid="transport">
+        <button id="rewBtn" class="btn" title="Rewind to start" aria-label="Rewind to start"
+          data-testid="btn-rew">⟲</button>
+        <button id="playBtn" class="btn primary" aria-pressed="false" aria-label="Play or Pause"
+          data-testid="btn-play">Play</button>
         <input id="progress" class="progress" type="range" min="0" max="1000" value="0" step="1"
-          aria-label="Playback position" />
-        <span class="time" id="timeReadout">00:00 / 00:00</span>
-        <button id="closeMixerBtn" class="btn close" aria-label="Close mixer" title="Close">×</button>
+          aria-label="Playback position" data-testid="progress" />
+        <span class="time" id="timeReadout" data-testid="time">00:00 / 00:00</span>
+        <button id="closeMixerBtn" class="btn close" aria-label="Close mixer" title="Close"
+          data-testid="close-mixer-btn" style="position:absolute;top:8px;right:8px">×</button>
+
       </div>
     </div>
 
@@ -35,67 +39,84 @@
     <audio id="audio-kathryn" preload="auto" src="assets/stems/right_in_two/rightInTwo_katVoxOnly.mp3"></audio>
 
     <div class="strips">
-      <div class="group-banner instruments" role="button" tabindex="0" title="Solo Instruments">Instruments</div>
-      <div class="group-banner vocals" role="button" tabindex="0" title="Solo Vocals">Vocals</div>
+      <div class="group-banner instruments" role="button" tabindex="0" title="Solo Instruments"
+        data-testid="group-instruments">Instruments</div>
+      <div class="group-banner vocals" role="button" tabindex="0" title="Solo Vocals" data-testid="group-vocals">Vocals
+      </div>
 
-      <div class="strip" data-channel="guitar">
+      <div class="strip" data-channel="guitar" data-testid="strip-guitar">
         <div class="name">Guitar</div>
-        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Guitar fader" />
+        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Guitar fader"
+          data-testid="fader-guitar" />
         <div class="db" aria-live="polite">0.0 dB</div>
         <div class="row">
-          <div class="chip solo" role="switch" aria-checked="false" aria-label="Guitar solo">SOLO</div>
-          <div class="chip mute" role="switch" aria-checked="false" aria-label="Guitar mute">MUTE</div>
+          <div class="chip solo" role="switch" aria-checked="false" aria-label="Guitar solo" data-testid="solo-guitar">
+            SOLO</div>
+          <div class="chip mute" role="switch" aria-checked="false" aria-label="Guitar mute" data-testid="mute-guitar">
+            MUTE</div>
         </div>
         <div class="meter"><span></span></div>
       </div>
 
-      <div class="strip" data-channel="cello">
+      <div class="strip" data-channel="cello" data-testid="strip-cello">
         <div class="name">Cello</div>
-        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Cello fader" />
+        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Cello fader"
+          data-testid="fader-cello" />
         <div class="db" aria-live="polite">0.0 dB</div>
         <div class="row">
-          <div class="chip solo" role="switch" aria-checked="false" aria-label="Cello solo">SOLO</div>
-          <div class="chip mute" role="switch" aria-checked="false" aria-label="Cello mute">MUTE</div>
+          <div class="chip solo" role="switch" aria-checked="false" aria-label="Cello solo" data-testid="solo-cello">
+            SOLO</div>
+          <div class="chip mute" role="switch" aria-checked="false" aria-label="Cello mute" data-testid="mute-cello">
+            MUTE</div>
         </div>
         <div class="meter"><span></span></div>
       </div>
 
-      <div class="strip" data-channel="eric">
+      <div class="strip" data-channel="eric" data-testid="strip-eric">
         <div class="name">Eric Vocals</div>
-        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Eric vocals fader" />
+        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Eric vocals fader"
+          data-testid="fader-eric" />
         <div class="db" aria-live="polite">0.0 dB</div>
         <div class="row">
-          <div class="chip solo" role="switch" aria-checked="false" aria-label="Eric vocals solo">SOLO</div>
-          <div class="chip mute" role="switch" aria-checked="false" aria-label="Eric vocals mute">MUTE</div>
+          <div class="chip solo" role="switch" aria-checked="false" aria-label="Eric vocals solo"
+            data-testid="solo-eric">SOLO</div>
+          <div class="chip mute" role="switch" aria-checked="false" aria-label="Eric vocals mute"
+            data-testid="mute-eric">MUTE</div>
         </div>
         <div class="meter"><span></span></div>
       </div>
 
-      <div class="strip" data-channel="kathryn">
+      <div class="strip" data-channel="kathryn" data-testid="strip-kathryn">
         <div class="name">Kathryn Vocals</div>
-        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Kathryn vocals fader" />
+        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Kathryn vocals fader"
+          data-testid="fader-kathryn" />
         <div class="db" aria-live="polite">0.0 dB</div>
         <div class="row">
-          <div class="chip solo" role="switch" aria-checked="false" aria-label="Kathryn vocals solo">SOLO</div>
-          <div class="chip mute" role="switch" aria-checked="false" aria-label="Kathryn vocals mute">MUTE</div>
+          <div class="chip solo" role="switch" aria-checked="false" aria-label="Kathryn vocals solo"
+            data-testid="solo-kathryn">SOLO</div>
+          <div class="chip mute" role="switch" aria-checked="false" aria-label="Kathryn vocals mute"
+            data-testid="mute-kathryn">MUTE</div>
         </div>
         <div class="meter"><span></span></div>
       </div>
 
-      <div class="strip" data-channel="master">
+      <div class="strip" data-channel="master" data-testid="strip-master">
         <div class="name">Master</div>
-        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Master fader" />
+        <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Master fader"
+          data-testid="fader-master" />
         <div class="db" aria-live="polite">0.0 dB</div>
         <div class="row">
-          <div class="chip mute" role="switch" aria-checked="false" aria-label="Master mute">MUTE</div>
-          <div class="chip unsolo" role="button" aria-label="Un-solo all channels">UN‑SOLO ALL</div>
+          <div class="chip mute" role="switch" aria-checked="false" aria-label="Master mute" data-testid="mute-master">
+            MUTE</div>
+          <div class="chip unsolo" role="button" aria-label="Un-solo all channels" data-testid="unsolo-all">UN‑SOLO ALL
+          </div>
         </div>
         <div class="meter"><span></span></div>
       </div>
     </div>
 
     <!-- Loading overlay -->
-    <div id="loadingOverlay" aria-live="polite" aria-busy="false" hidden>
+    <div id="loadingOverlay" aria-live="polite" aria-busy="false" hidden data-testid="loading-overlay">
       <div class="spinner" role="progressbar" aria-label="Loading stems"></div>
       <div class="loading-text"><span id="loadingMsg">Loading stems…</span></div>
     </div>

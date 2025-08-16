@@ -9,6 +9,7 @@
         try { stopAllSiteAudio(); } catch (_) { }
         const overlay = document.createElement('div');
         overlay.id = 'mixerModal';
+        overlay.setAttribute('data-testid', 'mixer-modal');
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-label', 'Stem Mixer');
@@ -23,6 +24,7 @@
         frame.title = 'Band of Echoes — Stem Mixer';
         frame.loading = 'eager';
         frame.allow = 'autoplay *; clipboard-read; clipboard-write';
+        frame.setAttribute('data-testid', 'mixer-iframe');
         frame.style.cssText = 'position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#0b0d12';
 
         // Always listen for close requests from the iframe (works cross-origin)
