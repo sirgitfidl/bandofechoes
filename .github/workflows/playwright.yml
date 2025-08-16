@@ -34,7 +34,10 @@ jobs:
           echo $! > server.pid
       - name: Wait for server
         run: |
-          npx --yes wait-on http://localhost:3000
+          npx --yes wait-on http://localhost:3000 || true
+          for i in 1 2 3 4 5; do
+            curl -fsSLI http://localhost:3000 && break || sleep 1;
+          done
       - name: Run Playwright tests (against local server)
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:3000
