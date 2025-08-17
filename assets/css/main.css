@@ -55,7 +55,7 @@ body {
     letter-spacing: .5px;
 }
 
-/* Only activate on small screens */
+/* Only activate on small touch screens */
 @media (max-width: 900px) and (orientation: landscape) {
     body.portrait-only .rotate-lock-overlay {
         display: flex;
