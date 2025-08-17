@@ -47,6 +47,9 @@
         padding: 12px;
     }
 
+    /* On mobile, scope the absolute close button inside transport and reserve space for it */
+    .transport { position: relative; padding-right: 46px; }
+
     .strips {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
@@ -74,6 +77,9 @@
     .mixer-wrap {
         padding: 12px;
     }
+
+    /* Slightly more padding on very small screens */
+    .transport { position: relative; padding-right: 52px; }
 
     .strips {
         grid-template-columns: repeat(2, minmax(0, 1fr));
