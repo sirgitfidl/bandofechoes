@@ -103,11 +103,13 @@ body {
 
 .time {
     margin-left: 8px;
-    margin-right: 12px; /* breathing room before the close button on desktop */
+    margin-right: 12px;
+    /* breathing room before the close button on desktop */
     font-variant-numeric: tabular-nums;
     color: var(--muted);
     font-size: 14px;
-    flex: 0 0 auto; /* don't shrink under the close button */
+    flex: 0 0 auto;
+    /* don't shrink under the close button */
 }
 
 /* Inline close button next to time readout */
