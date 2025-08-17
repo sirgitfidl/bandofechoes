@@ -35,8 +35,8 @@ export default defineConfig({
         : {
             command: 'npm run serve',
             url: 'http://localhost:3000',
-              reuseExistingServer: !isCI,
-              // Allow longer boot in CI
-              timeout: isCI ? 120_000 : 60_000,
+            reuseExistingServer: !isCI,
+            // Allow longer boot in CI
+            timeout: isCI ? 120_000 : 60_000,
         },
 });
