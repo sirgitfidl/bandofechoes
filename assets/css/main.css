@@ -57,29 +57,16 @@ body {
 
 /* Only activate on small touch screens */
 @media (max-width: 900px) and (orientation: landscape) {
-    /* We no longer force-show the overlay; JS may toggle it if desired */
-
-    /* Hard portrait fallback: rotate the app content to stay upright
-       while still allowing scroll and interaction. Keep overlay above. */
-    body.portrait-only.landscape-lock #app {
-        position: fixed;
-        inset: 0;
-        width: 100dvh;
-        /* swap using dynamic viewport */
-        height: 100dvw;
-        /* swap using dynamic viewport */
-        transform: rotate(90deg);
-        transform-origin: center center;
-        overflow: auto;
-        /* allow scrolling */
-        -webkit-overflow-scrolling: touch;
+    body.portrait-only .rotate-lock-overlay {
+        display: flex;
     }
 
-    /* Avoid double scrollbars on iOS while #app scrolls */
-    body.portrait-only.landscape-lock,
-    html.portrait-only.landscape-lock {
-        overflow: hidden;
-        height: 100%;
+    body.portrait-only main,
+    body.portrait-only header,
+    body.portrait-only footer {
+        filter: blur(4px);
+        pointer-events: none;
+        user-select: none;
     }
 }
 

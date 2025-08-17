@@ -1,9 +1,0 @@
-{
-    "name": "Band of Echoes",
-    "short_name": "Echoes",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#0c0c0c",
-    "theme_color": "#0c0c0c",
-    "orientation": "portrait"
-}
