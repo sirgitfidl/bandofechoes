@@ -470,8 +470,8 @@
                 try { setSolved(true); } catch (_) { /* no-op */ }
                 return;
             }
-            // Simple 'S' only when PUZZLE_DEBUG is truthy
-            if (window.PUZZLE_DEBUG && isS && !metaOrCtrl && !e.altKey) {
+            // Simple 'S' triggers solve (ignored while typing in fields)
+            if (isS && !metaOrCtrl && !e.altKey) {
                 e.preventDefault();
                 try { setSolved(true); } catch (_) { /* no-op */ }
             }
