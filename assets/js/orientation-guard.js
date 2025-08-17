@@ -27,6 +27,34 @@
 
         body.classList.add('portrait-only');
 
+        // Best-effort: try to lock screen orientation to portrait on supported browsers
+        let lockTried = false;
+        const canLock = !!(screen && screen.orientation && typeof screen.orientation.lock === 'function');
+        async function tryLockPortrait() {
+            if (!canLock) return false;
+            try {
+                // Some browsers accept 'portrait-primary', others 'portrait'
+                try { await screen.orientation.lock('portrait-primary'); }
+                catch (_) { await screen.orientation.lock('portrait'); }
+                return true;
+            } catch (_) { return false; }
+        }
+        async function ensureLockedOnce() {
+            if (lockTried) return; lockTried = true;
+            const ok = await tryLockPortrait();
+            if (!ok) {
+                // If denied (common on iOS Safari), we’ll rely on the overlay fallback
+            }
+        }
+        // Lock on first user gesture (required on many browsers)
+        const once = (el, ev, fn, opts) => { const h = async (e) => { try { await fn(e); } finally { el.removeEventListener(ev, h, opts); } }; el.addEventListener(ev, h, opts); };
+        once(document, 'click', ensureLockedOnce, { capture: true });
+        once(document, 'touchend', ensureLockedOnce, { capture: true, passive: true });
+        once(document, 'keydown', ensureLockedOnce, { capture: true });
+        // Retry on visibility/orientation changes
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) tryLockPortrait(); });
+        window.addEventListener('orientationchange', () => { setTimeout(() => { tryLockPortrait(); }, 50); });
+
         function isLandscape() {
             return (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) || (window.innerWidth > window.innerHeight);
         }
