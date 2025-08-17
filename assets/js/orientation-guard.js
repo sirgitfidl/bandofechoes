@@ -107,17 +107,12 @@
             return (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) || (window.innerWidth > window.innerHeight);
         }
         function update() {
-            // We're already gated to touch devices above. Show overlay on any touch device in landscape.
+            // Show overlay and enable CSS rotate fallback when in landscape on touch devices
             const show = isLandscape();
             overlay.style.display = show ? 'flex' : 'none';
             overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
-            if (show) {
-                if (!body.dataset.prevOverflow) body.dataset.prevOverflow = body.style.overflow || '';
-                body.style.overflow = 'hidden';
-            } else if (body.dataset.prevOverflow !== undefined) {
-                body.style.overflow = body.dataset.prevOverflow;
-                delete body.dataset.prevOverflow;
-            }
+            body.classList.toggle('landscape-lock', !!show);
+            // Do not globally freeze scroll; CSS fallback handles scrolling within #app.
         }
         ['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, update, { passive: true }));
         setTimeout(update, 0);

@@ -28,205 +28,211 @@
 <body>
   <a href="#main" class="skip" data-testid="skip-link">Skip to content</a>
 
-  <header>
-    <div class="wrap bar">
-      <div class="brand">
-        <h1 data-testid="brand-title">Band of Echoes</h1>
+  <div id="app">
+    <header>
+      <div class="wrap bar">
+        <div class="brand">
+          <h1 data-testid="brand-title">Band of Echoes</h1>
 
-      </div>
-      <nav class="nav">
-        <button id="navToggle" class="hamburger" aria-controls="navMenu" aria-expanded="false" aria-label="Menu"
-          data-testid="nav-toggle">
-          <span></span><span></span><span></span>
-        </button>
-        <div id="navMenu" class="menu" role="menu" aria-hidden="true" data-testid="nav-menu">
-          <a role="menuitem" href="#main" data-testid="menu-watch">Watch</a>
-          <a role="menuitem" href="#about" data-testid="menu-about">About</a>
-          <a role="menuitem" href="#support" data-testid="menu-support">Support</a>
-          <a role="menuitem" href="#contact" data-testid="menu-contact">Contact</a>
         </div>
-      </nav>
+        <nav class="nav">
+          <button id="navToggle" class="hamburger" aria-controls="navMenu" aria-expanded="false" aria-label="Menu"
+            data-testid="nav-toggle">
+            <span></span><span></span><span></span>
+          </button>
+          <div id="navMenu" class="menu" role="menu" aria-hidden="true" data-testid="nav-menu">
+            <a role="menuitem" href="#main" data-testid="menu-watch">Watch</a>
+            <a role="menuitem" href="#about" data-testid="menu-about">About</a>
+            <a role="menuitem" href="#support" data-testid="menu-support">Support</a>
+            <a role="menuitem" href="#contact" data-testid="menu-contact">Contact</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="wrap" data-testid="main">
+      <!-- HERO: Featured video -->
+      <section class="hero grid">
+        <div class="player" id="playerWrap" data-video="dRs_bLfrtu8" data-testid="hero-player">
+          <a class="poster" id="poster" href="https://www.youtube.com/watch?v=dRs_bLfrtu8" target="_blank"
+            rel="noopener" data-testid="hero-poster">
+            <img src="https://i.ytimg.com/vi/dRs_bLfrtu8/maxresdefault.jpg" alt="Right In Two — teaser (Short)">
+            <div class="play-btn" aria-hidden="true"><span class="triangle"></span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- WATCH: Playlist + Subscribe + Quote -->
+      <!-- ABOUT (moved up) -->
+      <section id="about" class="section cols" data-testid="section-about">
+        <div class="card pad">
+
+          <p class="text-justify">Band of Echoes is an acoustic duo reimagining songs by Tool, Nine Inch Nails, Alice In
+            Chains, Soundgarden,
+            and more. Featuring the intricate interplay of cello and guitar, layered with intertwined male and female
+            vocals, they transform heavy rock into raw, emotional acoustic arrangements. Their stripped-down sound is
+            dark, dynamic, and deeply immersive.</p>
+          <p class="quote text-justify" id="quote">“World‑class musicians. Duo sounds like a band.” — Name, Outlet</p>
+        </div>
+      </section>
+
+      <!-- WATCH: Polaroid collage -->
+      <section id="watch" class="section" data-testid="section-watch">
+        <div class="collage" aria-label="Photo collage">
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 1" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 1" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 2" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 2" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 3" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 3" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 4" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 4" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 5" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 5" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 6" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 6" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 7" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 7" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 8" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 8" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+          <figure class="polaroid" data-testid="polaroid">
+            <div class="polaroid-inner">
+              <div class="stage">
+                <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Band of Echoes — photo 9" width="1500" height="1844" loading="lazy" decoding="async"></div>
+                <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
+                    alt="Back of photo 9" width="1500" height="1844" loading="lazy" decoding="async"></div>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <!-- SUPPORT: Patreon embed / CTA -->
+      <section id="support" class="section cols" data-testid="section-support">
+        <div class="card pad">
+          <h2 style="margin-top:0">Support</h2>
+          <p class="text-justify">Into what we’re making and have an insatiable yearning for more? Patreon is the most
+            reliable way to help
+            keep this train a rollin’.</p>
+          <p class="text-justify"><em>Plus you get access to cool stuff like tabs/sheets, stems, and more!</em></p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a id="patreonCta2" class="btn primary" href="https://www.patreon.com/bandofechoes" target="_blank"
+              rel="noopener" data-testid="cta-patreon">Become a Patron</a>
+            <a class="btn" id="subFallback" href="https://youtube.com/@BandOfEchoes?sub_confirmation=1" target="_blank"
+              rel="noopener" data-testid="cta-subscribe">Subscribe on YouTube</a>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- CONTACT / EMAIL -->
+      <section id="contact" class="section cols" data-testid="section-contact">
+        <div class="card pad">
+          <h2 style="margin-top:0">Contact</h2>
+          <p>Booking / press: <a id="emailLink" class="btn" href="mailto:bandofechoesmusic@gmail.com"
+              data-testid="email-link">email</a></p>
+          <h3>Updates</h3>
+          <form id="emailForm" action="#" method="POST">
+            <input type="email" name="email" placeholder="your@email" required />
+            <button class="btn" type="submit">Get updates</button>
+          </form>
+          <p class="fine">We send very little. Unsubscribe anytime.</p>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Lightbox overlay -->
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer"
+      data-testid="lightbox">
+      <button class="lightbox-close" aria-label="Close" data-testid="lightbox-close">×</button>
+      <button class="lightbox-arrow prev" aria-label="Previous">‹</button>
+      <img id="lightboxImg" alt="">
+      <button class="lightbox-arrow next" aria-label="Next">›</button>
     </div>
-  </header>
 
-  <main id="main" class="wrap" data-testid="main">
-    <!-- HERO: Featured video -->
-    <section class="hero grid">
-      <div class="rotate-lock-overlay" aria-hidden="true" data-testid="rotate-lock-overlay">
-        <div class="icon">🔄</div>
-        <p>Please rotate your device<br>Use portrait orientation</p>
-      </div>
-      <div class="player" id="playerWrap" data-video="dRs_bLfrtu8" data-testid="hero-player">
-        <a class="poster" id="poster" href="https://www.youtube.com/watch?v=dRs_bLfrtu8" target="_blank" rel="noopener"
-          data-testid="hero-poster">
-          <img src="https://i.ytimg.com/vi/dRs_bLfrtu8/maxresdefault.jpg" alt="Right In Two — teaser (Short)">
-          <div class="play-btn" aria-hidden="true"><span class="triangle"></span></div>
-        </a>
-      </div>
-    </section>
-
-    <!-- WATCH: Playlist + Subscribe + Quote -->
-    <!-- ABOUT (moved up) -->
-    <section id="about" class="section cols" data-testid="section-about">
-      <div class="card pad">
-
-        <p class="text-justify">Band of Echoes is an acoustic duo reimagining songs by Tool, Nine Inch Nails, Alice In
-          Chains, Soundgarden,
-          and more. Featuring the intricate interplay of cello and guitar, layered with intertwined male and female
-          vocals, they transform heavy rock into raw, emotional acoustic arrangements. Their stripped-down sound is
-          dark, dynamic, and deeply immersive.</p>
-        <p class="quote text-justify" id="quote">“World‑class musicians. Duo sounds like a band.” — Name, Outlet</p>
-      </div>
-    </section>
-
-    <!-- WATCH: Polaroid collage -->
-    <section id="watch" class="section" data-testid="section-watch">
-      <div class="collage" aria-label="Photo collage">
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 1"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 1" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 2"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 2" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 3"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 3" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 4"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 4" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 5"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 5" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 6"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 6" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 7"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 7" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 8"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 8" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-        <figure class="polaroid" data-testid="polaroid">
-          <div class="polaroid-inner">
-            <div class="stage">
-              <div class="face front"><img src="assets/images/band_photos/polaroid_1.jpg" alt="Band of Echoes — photo 9"
-                  width="1500" height="1844" loading="lazy" decoding="async"></div>
-              <div class="face back" aria-hidden="true"><img src="assets/images/band_photos/polaroid_1.jpg"
-                  alt="Back of photo 9" width="1500" height="1844" loading="lazy" decoding="async"></div>
-            </div>
-          </div>
-        </figure>
-      </div>
-    </section>
-
-    <!-- SUPPORT: Patreon embed / CTA -->
-    <section id="support" class="section cols" data-testid="section-support">
-      <div class="card pad">
-        <h2 style="margin-top:0">Support</h2>
-        <p class="text-justify">Into what we’re making and have an insatiable yearning for more? Patreon is the most
-          reliable way to help
-          keep this train a rollin’.</p>
-        <p class="text-justify"><em>Plus you get access to cool stuff like tabs/sheets, stems, and more!</em></p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a id="patreonCta2" class="btn primary" href="https://www.patreon.com/bandofechoes" target="_blank"
-            rel="noopener" data-testid="cta-patreon">Become a Patron</a>
-          <a class="btn" id="subFallback" href="https://youtube.com/@BandOfEchoes?sub_confirmation=1" target="_blank"
-            rel="noopener" data-testid="cta-subscribe">Subscribe on YouTube</a>
+    <footer>
+      <div class="wrap foot">
+        <span class="muted">© <span id="year" data-testid="year"></span> Band of Echoes</span>
+        <div style="display:flex; gap:12px;">
+          <a id="ytFooter" href="#" target="_blank" rel="noopener" data-testid="footer-youtube">YouTube</a>
+          <a id="ptFooter" href="#" target="_blank" rel="noopener" data-testid="footer-patreon">Patreon</a>
         </div>
       </div>
-    </section>
+    </footer>
 
+  </div><!-- /#app -->
 
-    <!-- CONTACT / EMAIL -->
-    <section id="contact" class="section cols" data-testid="section-contact">
-      <div class="card pad">
-        <h2 style="margin-top:0">Contact</h2>
-        <p>Booking / press: <a id="emailLink" class="btn" href="mailto:bandofechoesmusic@gmail.com"
-            data-testid="email-link">email</a></p>
-        <h3>Updates</h3>
-        <form id="emailForm" action="#" method="POST">
-          <input type="email" name="email" placeholder="your@email" required />
-          <button class="btn" type="submit">Get updates</button>
-        </form>
-        <p class="fine">We send very little. Unsubscribe anytime.</p>
-      </div>
-
-    </section>
-  </main>
-
-  <!-- Lightbox overlay -->
-  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" data-testid="lightbox">
-    <button class="lightbox-close" aria-label="Close" data-testid="lightbox-close">×</button>
-    <button class="lightbox-arrow prev" aria-label="Previous">‹</button>
-    <img id="lightboxImg" alt="">
-    <button class="lightbox-arrow next" aria-label="Next">›</button>
+  <!-- Orientation overlay (kept outside #app so it's not rotated) -->
+  <div class="rotate-lock-overlay" aria-hidden="true" data-testid="rotate-lock-overlay">
+    <div class="icon">🔄</div>
+    <p>Please rotate your device<br>Use portrait orientation</p>
   </div>
-
-  <footer>
-    <div class="wrap foot">
-      <span class="muted">© <span id="year" data-testid="year"></span> Band of Echoes</span>
-      <div style="display:flex; gap:12px;">
-        <a id="ytFooter" href="#" target="_blank" rel="noopener" data-testid="footer-youtube">YouTube</a>
-        <a id="ptFooter" href="#" target="_blank" rel="noopener" data-testid="footer-patreon">Patreon</a>
-      </div>
-    </div>
-  </footer>
 
   <!-- JSON-LD (basic MusicGroup schema) -->
   <script type="application/ld+json" id="schema">
