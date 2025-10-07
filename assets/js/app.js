@@ -1,6 +1,6 @@
 // Band of Echoes — app.js (sanity v5)
 const CONFIG = {
-  featuredVideoId: 'Xb1Yky3S-Wg', // updated hero video (YouTube Shorts)
+  featuredVideoId: 'qqMLXwzeRE0', // updated hero video
   youtubeHandleUrl: 'https://youtube.com/@BandOfEchoes',
   patreonUrl: 'https://patreon.com/bandofechoes'
 };
