@@ -1,6 +1,6 @@
 // Band of Echoes — app.js (sanity v5)
 const CONFIG = {
-  featuredVideoId: 'dRs_bLfrtu8',
+  featuredVideoId: 'Xb1Yky3S-Wg', // updated hero video (YouTube Shorts)
   youtubeHandleUrl: 'https://youtube.com/@BandOfEchoes',
   patreonUrl: 'https://patreon.com/bandofechoes'
 };
@@ -22,6 +22,10 @@ const debugVals = () => { };
   // click-to-play hero
   const wrap = document.getElementById('playerWrap');
   const poster = document.getElementById('poster');
+  // Allow HTML data-video to override CONFIG so future swaps don't require JS edit
+  if (wrap && wrap.dataset && wrap.dataset.video) {
+    CONFIG.featuredVideoId = wrap.dataset.video;
+  }
   if (wrap && poster && CONFIG.featuredVideoId) {
     poster.addEventListener('click', (e) => {
       e.preventDefault();
