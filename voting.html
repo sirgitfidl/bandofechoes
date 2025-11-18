@@ -63,9 +63,9 @@
   </header>
   <main id="main">
     <h1 class="section-title">Vote on photos</h1>
-    <p class="muted">Rate each image with ✓ or ✕. When you submit, your picks will be shown with Yes first.</p>
+    <p class="muted">Tap ✓ to select images you like. When you submit, your picks will be shown with the most popular first.</p>
     <div class="controls">
-      <span class="muted" id="progress">0 decided</span>
+      <span class="muted" id="progress">0 picked</span>
     </div>
     <section id="voteView">
       <div id="grid" class="grid" aria-live="polite"></div>
@@ -82,7 +82,7 @@
     <button class="lb-arrow prev" id="lbPrev" aria-label="Previous">‹</button>
     <div class="content">
       <img id="lbImg" alt="">
-      <div class="lb-rate" id="lbRate" role="radiogroup"></div>
+      <div class="lb-rate" id="lbRate" role="group"></div>
       <div class="lb-id" id="lbId"></div>
     </div>
     <button class="lb-arrow next" id="lbNext" aria-label="Next">›</button>
@@ -133,33 +133,31 @@
         function saveVotes(v) { localStorage.setItem(LS_KEY, JSON.stringify(v)); }
         let votes = loadVotes();
 
-        function isDecided(v) { return v === 'yes' || v === 'no' || (typeof v === 'number' && !Number.isNaN(v)); }
-        function isYes(v) { return v === 'yes' || (typeof v === 'number' && v >= 3); }
+        // Only consider YES as a decision
+        function isDecided(v) { return v === 'yes'; }
 
-        // Remote counts and optimistic updates
-        let remoteCounts = {}; // { [id]: { yes, no } }
-        function ensureCount(id) { if (!remoteCounts[id]) remoteCounts[id] = { yes: 0, no: 0 }; return remoteCounts[id]; }
+        // Remote counts and optimistic updates (only YES)
+        let remoteCounts = {}; // { [id]: { yes } }
+        function ensureCount(id) { if (!remoteCounts[id]) remoteCounts[id] = { yes: 0 }; return remoteCounts[id]; }
         function applyCountDelta(id, prev, next) {
           const c = ensureCount(id);
           if (prev === 'yes') c.yes = Math.max(0, (c.yes || 0) - 1);
-          else if (prev === 'no') c.no = Math.max(0, (c.no || 0) - 1);
           if (next === 'yes') c.yes = (c.yes || 0) + 1;
-          else if (next === 'no') c.no = (c.no || 0) + 1;
           updateCountsUIForId(id);
         }
         function getCountsFor(id) {
           const c = remoteCounts[id];
-          if (c) return { yes: c.yes || 0, no: c.no || 0 };
+          if (c) return { yes: c.yes || 0 };
           const v = votes[id];
-          return isDecided(v) ? { yes: isYes(v) ? 1 : 0, no: isYes(v) ? 0 : 1 } : { yes: 0, no: 0 };
+          return isDecided(v) ? { yes: 1 } : { yes: 0 };
         }
         function updateCountsUIForId(id) {
           const c = getCountsFor(id);
           const gridEl = document.getElementById('counts-grid-' + id);
-          if (gridEl) gridEl.textContent = `✓ ${c.yes} · ✕ ${c.no}`;
+          if (gridEl) gridEl.textContent = `✓ ${c.yes}`;
           const resEl = document.getElementById('counts-res-' + id);
-          if (resEl) resEl.textContent = `✓ ${c.yes} · ✕ ${c.no}`;
-          if (lbRate.dataset.forId === id && lbCountsEl) lbCountsEl.textContent = `✓ ${c.yes} · ✕ ${c.no}`;
+          if (resEl) resEl.textContent = `✓ ${c.yes}`;
+          if (lbRate.dataset.forId === id && lbCountsEl) lbCountsEl.textContent = `✓ ${c.yes}`;
         }
         function updateCountsUIAll() { currentItems.forEach(p => updateCountsUIForId(p.id)); if (resultsOpen) renderResults(); }
 
@@ -168,7 +166,9 @@
           try {
             const ids = items.map(p => p.id);
             const data = await window.RemoteVotes.getCounts(ids);
-            remoteCounts = { ...remoteCounts, ...data };
+            // map {yes,no} -> {yes}
+            const mapped = {}; Object.entries(data).forEach(([id, v]) => { mapped[id] = { yes: v.yes || 0 }; });
+            remoteCounts = { ...remoteCounts, ...mapped };
             updateCountsUIAll();
           } catch {}
         }
@@ -176,14 +176,15 @@
           if (!window.RemoteVotes || initRemoteSubscription._done) return;
           initRemoteSubscription._done = true;
           window.RemoteVotes.subscribeCounts((data) => {
-            remoteCounts = { ...remoteCounts, ...data };
+            const mapped = {}; Object.entries(data).forEach(([id, v]) => { mapped[id] = { yes: (v && v.yes) || 0 }; });
+            remoteCounts = { ...remoteCounts, ...mapped };
             updateCountsUIAll();
           });
         }
 
         function setVote(id, value) {
-          const prev = votes[id] ?? null;
-          votes[id] = value; // 'yes' | 'no'
+          const prev = votes[id] ?? null; // 'yes' | null
+          votes[id] = value; // 'yes' | null
           saveVotes(votes);
           updateProgress();
           syncVoteUI(id);
@@ -194,24 +195,20 @@
         }
 
         function syncVoteUI(id) {
-          const name = 'vote-' + id;
           const selected = String(votes[id] ?? '');
-          document.querySelectorAll(`input[name="${CSS.escape(name)}"]`).forEach(inp => { inp.checked = (inp.value === selected); });
-          if (lbRate.dataset.forId === id) lbRate.querySelectorAll('input[type=radio]').forEach(inp => { inp.checked = (inp.value === selected); });
+          document.querySelectorAll(`input[name="vote-${CSS.escape(id)}"]`).forEach(inp => { inp.checked = (selected === 'yes'); });
+          if (lbRate.dataset.forId === id) lbRate.querySelectorAll('input[type=checkbox]').forEach(inp => { inp.checked = (selected === 'yes'); });
         }
 
         function buildRateControls(container, id) {
           container.innerHTML = '';
           container.dataset.forId = id;
           const name = 'vote-' + id;
-          const inpy = document.createElement('input'); inpy.type = 'radio'; inpy.name = name; inpy.id = name + '-modal-yes'; inpy.value = 'yes'; if (String(votes[id]) === 'yes') inpy.checked = true;
-          const laby = document.createElement('label'); laby.setAttribute('for', inpy.id); laby.textContent = '✓'; laby.title = 'Yes';
-          inpy.addEventListener('change', () => setVote(id, 'yes'));
-          container.appendChild(inpy); container.appendChild(laby);
-          const inpn = document.createElement('input'); inpn.type = 'radio'; inpn.name = name; inpn.id = name + '-modal-no'; inpn.value = 'no'; if (String(votes[id]) === 'no') inpn.checked = true;
-          const labn = document.createElement('label'); labn.setAttribute('for', inpn.id); labn.textContent = '✕'; labn.title = 'No';
-          inpn.addEventListener('change', () => setVote(id, 'no'));
-          container.appendChild(inpn); container.appendChild(labn);
+          // YES toggle (checkbox)
+          const inp = document.createElement('input'); inp.type = 'checkbox'; inp.name = name; inp.id = name + '-modal-yes'; inp.value = 'yes'; inp.checked = (String(votes[id]) === 'yes');
+          const lab = document.createElement('label'); lab.setAttribute('for', inp.id); lab.textContent = '✓'; lab.title = 'Yes';
+          inp.addEventListener('change', () => setVote(id, inp.checked ? 'yes' : null));
+          container.appendChild(inp); container.appendChild(lab);
           updateCountsUIForId(id);
         }
 
@@ -243,17 +240,15 @@
             const meta = document.createElement('div'); meta.className = 'meta';
             const id = document.createElement('div'); id.className = 'id'; id.textContent = p.id; meta.appendChild(id);
 
-            const rate = document.createElement('div'); rate.className = 'rate'; rate.setAttribute('role', 'radiogroup');
+            const rate = document.createElement('div'); rate.className = 'rate'; rate.setAttribute('role', 'group');
             const name = 'vote-' + p.id;
-            const inpy = document.createElement('input'); inpy.type = 'radio'; inpy.name = name; inpy.id = name + '-yes'; inpy.value = 'yes'; if (String(votes[p.id]) === 'yes') inpy.checked = true;
-            const laby = document.createElement('label'); laby.setAttribute('for', inpy.id); laby.textContent = '✓'; laby.title = 'Yes'; inpy.addEventListener('change', () => setVote(p.id, 'yes'));
-            rate.appendChild(inpy); rate.appendChild(laby);
-            const inpn = document.createElement('input'); inpn.type = 'radio'; inpn.name = name; inpn.id = name + '-no'; inpn.value = 'no'; if (String(votes[p.id]) === 'no') inpn.checked = true;
-            const labn = document.createElement('label'); labn.setAttribute('for', inpn.id); labn.textContent = '✕'; labn.title = 'No'; inpn.addEventListener('change', () => setVote(p.id, 'no'));
-            rate.appendChild(inpn); rate.appendChild(labn);
+            const inp = document.createElement('input'); inp.type = 'checkbox'; inp.name = name; inp.id = name + '-yes'; inp.value = 'yes'; inp.checked = (String(votes[p.id]) === 'yes');
+            const lab = document.createElement('label'); lab.setAttribute('for', inp.id); lab.textContent = '✓'; lab.title = 'Yes';
+            inp.addEventListener('change', () => setVote(p.id, inp.checked ? 'yes' : null));
+            rate.appendChild(inp); rate.appendChild(lab);
             meta.appendChild(rate);
 
-            const counts = document.createElement('div'); counts.className = 'counts muted'; counts.id = 'counts-grid-' + p.id; counts.textContent = '✓ 0 · ✕ 0'; meta.appendChild(counts);
+            const counts = document.createElement('div'); counts.className = 'counts muted'; counts.id = 'counts-grid-' + p.id; counts.textContent = '✓ 0'; meta.appendChild(counts);
 
             card.appendChild(meta);
             frag.appendChild(card);
@@ -266,9 +261,8 @@
         }
 
         function updateProgress() {
-          const total = photos.length;
-          const decided = Object.keys(votes).filter(id => isDecided(votes[id])).length;
-          progress.textContent = `${decided} decided of ${total}`;
+          const totalYes = Object.values(votes).filter(v => v === 'yes').length;
+          progress.textContent = `${totalYes} picked`;
         }
 
         function buildDecidedList() {
@@ -282,22 +276,20 @@
             .sort((a, b) => {
               const ay = a.counts.yes || 0, by = b.counts.yes || 0;
               if (by !== ay) return by - ay; // more YES first
-              const an = a.counts.no || 0, bn = b.counts.no || 0;
-              if (an !== bn) return an - bn; // fewer NO next
               return a.photo.filename.localeCompare(b.photo.filename);
             });
 
           resultsGrid.innerHTML = '';
-          resultsNote.textContent = decided.length ? `${decided.length} images decided. Yes first.` : 'No votes yet. Please vote with ✓ or ✕.';
+          resultsNote.textContent = decided.length ? `${decided.length} selected. Sorted by ✓ count.` : 'No selections yet. Tap ✓ on images you like.';
 
           const frag = document.createDocumentFragment();
-          for (const { photo: p, vote } of decided) {
+          for (const { photo: p } of decided) {
             const card = document.createElement('article'); card.className = 'card';
             const img = document.createElement('img'); img.src = p.url; img.alt = p.filename || p.id; img.loading = 'lazy'; img.decoding = 'async';
             img.addEventListener('click', () => { const idx = currentItems.findIndex(ci => ci.id === p.id); if (idx >= 0) openModal(idx); });
             const meta = document.createElement('div'); meta.className = 'meta';
-            const title = document.createElement('div'); title.className = 'id'; title.textContent = `${p.id} · ${isYes(vote) ? 'Yes' : 'No'}`; meta.appendChild(title);
-            const counts = document.createElement('div'); counts.className = 'counts muted'; counts.id = 'counts-res-' + p.id; counts.textContent = '✓ 0 · ✕ 0'; meta.appendChild(counts);
+            const title = document.createElement('div'); title.className = 'id'; title.textContent = p.id; meta.appendChild(title);
+            const counts = document.createElement('div'); counts.className = 'counts muted'; counts.id = 'counts-res-' + p.id; counts.textContent = '✓ 0'; meta.appendChild(counts);
             card.appendChild(img); card.appendChild(meta);
             frag.appendChild(card);
           }
