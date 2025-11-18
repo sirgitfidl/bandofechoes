@@ -91,7 +91,6 @@
     <div class="wrap">
       <div class="muted">Your votes are saved locally.</div>
       <div style="display:flex; gap:8px;">
-        <button id="resetBtn" class="btn" type="button">Reset</button>
         <button id="submitBtn" class="btn primary" type="button">Submit votes</button>
       </div>
     </div>
@@ -112,7 +111,6 @@
         const voteView = document.getElementById('voteView');
         const resultsView = document.getElementById('resultsView');
         const submitBtn = document.getElementById('submitBtn');
-        const resetBtn = document.getElementById('resetBtn');
         const progress = document.getElementById('progress');
         const resultsNote = document.getElementById('resultsNote');
 
@@ -316,7 +314,6 @@
         }
 
         submitBtn.addEventListener('click', showResults);
-        resetBtn.addEventListener('click', () => { votes = {}; saveVotes(votes); resultsOpen = false; render(photos); });
 
         // Initial render
         render(photos);
