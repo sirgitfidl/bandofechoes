@@ -304,6 +304,15 @@
           renderResults();
           voteView.classList.add('hidden');
           resultsView.classList.remove('hidden');
+          submitBtn.textContent = 'Back';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showAll() {
+          resultsOpen = false;
+          resultsView.classList.add('hidden');
+          voteView.classList.remove('hidden');
+          submitBtn.textContent = 'See selections';
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -371,7 +380,7 @@
       frag.appendChild(fig);
     }
     grid.appendChild(frag);
-  </script>
+  ${'</scr' + 'ipt>'}
 </body>
 </html>`;
           const blob = new Blob([html], { type: 'text/html' });
@@ -385,7 +394,7 @@
           setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
         }
 
-        submitBtn.addEventListener('click', showResults);
+        submitBtn.addEventListener('click', () => { if (resultsOpen) showAll(); else showResults(); });
         exportBtn.addEventListener('click', exportSelections);
 
         // Initial render
