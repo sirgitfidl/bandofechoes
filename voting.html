@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vote Photos — Band of Echoes</title>
+  <meta name="color-scheme" content="light dark" />
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    :root { --gap: 14px; }
+    body { margin: 0; }
+    header { border-bottom: 1px solid var(--border, #ccc); position: sticky; top: 0; backdrop-filter: blur(6px); background: color-mix(in srgb, Canvas 85%, transparent); z-index: 10; }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; max-width: 1100px; margin: 0 auto; }
+    header a { text-decoration: none; }
+    main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0 16px; }
+    .muted { opacity: .7; font-size: .95em; }
+    .grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .card { border: 1px solid var(--border, #ddd); border-radius: 8px; overflow: hidden; background: Canvas; box-shadow: 0 1px 2px color-mix(in srgb, #000 8%, transparent); display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 200px; object-fit: cover; display: block; background: #111; cursor: zoom-in; }
+    .meta { padding: 10px; display: grid; gap: 8px; }
+    .id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .look { display: none; }
+    .rate { display: flex; gap: 6px; align-items: center; }
+    .rate input { display: none; }
+    .rate label { cursor: pointer; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border, #bbb); font-size: 12px; }
+    .rate input:checked + label { background: #222; color: #fff; border-color: #222; }
+    .sticky-footer { position: sticky; bottom: 0; margin-top: 16px; background: color-mix(in srgb, Canvas 90%, transparent); backdrop-filter: blur(6px); border-top: 1px solid var(--border, #ccc); }
+    .sticky-footer .wrap { padding: 10px 16px; display: flex; gap: 10px; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto; }
+    .btn { padding: 8px 12px; border: 1px solid var(--border, #ccc); border-radius: 6px; background: ButtonFace; cursor: pointer; }
+    .btn.primary { background: #222; color: #fff; border-color: #222; }
+    .section-title { margin: 8px 0 14px; }
+    .results-note { margin: 10px 0 16px; }
+    .hidden { display: none !important; }
+    .lb { position: fixed; inset: 0; background: rgba(0,0,0,.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 32px 56px; }
+    .lb:not(.hidden) { display: flex; }
+    .lb .content { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 96vw; max-height: 92vh; }
+    .lb img { max-width: 96vw; max-height: calc(92vh - 120px); object-fit: contain; background: #000; border-radius: 8px; margin: 0 auto; }
+    .lb .lb-id { color: #fff; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; opacity: .9; text-align: center; }
+    .lb .lb-rate { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    .lb .lb-rate input { display: none; }
+    .lb .lb-rate label { cursor: pointer; padding: 8px 12px; border-radius: 6px; border: 1px solid #aaa; color: #fff; font-size: 16px; }
+    .lb .lb-rate input:checked + label { background: #fff; color: #000; border-color: #fff; }
+    .lb .lb-close { position: absolute; top: 12px; right: 14px; background: transparent; color: #fff; border: 0; font-size: 28px; cursor: pointer; }
+    .lb .lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.4); width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 22px; display: grid; place-items: center; }
+    .lb .lb-arrow.prev { left: 10px; }
+    .lb .lb-arrow.next { right: 10px; }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip">Skip to content</a>
+  <header>
+    <div class="wrap">
+      <div>
+        <strong>Band of Echoes</strong> · Photo voting
+      </div>
+      <nav>
+        <a href="./" class="muted">← Back to home</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <h1 class="section-title">Vote on photos</h1>
+    <p class="muted">Rate each image from 1 to 5. When you submit, your picks will be shown from highest to lowest.</p>
+
+    <div class="controls">
+      <label>
+        Show look:
+        <select id="lookFilter">
+          <option value="all">All</option>
+        </select>
+      </label>
+      <span class="muted" id="progress">0 rated</span>
+    </div>
+
+    <section id="voteView">
+      <div id="grid" class="grid" aria-live="polite"></div>
+    </section>
+
+    <section id="resultsView" class="hidden">
+      <h2 class="section-title">Results</h2>
+      <p class="muted results-note" id="resultsNote"></p>
+      <div id="resultsGrid" class="grid"></div>
+    </section>
+  </main>
+
+  <!-- Full-size lightbox -->
+  <div id="lightbox" class="lb hidden" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lb-close" id="lbClose" aria-label="Close">×</button>
+    <button class="lb-arrow prev" id="lbPrev" aria-label="Previous">‹</button>
+    <div class="content">
+      <img id="lbImg" alt="">
+      <div class="lb-rate" id="lbRate" role="radiogroup"></div>
+      <div class="lb-id" id="lbId"></div>
+    </div>
+    <button class="lb-arrow next" id="lbNext" aria-label="Next">›</button>
+  </div>
+
+  <div class="sticky-footer">
+    <div class="wrap">
+      <div class="muted">Your votes are saved locally.</div>
+      <div style="display:flex; gap:8px;">
+        <button id="resetBtn" class="btn" type="button">Reset</button>
+        <button id="submitBtn" class="btn primary" type="button">Submit votes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo data generated by scrape-smugmug.js -->
+  <script src="assets/js/data/bofe-photos.js" defer></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      (function() {
+        const LS_KEY = 'bofe-votes-v1';
+        const photos = (window.BOE_PHOTOS || []).slice();
+        const grid = document.getElementById('grid');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const voteView = document.getElementById('voteView');
+        const resultsView = document.getElementById('resultsView');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const lookFilter = document.getElementById('lookFilter');
+        const progress = document.getElementById('progress');
+        const resultsNote = document.getElementById('resultsNote');
+
+        // Lightbox elements
+        const lb = document.getElementById('lightbox');
+        const lbImg = document.getElementById('lbImg');
+        const lbId = document.getElementById('lbId');
+        const lbRate = document.getElementById('lbRate');
+        const lbClose = document.getElementById('lbClose');
+        const lbPrev = document.getElementById('lbPrev');
+        const lbNext = document.getElementById('lbNext');
+
+        let currentItems = [];
+        let currentIndex = -1;
+
+        const looks = Array.from(new Set(photos.map(p => p.look))).sort();
+        for (const look of looks) {
+          const opt = document.createElement('option');
+          opt.value = look; opt.textContent = look; lookFilter.appendChild(opt);
+        }
+
+        function loadVotes() {
+          try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+        }
+        function saveVotes(v) { localStorage.setItem(LS_KEY, JSON.stringify(v)); }
+
+        let votes = loadVotes();
+
+        function setVote(id, value) {
+          votes[id] = value;
+          saveVotes(votes);
+          updateProgress();
+          syncVoteUI(id);
+        }
+
+        function syncVoteUI(id) {
+          const name = 'score-' + id;
+          const selected = String(votes[id] || '');
+          document.querySelectorAll(`input[name="${CSS.escape(name)}"]`).forEach(inp => {
+            inp.checked = (inp.value === selected);
+          });
+          if (lbRate.dataset.forId === id) {
+            lbRate.querySelectorAll('input[type=radio]').forEach(inp => { inp.checked = (inp.value === selected); });
+          }
+        }
+
+        function buildRateControls(container, id) {
+          container.innerHTML = '';
+          container.dataset.forId = id;
+          for (let s = 1; s <= 5; s++) {
+            const name = 'score-' + id;
+            const inp = document.createElement('input');
+            inp.type = 'radio'; inp.name = name; inp.id = name + '-modal-' + s; inp.value = String(s);
+            if (String(votes[id]) === String(s)) inp.checked = true;
+            const lab = document.createElement('label'); lab.setAttribute('for', inp.id); lab.textContent = String(s);
+            inp.addEventListener('change', () => setVote(id, s));
+            container.appendChild(inp); container.appendChild(lab);
+          }
+        }
+
+        function openModal(idx) {
+          if (idx < 0 || idx >= currentItems.length) return;
+          currentIndex = idx;
+          const p = currentItems[idx];
+          lbImg.src = p.url; lbImg.alt = p.filename || p.id;
+          lbId.textContent = p.id;
+          buildRateControls(lbRate, p.id);
+          lb.classList.remove('hidden');
+        }
+
+        function closeModal() { lb.classList.add('hidden'); currentIndex = -1; }
+        function nav(delta) { if (currentIndex < 0) return; const next = currentIndex + delta; if (next >= 0 && next < currentItems.length) openModal(next); }
+        lbClose.addEventListener('click', closeModal);
+        lbPrev.addEventListener('click', () => nav(-1));
+        lbNext.addEventListener('click', () => nav(1));
+        document.addEventListener('keydown', (e) => { if (lb.classList.contains('hidden')) return; if (e.key === 'Escape') closeModal(); else if (e.key === 'ArrowLeft') nav(-1); else if (e.key === 'ArrowRight') nav(1); });
+
+        function render(items) {
+          currentItems = items.slice();
+          grid.innerHTML = '';
+          const frag = document.createDocumentFragment();
+          currentItems.forEach((p, i) => {
+            const card = document.createElement('article');
+            card.className = 'card';
+            const img = document.createElement('img');
+            img.loading = 'lazy'; img.decoding = 'async';
+            img.src = p.url; img.alt = p.filename || p.id;
+            img.addEventListener('click', () => openModal(i));
+            card.appendChild(img);
+
+            const meta = document.createElement('div'); meta.className = 'meta';
+            const id = document.createElement('div'); id.className = 'id'; id.textContent = p.id; meta.appendChild(id);
+            const rate = document.createElement('div'); rate.className = 'rate'; rate.setAttribute('role', 'radiogroup');
+            for (let s = 1; s <= 5; s++) {
+              const name = 'score-' + p.id;
+              const inp = document.createElement('input');
+              inp.type = 'radio'; inp.name = name; inp.id = name + '-' + s; inp.value = String(s);
+              if (String(votes[p.id]) === String(s)) inp.checked = true;
+              const lab = document.createElement('label'); lab.setAttribute('for', inp.id); lab.textContent = String(s);
+              inp.addEventListener('change', () => setVote(p.id, s));
+              rate.appendChild(inp); rate.appendChild(lab);
+            }
+            meta.appendChild(rate);
+            card.appendChild(meta);
+            frag.appendChild(card);
+          });
+          grid.appendChild(frag);
+          updateProgress();
+        }
+
+        function updateProgress() {
+          const total = photos.length;
+          const rated = Object.keys(votes).filter(id => votes[id] >= 1 && votes[id] <= 5).length;
+          progress.textContent = `${rated} rated of ${total}`;
+        }
+
+        function applyFilter() {
+          const sel = lookFilter.value;
+          const items = sel === 'all' ? photos : photos.filter(p => p.look === sel);
+          render(items);
+        }
+
+        function showResults() {
+          const scored = photos
+            .map(p => ({ photo: p, score: votes[p.id] }))
+            .filter(x => typeof x.score === 'number')
+            .sort((a, b) => (b.score - a.score) || a.photo.filename.localeCompare(b.photo.filename));
+
+          resultsGrid.innerHTML = '';
+          resultsNote.textContent = scored.length ? `${scored.length} images scored. Highest to lowest.` : 'No scores yet. Please rate some images.';
+
+          const frag = document.createDocumentFragment();
+          for (const { photo: p, score } of scored) {
+            const card = document.createElement('article'); card.className = 'card';
+            const img = document.createElement('img'); img.src = p.url; img.alt = p.filename || p.id; img.loading = 'lazy'; img.decoding = 'async';
+            img.addEventListener('click', () => { const idx = currentItems.findIndex(ci => ci.id === p.id); if (idx >= 0) openModal(idx); });
+            const meta = document.createElement('div'); meta.className = 'meta';
+            const title = document.createElement('div'); title.className = 'id'; title.textContent = `${p.id} · Score: ${score}`; meta.appendChild(title);
+            card.appendChild(img); card.appendChild(meta);
+            frag.appendChild(card);
+          }
+          resultsGrid.appendChild(frag);
+
+          voteView.classList.add('hidden');
+          resultsView.classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        submitBtn.addEventListener('click', showResults);
+        resetBtn.addEventListener('click', () => { votes = {}; saveVotes(votes); applyFilter(); });
+        lookFilter.addEventListener('change', applyFilter);
+
+        // Initial render
+        applyFilter();
+      })();
+    });
+  </script>
+</body>
+</html>
