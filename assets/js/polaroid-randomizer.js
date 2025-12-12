@@ -1,6 +1,6 @@
 // Randomly assign polaroid images to collage positions on each page load.
 // Assumptions:
-// - Image files live in assets/images/band_photos/ named polaroid_1.jpg .. polaroid_9.jpg
+// - Image files live in assets/images/band_photos/polaroids/ named polaroid_01.png .. polaroid_09.png
 // - Collage markup contains <figure class="polaroid"> elements each with
 //   .face.front img and .face.back img.
 // - All currently point to a placeholder (polaroid_1.jpg) that we replace.
@@ -20,8 +20,11 @@
         const totalNeeded = figures.length;
 
         // Collect available image names (update here if you add/remove files)
-        const baseDir = 'assets/images/band_photos/';
-        const available = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => ({ n, path: `${baseDir}polaroid_${n}.jpg` }));
+        const baseDir = 'assets/images/band_photos/polaroids/';
+        const available = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => {
+            const num = String(n).padStart(2, '0');
+            return { n, path: `${baseDir}polaroid_${num}.png` };
+        });
 
         // Shuffle and slice (if fewer figures than images)
         const chosen = shuffle(available.slice()).slice(0, totalNeeded);

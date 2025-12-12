@@ -392,7 +392,34 @@
     assignPuzzleBacks();
 
     // lightbox
-    const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lightboxImg'); const lbClose = document.querySelector('.lightbox-close'), lbPrev = document.querySelector('.lightbox-arrow.prev'), lbNext = document.querySelector('.lightbox-arrow.next'); const cards = [...document.querySelectorAll('.polaroid')]; const gallery = [...document.querySelectorAll('.polaroid .face.front img')]; let current = -1, lastFocus = null; function openAt(i) { current = (i + gallery.length) % gallery.length; if (!lb || !lbImg) return; lbImg.src = gallery[current]?.src || ''; lb.classList.add('open'); lastFocus = document.activeElement; document.body.style.overflow = 'hidden'; (lbClose || lbImg)?.focus?.(); } function close() { if (!lb || !lbImg) return; lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; (lastFocus || document.body)?.focus?.(); } function next(n) { if (!gallery.length) return; current = (current + n + gallery.length) % gallery.length; if (lbImg) lbImg.src = gallery[current]?.src || ''; }
+    const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lightboxImg'); const lbClose = document.querySelector('.lightbox-close'), lbPrev = document.querySelector('.lightbox-arrow.prev'), lbNext = document.querySelector('.lightbox-arrow.next'); const cards = [...document.querySelectorAll('.polaroid')]; const gallery = [...document.querySelectorAll('.polaroid .face.front img')]; let current = -1, lastFocus = null;
+    function toFullSrc(src) {
+        try {
+            if (!src) return '';
+            // Normalize for potential different paths and extensions
+            // Cases supported:
+            //  - assets/images/band_photos/polaroids/polaroid_03.png|jpg
+            //  - assets/images/band_photos/polaroid_3.jpg (legacy)
+            //  - any path containing "polaroid_XX"
+            const m = src.match(/polaroid[_-]?0?(\d{1,2})\.(png|jpg|jpeg|webp)$/i);
+            if (m) {
+                const num = m[1].padStart(2, '0');
+                return `assets/images/band_photos/fullRes/full_${num}.png`;
+            }
+            // Also try extracting by folder naming
+            const m2 = src.match(/\/polaroids\/polaroid[_-]?0?(\d{1,2})\./i);
+            if (m2) {
+                const num = m2[1].padStart(2, '0');
+                return `assets/images/band_photos/fullRes/full_${num}.png`;
+            }
+            return src; // fallback
+        } catch (_) {
+            return src || '';
+        }
+    }
+    function openAt(i) { current = (i + gallery.length) % gallery.length; if (!lb || !lbImg) return; const src = gallery[current]?.src || ''; lbImg.src = toFullSrc(src); lb.classList.add('open'); lastFocus = document.activeElement; document.body.style.overflow = 'hidden'; (lbClose || lbImg)?.focus?.(); }
+    function close() { if (!lb || !lbImg) return; lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; (lastFocus || document.body)?.focus?.(); }
+    function next(n) { if (!gallery.length) return; current = (current + n + gallery.length) % gallery.length; if (lbImg) { const src = gallery[current]?.src || ''; lbImg.src = toFullSrc(src); } }
     cards.forEach((card, i) => { card.addEventListener('click', ev => { if (ev.target.closest('.flipper, .rotor')) return; if (card.dataset.flipped === '1') return; if (card.dataset.didDrag) return; if (card.classList.contains('dragging') || card.classList.contains('rotating')) return; openAt(i); }); card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && card.dataset.flipped !== '1') { e.preventDefault(); openAt(i); } }); }); lb && lb.addEventListener('click', e => { if (e.target === lb) close(); }); lbClose && lbClose.addEventListener('click', close); lbPrev && lbPrev.addEventListener('click', () => next(-1)); lbNext && lbNext.addEventListener('click', () => next(1));
 
     // solver
