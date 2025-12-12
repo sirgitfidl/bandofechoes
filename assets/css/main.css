@@ -368,7 +368,7 @@ header h1,
 header h1 a,
 header .site-title,
 header .logo {
-    font-family: 'Maragsa Display', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-family: 'Optimus Princeps', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     font-weight: 400;
     letter-spacing: .02em;
 }
@@ -388,8 +388,8 @@ header .logo {
 }
 
 @font-face {
-    font-family: 'Maragsa Display';
-    src: url('../fonts/MaragsaDisplay-GO6PD.otf') format('opentype');
+    font-family: 'Optimus Princeps';
+    src: url('../fonts/OptimusPrinceps.ttf') format('opentype');
     font-weight: 400;
     font-style: normal;
     font-display: swap
