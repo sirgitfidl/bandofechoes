@@ -28,7 +28,13 @@
     const ROT_DIST = { uprightBias: 0.78, uprightSpread: 55, invertedSpread: 26 };
     const GROUP_ROTOR_OFFSET = 12; // px inward from the top-right corner
     const wrap180full = a => ((a + 180) % 360 + 360) % 360 - 180;
-    function biasedRotation() { const tri = () => (Math.random() + Math.random()) / 2; if (Math.random() < ROT_DIST.uprightBias) { const centered = (tri() * 2 - 1); return wrap180full(centered * ROT_DIST.uprightSpread); } else { const sign = Math.random() < 0.5 ? 1 : -1; const offset = (tri() * 2 - 1) * ROT_DIST.invertedSpread; return wrap180full(sign * 180 + offset); } }
+    function biasedRotation() {
+        // Limit rotation to between -80 and +80 degrees
+        const tri = () => (Math.random() + Math.random()) / 2;
+        const centered = (tri() * 2 - 1);
+        const deg = centered * 80; // max spread 80
+        return Math.max(-80, Math.min(80, deg));
+    }
     function preSeedRotations() { const touched = []; document.querySelectorAll('.polaroid').forEach(el => { if (el.dataset.seededRot) return; const prev = el.style.transition; el.style.transition = 'none'; const r = biasedRotation(); el.style.setProperty('--rot', r + 'deg'); el.dataset.seededRot = '1'; el.dataset._baseRot = r; touched.push([el, prev]); }); if (touched.length) { void document.body.offsetHeight; } touched.forEach(([el, prev]) => { el.style.transition = prev; }); }
 
     // Interaction guards
@@ -37,8 +43,45 @@
 
     const collage = document.querySelector('.collage'); let zCounter = 10000;
     function scatter() {
+        // Helper to compute overlap area fraction; uses current bounding boxes (after transform)
+        const overlapFrac = (elA, elB) => {
+            const a = elA.getBoundingClientRect();
+            const b = elB.getBoundingClientRect();
+            const left = Math.max(a.left, b.left);
+            const top = Math.max(a.top, b.top);
+            const right = Math.min(a.right, b.right);
+            const bottom = Math.min(a.bottom, b.bottom);
+            const w = Math.max(0, right - left);
+            const h = Math.max(0, bottom - top);
+            const area = w * h;
+            const areaB = (b.right - b.left) * (b.bottom - b.top);
+            if (areaB <= 0) return 0;
+            return area / areaB; // fraction of B covered by A
+        };
         if (!collage) return; const items = collage.querySelectorAll('.polaroid'); const vw = window.innerWidth || document.documentElement.clientWidth; const mobileMode = vw <= 560; let repW = 0, repH = 0; if (mobileMode) { const first = items[0]; if (first) { repW = first.offsetWidth || 200; repH = repW * 1.22; const targetH = Math.round(repH * 2.15); collage.style.position = 'relative'; collage.style.height = targetH + 'px'; } } else { if (collage.style.height) { collage.style.height = ''; collage.style.position = ''; } }
-        items.forEach((el, i) => { const w = el.offsetWidth || repW || 300; const randomRot = biasedRotation; if (mobileMode) { if (el.style.position !== 'absolute') { el.style.position = 'absolute'; el.style.top = '0'; el.style.left = '0'; } const h = repH || (w * 1.22); const containerW = collage.clientWidth || (w * 3); const containerH = parseFloat(collage.style.height) || (h * 2.1); const cx = containerW / 2; const cy = containerH / 2; const spreadX = w * 1.15; const spreadY = h * 0.55; const tri = () => (Math.random() + Math.random() - 1); const rxLocal = tri() * spreadX; const ryLocal = tri() * spreadY; const rx = cx - w / 2 + rxLocal; const ry = cy - h / 2 + ryLocal; if (!el.dataset.seededRot) { const rot = randomRot(); el.style.setProperty('--rot', rot + 'deg'); el.dataset.seededRot = '1'; el.dataset._baseRot = rot; } el.style.setProperty('--tx', rx + 'px'); el.style.setProperty('--ty', ry + 'px'); } else { const maxX = Math.max(40, Math.min(220, w * 0.55)); const maxY = Math.max(14, Math.min(80, w * 0.20)); let rx = (Math.random() * 2 - 1) * maxX; if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4); if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1)); const ry = Math.pow(Math.random(), 1.2) * maxY; if (!el.dataset.seededRot) { const rot = randomRot(); el.style.setProperty('--rot', rot + 'deg'); el.dataset.seededRot = '1'; el.dataset._baseRot = rot; } el.style.setProperty('--tx', rx + 'px'); el.style.setProperty('--ty', ry + 'px'); if (el.style.position === 'absolute' && !mobileMode) { el.style.position = ''; el.style.top = ''; el.style.left = ''; } } if (!el.style.zIndex) el.style.zIndex = String(10 + i); });
+        items.forEach((el, i) => { const w = el.offsetWidth || repW || 300; const randomRot = biasedRotation; if (mobileMode) { if (el.style.position !== 'absolute') { el.style.position = 'absolute'; el.style.top = '0'; el.style.left = '0'; } const h = repH || (w * 1.22); const containerW = collage.clientWidth || (w * 3); const containerH = parseFloat(collage.style.height) || (h * 2.1); const cx = containerW / 2; const cy = containerH / 2; const spreadX = w * 1.15; const spreadY = h * 0.55; const tri = () => (Math.random() + Math.random() - 1); const rxLocal = tri() * spreadX; const ryLocal = tri() * spreadY; const rx = cx - w / 2 + rxLocal; const ry = cy - h / 2 + ryLocal; if (!el.dataset.seededRot) { const rot = randomRot(); el.style.setProperty('--rot', rot + 'deg'); el.dataset.seededRot = '1'; el.dataset._baseRot = rot; } el.style.setProperty('--tx', rx + 'px'); el.style.setProperty('--ty', ry + 'px'); // Avoid covering more than 50% of another polaroid; jitter if needed
+                let attempts = 0;
+                const prevs = Array.from(items).slice(0, i);
+                while (attempts < 40 && prevs.some(p => overlapFrac(el, p) > 0.5)) {
+                    attempts++;
+                    const jx = (Math.random() * 2 - 1) * (w * 0.2);
+                    const jy = (Math.random() * 2 - 1) * (w * 0.2);
+                    const nx = rx + jx;
+                    const ny = ry + jy;
+                    el.style.setProperty('--tx', nx + 'px');
+                    el.style.setProperty('--ty', ny + 'px');
+                } } else { const maxX = Math.max(40, Math.min(220, w * 0.55)); const maxY = Math.max(14, Math.min(80, w * 0.20)); let rx = (Math.random() * 2 - 1) * maxX; if ((i % 5) === 4 && rx > 0) rx = Math.min(rx, maxX * 0.4); if (i >= 5) rx = Math.max(-maxX * 1.1, Math.min(maxX * 1.1, rx * 1.1)); const ry = Math.pow(Math.random(), 1.2) * maxY; if (!el.dataset.seededRot) { const rot = randomRot(); el.style.setProperty('--rot', rot + 'deg'); el.dataset.seededRot = '1'; el.dataset._baseRot = rot; } el.style.setProperty('--tx', rx + 'px'); el.style.setProperty('--ty', ry + 'px'); // Avoid covering more than 50% of another polaroid; jitter if needed
+                let attempts = 0;
+                const prevs = Array.from(items).slice(0, i);
+                while (attempts < 40 && prevs.some(p => overlapFrac(el, p) > 0.5)) {
+                    attempts++;
+                    const jx = (Math.random() * 2 - 1) * (w * 0.35);
+                    const jy = (Math.random() * 2 - 1) * (w * 0.18);
+                    const nx = rx + jx;
+                    const ny = ry + jy;
+                    el.style.setProperty('--tx', nx + 'px');
+                    el.style.setProperty('--ty', ny + 'px');
+                } if (el.style.position === 'absolute' && !mobileMode) { el.style.position = ''; el.style.top = ''; el.style.left = ''; } } if (!el.style.zIndex) el.style.zIndex = String(10 + i); });
     }
 
     // Grouping & snapping + puzzle state
