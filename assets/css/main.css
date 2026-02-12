@@ -368,7 +368,7 @@ header h1,
 header h1 a,
 header .site-title,
 header .logo {
-    font-family: 'Optimus Princeps', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-family: 'Dark Roast', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     font-weight: 400;
     letter-spacing: .02em;
 }
@@ -388,8 +388,8 @@ header .logo {
 }
 
 @font-face {
-    font-family: 'Optimus Princeps';
-    src: url('../fonts/OptimusPrinceps.ttf') format('opentype');
+    font-family: 'Dark Roast';
+    src: url('../fonts/dark\ roast.ttf') format('opentype');
     font-weight: 400;
     font-style: normal;
     font-display: swap
