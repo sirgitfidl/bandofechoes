@@ -393,7 +393,7 @@ header .logo {
     src: url('../fonts/dark\ roast.ttf') format('opentype');
     font-weight: 400;
     font-style: normal;
-    font-display: swap
+    font-display: block;
 }
 
 /* Global focus & skip */
