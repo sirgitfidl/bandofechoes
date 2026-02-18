@@ -517,7 +517,37 @@
             zCounter++; el.style.zIndex = String(zCounter);
         });
     });
-    preSeedRotations(); scatter(); let __lastScatterMode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop'; function responsiveRescatter() { const mode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop'; if (mode === __lastScatterMode) return; document.querySelectorAll('.polaroid').forEach(el => { el.style.setProperty('--ux', '0px'); el.style.setProperty('--uy', '0px'); }); scatter(); __lastScatterMode = mode; }
+    preSeedRotations();
+
+    // Animate scatter on initial page load.
+    // If scatter runs before the first paint (common with deferred scripts), the user never
+    // sees the transition from the initial grid layout into the scattered layout.
+    const __prefersReducedMotion = (() => {
+        try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+        catch (_) { return false; }
+    })();
+
+    let __lastScatterMode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop';
+    if (__prefersReducedMotion) {
+        scatter();
+    } else {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                scatter();
+            });
+        });
+    }
+
+    function responsiveRescatter() {
+        const mode = (window.innerWidth || document.documentElement.clientWidth) <= 560 ? 'mobile' : 'desktop';
+        if (mode === __lastScatterMode) return;
+        document.querySelectorAll('.polaroid').forEach(el => {
+            el.style.setProperty('--ux', '0px');
+            el.style.setProperty('--uy', '0px');
+        });
+        scatter();
+        __lastScatterMode = mode;
+    }
     let __rszTimer = null; window.addEventListener('resize', () => { if (__rszTimer) clearTimeout(__rszTimer); __rszTimer = setTimeout(() => { responsiveRescatter(); placeAllGroupRotors(); }, 140); });
 
     // expose bits needed across modules
