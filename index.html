@@ -4,10 +4,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Band of Echoes</title>
-  <meta name="description"
-    content="Acoustic duo reimagining Tool, Nine Inch Nails, Alice In Chains, Soundgarden — cello, guitar, dual vocals." />
+  <title>Band of Echoes | Acoustic Covers (Tool, NIN, Metallica)</title>
+  <meta name="description" content="Band of Echoes is an acoustic duo creating dark, dynamic acoustic covers—cello + acoustic guitar, dual vocals. Tool, Nine Inch Nails, Metallica, Alice In Chains, Soundgarden, and more." />
   <meta name="color-scheme" content="light dark" />
+
+  <link rel="canonical" href="https://bandofechoes.com/" />
 
   <!-- Favicon -->
   <link rel="icon" href="favicon.ico" sizes="any">
@@ -19,8 +20,10 @@
     content="Acoustic duo reimagining Tool, NIN, AIC, Soundgarden — cello, guitar, dual vocals." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/images/og.jpg" />
-  <meta property="og:url" content="https://yourdomain.com" />
+  <meta property="og:url" content="https://bandofechoes.com/" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Band of Echoes" />
+  <meta name="twitter:description" content="Acoustic covers with cello + acoustic guitar, dual vocals. Tool, Nine Inch Nails, Metallica, Alice In Chains, Soundgarden, and more." />
   <link rel="preconnect" href="https://www.youtube.com">
   <link rel="preconnect" href="https://i.ytimg.com">
 
@@ -76,11 +79,9 @@
     <section id="about" class="section cols" data-testid="section-about">
       <div class="card pad">
 
-        <p class="text-justify">Band of Echoes is an acoustic duo reimagining songs by Tool, Nine Inch Nails, Alice In
-          Chains, Soundgarden,
-          and more. Featuring the intricate interplay of cello and guitar, layered with intertwined male and female
-          vocals, they transform heavy rock into raw, emotional acoustic arrangements. Their stripped-down sound is
-          dark, dynamic, and deeply immersive.</p>
+        <p class="text-justify">Band of Echoes is an acoustic duo creating dynamic acoustic covers — reimagining songs by Tool, Nine Inch Nails, Alice In
+          Chains, Soundgarden, Metallica, and more. Featuring the intricate interplay of cello and acoustic guitar, layered with intertwined male and female
+          vocals, they transform heavy rock into raw, emotional acoustic arrangements.</p>
         <!--<p class="quote text-justify" id="quote">“World‑class musicians. Duo sounds like a band.” — Name, Outlet</p>-->
       </div>
     </section>
@@ -238,13 +239,44 @@
   <script type="application/ld+json" id="schema">
   {
     "@context": "https://schema.org",
-    "@type": "MusicGroup",
-    "name": "Band of Echoes",
-    "url": "https://yourdomain.com/",
-    "sameAs": ["https://youtube.com/@BandOfEchoes", "https://patreon.com/bandofechoes"],
-    "member": [
-      {"@type":"Person","name":"Eric"},
-      {"@type":"Person","name":"Kathryn"}
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://bandofechoes.com/#website",
+        "url": "https://bandofechoes.com/",
+        "name": "Band of Echoes"
+      },
+      {
+        "@type": "MusicGroup",
+        "@id": "https://bandofechoes.com/#musicgroup",
+        "name": "Band of Echoes",
+        "url": "https://bandofechoes.com/",
+        "description": "Acoustic duo creating dark, dynamic acoustic covers with cello + acoustic guitar and dual vocals.",
+        "genre": ["Acoustic", "Rock", "Alternative rock"],
+        "keywords": [
+          "acoustic covers",
+          "acoustic guitar covers",
+          "cello covers",
+          "acoustic guitar and cello",
+          "Tool cover",
+          "Nine Inch Nails cover",
+          "Metallica cover",
+          "Alice In Chains cover",
+          "Soundgarden cover",
+          "System of a Down cover",
+          "A Perfect Circle cover",
+          "Radiohead cover",
+          "Failure cover"
+        ],
+        "sameAs": [
+          "https://youtube.com/@BandOfEchoes",
+          "https://www.patreon.com/bandofechoes"
+        ],
+        "member": [
+          {"@type":"Person","name":"Eric"},
+          {"@type":"Person","name":"Kathryn"}
+        ]
+      }
     ]
   }
   </script>
