@@ -11,9 +11,26 @@
     "devDependencies": {
         "@playwright/test": "^1.47.2",
         "http-server": "^14.1.1",
-        "playwright": "^1.56.1"
+        "playwright": "^1.58.2"
     },
     "dependencies": {
         "puppeteer": "^24.30.0"
-    }
+    },
+    "description": "Band of Echoes — local dev",
+    "main": "index.js",
+    "directories": {
+        "test": "tests"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sirgitfidl/bandofechoes.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "bugs": {
+        "url": "https://github.com/sirgitfidl/bandofechoes/issues"
+    },
+    "homepage": "https://github.com/sirgitfidl/bandofechoes#readme"
 }

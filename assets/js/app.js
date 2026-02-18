@@ -2,6 +2,7 @@
 const CONFIG = {
   featuredVideoId: 'qqMLXwzeRE0', // updated hero video
   youtubeHandleUrl: 'https://youtube.com/@BandOfEchoes',
+  spotifyUrl: 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS',
   patreonUrl: 'https://patreon.com/bandofechoes'
 };
 
@@ -40,6 +41,7 @@ const debugVals = () => { };
 
   // footer links
   const yt = document.getElementById('ytFooter'); if (yt) yt.href = CONFIG.youtubeHandleUrl;
+  const sp = document.getElementById('spFooter'); if (sp) sp.href = CONFIG.spotifyUrl;
   const pt = document.getElementById('ptFooter'); if (pt) pt.href = CONFIG.patreonUrl;
 
   // hamburger menu wiring (restore)
