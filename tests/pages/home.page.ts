@@ -100,7 +100,7 @@ export class MainPage {
 
     async goto() {
         await this.page.goto('/');
-        await expect(this.brandTitle).toHaveText(/Band of Echoes/i);
+        await expect(this.brandTitle).toHaveText(/BAND\s+OF\s+ECHOES/i);
     }
 
     // --- Nav helpers ---
