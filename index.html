@@ -7,8 +7,10 @@
   <title>Band of Echoes | Acoustic Covers (Tool, NIN, Metallica)</title>
   <meta name="description" content="Band of Echoes is an acoustic duo creating dark, dynamic acoustic covers—cello + acoustic guitar, dual vocals. Tool, Nine Inch Nails, Metallica, Alice In Chains, Soundgarden, and more." />
   <meta name="color-scheme" content="light dark" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
 
   <link rel="canonical" href="https://bandofechoes.com/" />
+  <link rel="me" href="https://youtube.com/@BandOfEchoes" />
 
   <!-- Favicon -->
   <link rel="icon" href="favicon.ico" sizes="any">
@@ -18,12 +20,66 @@
   <meta property="og:title" content="Band of Echoes" />
   <meta property="og:description"
     content="Acoustic duo reimagining Tool, NIN, AIC, Soundgarden — cello, guitar, dual vocals." />
+  <meta property="og:site_name" content="Band of Echoes" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="/assets/images/og.jpg" />
+  <meta property="og:image" content="https://bandofechoes.com/assets/images/og.jpg" />
+  <meta property="og:image:alt" content="Band of Echoes" />
   <meta property="og:url" content="https://bandofechoes.com/" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Band of Echoes" />
   <meta name="twitter:description" content="Acoustic covers with cello + acoustic guitar, dual vocals. Tool, Nine Inch Nails, Metallica, Alice In Chains, Soundgarden, and more." />
+  <meta name="twitter:image" content="https://bandofechoes.com/assets/images/og.jpg" />
+
+  <!-- Structured data: brand + featured YouTube video -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://bandofechoes.com/#org",
+          "name": "Band of Echoes",
+          "url": "https://bandofechoes.com/",
+          "sameAs": [
+            "https://youtube.com/@BandOfEchoes",
+            "https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS",
+            "https://www.patreon.com/bandofechoes"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://bandofechoes.com/#website",
+          "url": "https://bandofechoes.com/",
+          "name": "Band of Echoes",
+          "publisher": { "@id": "https://bandofechoes.com/#org" }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://bandofechoes.com/#webpage",
+          "url": "https://bandofechoes.com/",
+          "name": "Band of Echoes",
+          "isPartOf": { "@id": "https://bandofechoes.com/#website" },
+          "about": { "@id": "https://bandofechoes.com/#org" },
+          "primaryImageOfPage": {
+            "@type": "ImageObject",
+            "url": "https://bandofechoes.com/assets/images/og.jpg"
+          }
+        },
+        {
+          "@type": "VideoObject",
+          "@id": "https://www.youtube.com/watch?v=yIyU3hoZU0g",
+          "name": "Band of Echoes — Featured Video",
+          "description": "Band of Echoes — featured YouTube video.",
+          "thumbnailUrl": ["https://i.ytimg.com/vi/yIyU3hoZU0g/maxresdefault.jpg"],
+          "embedUrl": "https://www.youtube.com/embed/yIyU3hoZU0g",
+          "contentUrl": "https://youtu.be/yIyU3hoZU0g",
+          "publisher": { "@id": "https://bandofechoes.com/#org" },
+          "isPartOf": { "@id": "https://bandofechoes.com/#webpage" },
+          "keywords": "Band of Echoes, acoustic covers, cello, acoustic guitar, dual vocals, Tool, Nine Inch Nails, Metallica, Alice In Chains, Soundgarden"
+        }
+      ]
+    }
+  </script>
   <link rel="preconnect" href="https://www.youtube.com">
   <link rel="preconnect" href="https://i.ytimg.com">
 

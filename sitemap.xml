@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://bandofechoes.com/</loc>
-  </url>
-  <url>
-    <loc>https://bandofechoes.com/watch/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/yIyU3hoZU0g/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>Band of Echoes — Featured Video</video:title>
+      <video:description>Acoustic duo reimagining Tool, NIN, AIC, Soundgarden — cello, guitar, dual vocals.</video:description>
+      <video:player_loc allow_embed="yes">https://www.youtube.com/embed/yIyU3hoZU0g</video:player_loc>
+    </video:video>
   </url>
 </urlset>
