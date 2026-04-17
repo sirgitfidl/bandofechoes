@@ -256,6 +256,21 @@
             rel="noopener" data-testid="cta-subscribe">Subscribe on YouTube</a>
         </div>
 
+        <div class="yt-playlist" data-testid="yt-playlist" data-playlist-id="PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" data-playlist-url="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0">
+          <div class="player yt-playlist-stage" id="ytPlaylistStage">
+            <a class="poster" id="ytPlaylistPoster" href="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" target="_blank" rel="noopener" aria-label="Open the Band of Echoes playlist on YouTube" data-testid="yt-playlist-poster">
+              <img src="assets/images/og.jpg" alt="Band of Echoes — YouTube playlist">
+              <div class="play-btn" aria-hidden="true"><span class="triangle"></span></div>
+            </a>
+            <div id="ytPlaylistPlayer" class="yt-playlist-player" hidden></div>
+          </div>
+          <div class="yt-playlist-controls" aria-label="Playlist controls">
+            <button class="btn" id="ytPlaylistPrev" type="button" disabled aria-disabled="true" data-testid="yt-playlist-prev">Previous</button>
+            <button class="btn" id="ytPlaylistNext" type="button" disabled aria-disabled="true" data-testid="yt-playlist-next">Next</button>
+            <a class="btn" id="ytPlaylistOpen" href="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" target="_blank" rel="noopener" data-testid="yt-playlist-open">View playlist</a>
+          </div>
+        </div>
+
         <div class="spotify-embed" data-testid="spotify-embed" aria-label="Spotify player">
           <iframe
             title="Band of Echoes on Spotify"
@@ -357,6 +372,7 @@
   <script src="assets/js/data/quotes.js" defer></script>
   <script src="assets/js/mixer-modal.js" defer></script>
   <script src="assets/js/orientation-guard.js" defer></script>
+  <script src="assets/js/youtube-playlist-carousel.js" defer></script>
   <script src="assets/js/data/witness-urls.js" defer></script>
   <script src="assets/js/data/solve-phrases.js" defer></script>
   <script src="assets/js/polaroid-randomizer.js" defer></script>

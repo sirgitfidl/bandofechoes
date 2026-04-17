@@ -416,6 +416,35 @@ header .logo {
     margin-top: 32px;
 }
 
+/* YouTube playlist carousel (Support section) */
+.yt-playlist {
+    margin-top: 18px;
+}
+
+.yt-playlist-stage {
+    aspect-ratio: 16/9;
+    width: 100%;
+}
+
+.yt-playlist-player {
+    position: absolute;
+    inset: 0;
+}
+
+.yt-playlist-player iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: 0;
+    display: block;
+}
+
+.yt-playlist-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
 .spotify-embed iframe {
     display: block;
     width: 100%;
