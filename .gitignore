@@ -3,3 +3,6 @@ playwright-report/
 blob-report/
 .test-results/
 test-results/
+
+# Do not commit API keys
+assets/js/data/youtube-api.private.js

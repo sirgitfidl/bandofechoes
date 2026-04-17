@@ -31,7 +31,7 @@
   <meta name="twitter:image" content="https://bandofechoes.com/assets/images/og.jpg" />
 
   <!-- Structured data: brand + featured YouTube video -->
-  <script type="application/ld+json">
+  <script type="application/ld+json" id="schema-featured-video">
     {
       "@context": "https://schema.org",
       "@graph": [
@@ -67,12 +67,12 @@
         },
         {
           "@type": "VideoObject",
-          "@id": "https://www.youtube.com/watch?v=SlaSbwxG46Y",
+          "@id": "https://www.youtube.com/watch?v=__BOE_FEATURED_VIDEO_ID__",
           "name": "Band of Echoes — Featured Video",
           "description": "Band of Echoes — featured YouTube video.",
-          "thumbnailUrl": ["https://i.ytimg.com/vi/SlaSbwxG46Y/maxresdefault.jpg"],
-          "embedUrl": "https://www.youtube.com/embed/SlaSbwxG46Y",
-          "contentUrl": "https://youtu.be/SlaSbwxG46Y",
+          "thumbnailUrl": ["https://i.ytimg.com/vi/__BOE_FEATURED_VIDEO_ID__/maxresdefault.jpg"],
+          "embedUrl": "https://www.youtube.com/embed/__BOE_FEATURED_VIDEO_ID__",
+          "contentUrl": "https://youtu.be/__BOE_FEATURED_VIDEO_ID__",
           "publisher": { "@id": "https://bandofechoes.com/#org" },
           "isPartOf": { "@id": "https://bandofechoes.com/#webpage" },
           "keywords": "Band of Echoes, acoustic covers, cello, acoustic guitar, dual vocals, Tool, Nine Inch Nails, Metallica, Alice In Chains, Soundgarden"
@@ -124,10 +124,10 @@
         <div class="icon">🔄</div>
         <p>Please rotate your device<br>Use portrait orientation</p>
       </div>
-      <div class="player" id="playerWrap" data-video="SlaSbwxG46Y" data-testid="hero-player">
-        <a class="poster" id="poster" href="https://youtu.be/SlaSbwxG46Y" target="_blank" rel="noopener"
+      <div class="player" id="playerWrap" data-video="__BOE_FEATURED_VIDEO_ID__" data-testid="hero-player">
+        <a class="poster" id="poster" href="https://youtu.be/__BOE_FEATURED_VIDEO_ID__" target="_blank" rel="noopener"
           data-testid="hero-poster">
-          <img src="https://i.ytimg.com/vi/SlaSbwxG46Y/maxresdefault.jpg" alt="Band of Echoes — featured video">
+          <img src="https://i.ytimg.com/vi/__BOE_FEATURED_VIDEO_ID__/maxresdefault.jpg" alt="Band of Echoes — featured video">
           <div class="play-btn" aria-hidden="true"><span class="triangle"></span></div>
         </a>
       </div>
@@ -256,18 +256,12 @@
             rel="noopener" data-testid="cta-subscribe">Subscribe on YouTube</a>
         </div>
 
-        <div class="yt-playlist" data-testid="yt-playlist" data-playlist-id="PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" data-playlist-url="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0">
-          <div class="player yt-playlist-stage" id="ytPlaylistStage">
-            <a class="poster" id="ytPlaylistPoster" href="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" target="_blank" rel="noopener" aria-label="Open the Band of Echoes playlist on YouTube" data-testid="yt-playlist-poster">
-              <img src="assets/images/og.jpg" alt="Band of Echoes — YouTube playlist">
-              <div class="play-btn" aria-hidden="true"><span class="triangle"></span></div>
-            </a>
-            <div id="ytPlaylistPlayer" class="yt-playlist-player" hidden></div>
-          </div>
-          <div class="yt-playlist-controls" aria-label="Playlist controls">
-            <button class="btn" id="ytPlaylistPrev" type="button" disabled aria-disabled="true" data-testid="yt-playlist-prev">Previous</button>
-            <button class="btn" id="ytPlaylistNext" type="button" disabled aria-disabled="true" data-testid="yt-playlist-next">Next</button>
-            <a class="btn" id="ytPlaylistOpen" href="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" target="_blank" rel="noopener" data-testid="yt-playlist-open">View playlist</a>
+        <div class="yt-carousel" data-testid="yt-playlist" data-playlist-id="PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" data-playlist-url="https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0" aria-label="YouTube playlist">
+          <h3 class="visually-hidden">YouTube playlist</h3>
+          <button class="yt-carousel-arrow left" type="button" aria-label="Scroll left" data-testid="yt-carousel-left" hidden>‹</button>
+          <button class="yt-carousel-arrow right" type="button" aria-label="Scroll right" data-testid="yt-carousel-right" hidden>›</button>
+          <div class="yt-carousel-viewport" data-testid="yt-carousel-viewport">
+            <div class="yt-carousel-track" data-testid="yt-carousel-track"></div>
           </div>
         </div>
 
@@ -372,6 +366,11 @@
   <script src="assets/js/data/quotes.js" defer></script>
   <script src="assets/js/mixer-modal.js" defer></script>
   <script src="assets/js/orientation-guard.js" defer></script>
+  <script src="assets/js/data/featured-video.js" defer></script>
+  <script src="assets/js/featured-video.js" defer></script>
+  <script src="assets/js/data/youtube-api.js" defer></script>
+  <script src="assets/js/data/youtube-api.private.js" defer></script>
+  <script src="assets/js/data/youtube-playlist-items.js" defer></script>
   <script src="assets/js/youtube-playlist-carousel.js" defer></script>
   <script src="assets/js/data/witness-urls.js" defer></script>
   <script src="assets/js/data/solve-phrases.js" defer></script>
