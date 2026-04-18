@@ -277,8 +277,9 @@ nav a:hover {
 }
 
 #support.section {
-    padding-top: 6px;
+    padding-top: 18px;
     padding-bottom: 0px;
+    scroll-margin-top: 110px;
 }
 
 #contact.section {
@@ -417,6 +418,19 @@ header .logo {
     border-radius: 12px;
     overflow: hidden;
     background: var(--card);
+}
+
+.next-video-countdown {
+    margin-top: 32px;
+}
+
+.next-video-countdown .countdown-timer {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .08em;
+    font-weight: 750;
+    font-size: clamp(18px, 3.4vw, 26px);
+    color: var(--fg);
 }
 
 /* YouTube playlist tiles carousel (Support section) */
