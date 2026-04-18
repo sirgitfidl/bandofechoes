@@ -6,6 +6,12 @@
 //
 // Leave empty to fall back to the bundled snapshot data.
 //
-// IMPORTANT: Do not commit your key to the repo. Instead, create an untracked
-// file at assets/js/data/youtube-api.private.js that sets window.BOE_YT_API_KEY.
+// IMPORTANT: Do not commit your key to the repo.
+//
+// This repo loads an optional override file at:
+//   assets/js/data/youtube-api.private.js
+//
+// In production (GitHub Pages via Actions), that file should be generated from a
+// GitHub Secret at deploy time. In git, it can exist as an empty placeholder so
+// the <script> tag doesn't 404.
 window.BOE_YT_API_KEY = '';

@@ -12,10 +12,9 @@ Quick start:
 
 YouTube playlist tiles:
 - The carousel can load the playlist dynamically at runtime via the YouTube Data API.
-- To enable this without committing secrets, create an untracked file at [assets/js/data/youtube-api.private.js](assets/js/data/youtube-api.private.js) with:
-   - `window.BOE_YT_API_KEY = 'YOUR_KEY_HERE';`
-   - Restrict the key to YouTube Data API v3 and your site’s HTTP referrers (e.g. `https://bandofechoes.com/*`).
-   - For local dev, add `http://localhost:*/*` to the allowed referrers.
+- The site loads an optional override file at [assets/js/data/youtube-api.private.js](assets/js/data/youtube-api.private.js).
+   - In git, this file can stay as an empty placeholder (no secret committed).
+   - In production, it should be generated at deploy time from a GitHub Secret (see GitHub Pages section below).
 - If no API key is set (or the API fails), the site falls back to the bundled snapshot at [assets/js/data/youtube-playlist-items.js](assets/js/data/youtube-playlist-items.js).
 
 GitHub Pages (recommended for keeping the key out of git):
