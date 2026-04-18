@@ -299,15 +299,11 @@
       updateArrows(root, viewport, leftBtn, rightBtn);
     };
 
-    /** @type {any[]} */
-    const localItems = (window.BOE_YT_PLAYLISTS && window.BOE_YT_PLAYLISTS[playlistId]) || [];
     const cachedItems = readCache(playlistId, 6 * 60 * 60 * 1000);
 
     // Fast path: show cached or bundled data immediately.
     if (cachedItems && cachedItems.length) {
       renderItems(cachedItems);
-    } else if (localItems && localItems.length) {
-      renderItems(localItems);
     } else {
       renderItems([]);
     }
