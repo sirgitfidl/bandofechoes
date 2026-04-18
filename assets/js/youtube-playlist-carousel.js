@@ -69,14 +69,28 @@
     setHidden(rightBtn, !showRight);
   }
 
+  function buildEmbedUrl(videoId) {
+    const u = new URL(`https://www.youtube.com/embed/${encodeURIComponent(videoId)}`);
+    u.searchParams.set('autoplay', '1');
+    u.searchParams.set('rel', '0');
+    return u.toString();
+  }
+
+  function buildIframe(videoId, title) {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'yt-embed';
+    iframe.src = buildEmbedUrl(videoId);
+    iframe.title = title || 'YouTube video';
+    iframe.loading = 'lazy';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    return iframe;
+  }
+
   function buildTile(item, playlistId, playlistUrl) {
-    const a = document.createElement('a');
-    a.className = 'yt-tile';
+    const wrap = document.createElement('div');
+    wrap.className = 'yt-tile';
     const videoUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(item.videoId)}&list=${encodeURIComponent(playlistId)}`;
-    a.href = videoUrl;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.setAttribute('aria-label', item.title || 'YouTube video');
 
     const thumb = document.createElement('div');
     thumb.className = 'yt-thumb';
@@ -89,18 +103,43 @@
 
     thumb.appendChild(img);
 
+    const open = document.createElement('a');
+    open.className = 'yt-open';
+    open.href = videoUrl;
+    open.target = '_blank';
+    open.rel = 'noopener';
+    open.setAttribute('aria-label', item.title || 'Open YouTube video');
+    thumb.appendChild(open);
+
+    const playBtn = document.createElement('button');
+    playBtn.type = 'button';
+    playBtn.className = 'yt-play-btn';
+    playBtn.setAttribute('aria-label', item.title ? `Play: ${item.title}` : 'Play video');
+    playBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (thumb.querySelector('iframe')) return;
+      thumb.innerHTML = '';
+      thumb.appendChild(buildIframe(item.videoId, item.title || 'YouTube video'));
+    });
+    thumb.appendChild(playBtn);
+
     const meta = document.createElement('div');
     meta.className = 'yt-meta';
 
-    const title = document.createElement('div');
+    const title = document.createElement('a');
     title.className = 'yt-title';
+    title.href = videoUrl;
+    title.target = '_blank';
+    title.rel = 'noopener';
     title.textContent = cleanTitle(item.title || '');
 
     meta.appendChild(title);
 
-    a.appendChild(thumb);
-    a.appendChild(meta);
-    return a;
+    wrap.appendChild(thumb);
+    wrap.appendChild(meta);
+    return wrap;
   }
 
   function signature(items) {

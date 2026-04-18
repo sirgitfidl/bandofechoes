@@ -446,10 +446,14 @@ header .logo {
     flex: 0 0 auto;
     width: clamp(220px, 36vw, 340px);
     color: var(--fg);
+}
+
+.yt-tile a {
+    color: inherit;
     text-decoration: none;
 }
 
-.yt-tile:hover {
+.yt-tile a:hover {
     text-decoration: none;
 }
 
@@ -459,14 +463,56 @@ header .logo {
     overflow: hidden;
     background: #111;
     border: 1px solid var(--border);
+    aspect-ratio: 16/9;
 }
 
 .yt-thumb img {
     width: 100%;
-    height: auto;
-    aspect-ratio: 16/9;
+    height: 100%;
     object-fit: cover;
     display: block;
+}
+
+.yt-thumb .yt-open {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.yt-thumb .yt-embed {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+.yt-thumb .yt-play-btn {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(17, 17, 17, .88);
+    color: var(--fg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.yt-thumb .yt-play-btn::before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    border-left: 14px solid currentColor;
+    margin-left: 2px;
 }
 
 .yt-meta {
