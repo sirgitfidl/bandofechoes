@@ -38,6 +38,12 @@ const debugVals = () => { };
       wrap.innerHTML = ''; wrap.appendChild(f);
 
       try {
+        if (typeof window.__boeRegisterYouTubeIframe === 'function') {
+          window.__boeRegisterYouTubeIframe(f);
+        }
+      } catch { }
+
+      try {
         window.dispatchEvent(
           new CustomEvent('boe:media-play', {
             detail: { type: 'youtube', source: 'hero', videoId: CONFIG.featuredVideoId, iframe: f }

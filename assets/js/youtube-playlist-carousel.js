@@ -17,6 +17,17 @@
     return Boolean(navigator && navigator.webdriver);
   }
 
+  function getOriginParam() {
+    try {
+      const o = String(window.location && window.location.origin ? window.location.origin : '');
+      if (!o || o === 'null') return '';
+      if (!/^https?:\/\//i.test(o)) return '';
+      return o;
+    } catch {
+      return '';
+    }
+  }
+
   function getApiKey() {
     const k = (window.BOE_YT_API_KEY || '').trim();
     return k ? k : null;
@@ -44,7 +55,97 @@
     }
   }
 
+  function ensureYouTubeIframeApiLoaded() {
+    if (window.__boeYtApiPromise) return window.__boeYtApiPromise;
+
+    window.__boeYtApiPromise = new Promise((resolve) => {
+      if (isAutomation()) return resolve(null);
+
+      if (window.YT && window.YT.Player) return resolve(window.YT);
+
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        try {
+          if (typeof prev === 'function') prev();
+        } catch {
+          // ignore
+        }
+        resolve(window.YT);
+      };
+
+      const existing = document.querySelector('script[data-boe-yt-iframe-api]');
+      if (existing) return;
+
+      const s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      s.async = true;
+      s.defer = true;
+      s.setAttribute('data-boe-yt-iframe-api', '1');
+      (document.head || document.documentElement).appendChild(s);
+    });
+
+    return window.__boeYtApiPromise;
+  }
+
+  async function registerYouTubeIframe(iframe) {
+    if (!iframe) return;
+    if (isAutomation()) return;
+
+    window.__boeYtPlayers = window.__boeYtPlayers || new Map();
+    const map = window.__boeYtPlayers;
+    if (map.has(iframe)) return;
+
+    const yt = await ensureYouTubeIframeApiLoaded();
+    if (!yt || !yt.Player) return;
+
+    if (!iframe.id) {
+      iframe.id = `boe-yt-${Math.random().toString(36).slice(2)}`;
+    }
+
+    try {
+      const player = new yt.Player(iframe, {
+        events: {
+          onStateChange: (ev) => {
+            try {
+              if (yt.PlayerState && ev && ev.data === yt.PlayerState.PLAYING) {
+                window.dispatchEvent(
+                  new CustomEvent('boe:media-play', {
+                    detail: { type: 'youtube', source: 'yt-api', iframe }
+                  })
+                );
+              }
+            } catch {
+              // ignore
+            }
+          }
+        }
+      });
+
+      map.set(iframe, player);
+    } catch {
+      // ignore
+    }
+  }
+
   function pauseOtherYouTubeIframes(exceptIframe) {
+    // Prefer the official API if we have player instances.
+    try {
+      const map = window.__boeYtPlayers;
+      if (map && typeof map.forEach === 'function') {
+        map.forEach((player, iframe) => {
+          if (exceptIframe && iframe === exceptIframe) return;
+          try {
+            if (player && typeof player.pauseVideo === 'function') player.pauseVideo();
+            else pauseYouTubeIframe(iframe);
+          } catch {
+            pauseYouTubeIframe(iframe);
+          }
+        });
+      }
+    } catch {
+      // ignore
+    }
+
     try {
       document
         .querySelectorAll(
@@ -95,40 +196,8 @@
       }
     });
 
-    const isYouTubeEmbedIframe = (node) => {
-      if (!node || node.tagName !== 'IFRAME') return false;
-      const src = String(node.getAttribute('src') || '');
-      return src.includes('youtube.com/embed') || src.includes('youtube-nocookie.com/embed');
-    };
-
-    const notifyYouTubeInteraction = (iframe) => {
-      if (!isYouTubeEmbedIframe(iframe)) return;
-      try {
-        window.dispatchEvent(new CustomEvent('boe:media-play', { detail: { type: 'youtube', source: 'iframe', iframe } }));
-      } catch {
-        // ignore
-      }
-    };
-
-    // Cross-origin: we can't observe play events inside the iframe.
-    // But we *can* detect user interaction with the iframe element itself.
-    document.addEventListener(
-      'pointerdown',
-      (e) => {
-        const t = e && e.target ? e.target : null;
-        if (t && t.tagName === 'IFRAME') notifyYouTubeInteraction(t);
-      },
-      { capture: true, passive: true }
-    );
-
-    document.addEventListener(
-      'focusin',
-      (e) => {
-        const t = e && e.target ? e.target : null;
-        if (t && t.tagName === 'IFRAME') notifyYouTubeInteraction(t);
-      },
-      true
-    );
+    // Expose registration for other scripts (hero video).
+    window.__boeRegisterYouTubeIframe = registerYouTubeIframe;
 
     // Clicking/tapping the Spotify iframe is detectable on the iframe element.
     const spotifyWrap = document.querySelector('[data-testid="spotify-embed"]');
@@ -197,6 +266,8 @@
     u.searchParams.set('rel', '0');
     u.searchParams.set('modestbranding', '1');
     u.searchParams.set('enablejsapi', '1');
+    const origin = getOriginParam();
+    if (origin) u.searchParams.set('origin', origin);
     return u.toString();
   }
 
@@ -248,6 +319,8 @@
 
       const iframe = buildIframe(item.videoId, item.title || 'YouTube video');
       thumb.appendChild(iframe);
+
+      registerYouTubeIframe(iframe);
 
       try {
         window.dispatchEvent(
