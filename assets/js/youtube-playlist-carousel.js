@@ -351,6 +351,36 @@
     return `BOE_YT_PLAYLIST_CACHE_${playlistId}`;
   }
 
+  function dispatchFeatured(videoId, source) {
+    try {
+      const id = String(videoId || '').trim();
+      if (!id) return;
+      window.dispatchEvent(
+        new CustomEvent('boe:featured-video', {
+          detail: { videoId: id, source: String(source || 'playlist') }
+        })
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  function maybeSetFeaturedFromItems(items, source) {
+    try {
+      if (!Array.isArray(items) || !items.length) return;
+      const candidate = items[0] && items[0].videoId ? String(items[0].videoId).trim() : '';
+      if (!candidate) return;
+
+      const current = String(window.BOE_FEATURED_VIDEO_ID || '').trim();
+      if (current === candidate) return;
+
+      window.BOE_FEATURED_VIDEO_ID = candidate;
+      dispatchFeatured(candidate, source);
+    } catch {
+      // ignore
+    }
+  }
+
   function readCache(playlistId, maxAgeMs) {
     try {
       const raw = localStorage.getItem(cacheKey(playlistId));
@@ -403,42 +433,34 @@
 
   async function fetchPlaylistItemsViaApi(playlistId, apiKey) {
     const collected = [];
-    let pageToken = '';
+    const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
+    url.searchParams.set('part', 'snippet,contentDetails');
+    url.searchParams.set('maxResults', '50');
+    url.searchParams.set('playlistId', playlistId);
+    url.searchParams.set('key', apiKey);
 
-    for (let page = 0; page < 50; page++) {
-      const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
-      url.searchParams.set('part', 'snippet,contentDetails');
-      url.searchParams.set('maxResults', '50');
-      url.searchParams.set('playlistId', playlistId);
-      url.searchParams.set('key', apiKey);
-      if (pageToken) url.searchParams.set('pageToken', pageToken);
+    const json = await fetchJson(url.toString());
+    const items = Array.isArray(json.items) ? json.items : [];
 
-      const json = await fetchJson(url.toString());
-      const items = Array.isArray(json.items) ? json.items : [];
+    for (const it of items) {
+      const videoId =
+        it?.contentDetails?.videoId ||
+        it?.snippet?.resourceId?.videoId ||
+        '';
+      const title = (it?.snippet?.title || '').trim();
+      if (!videoId || !title) continue;
+      if (title === 'Private video' || title === 'Deleted video') continue;
 
-      for (const it of items) {
-        const videoId =
-          it?.contentDetails?.videoId ||
-          it?.snippet?.resourceId?.videoId ||
-          '';
-        const title = (it?.snippet?.title || '').trim();
-        if (!videoId || !title) continue;
-        if (title === 'Private video' || title === 'Deleted video') continue;
+      const thumbs = it?.snippet?.thumbnails || {};
+      const thumbnailUrl =
+        thumbs.maxres?.url ||
+        thumbs.standard?.url ||
+        thumbs.high?.url ||
+        thumbs.medium?.url ||
+        thumbs.default?.url ||
+        `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
-        const thumbs = it?.snippet?.thumbnails || {};
-        const thumbnailUrl =
-          thumbs.maxres?.url ||
-          thumbs.standard?.url ||
-          thumbs.high?.url ||
-          thumbs.medium?.url ||
-          thumbs.default?.url ||
-          `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-
-        collected.push({ videoId, title, thumbnailUrl });
-      }
-
-      pageToken = String(json.nextPageToken || '').trim();
-      if (!pageToken) break;
+      collected.push({ videoId, title, thumbnailUrl });
     }
 
     return collected;
@@ -507,6 +529,9 @@
 
     // Fast path: show cached or bundled data immediately.
     if (cachedItems && cachedItems.length) {
+      // If we can, set featured from the cached playlist order (first item).
+      // This lets the hero resolve without requiring a second API call.
+      maybeSetFeaturedFromItems(cachedItems, 'cache');
       renderItems(cachedItems);
     } else {
       renderItems([]);
@@ -520,8 +545,13 @@
           const liveItems = await fetchPlaylistItemsViaApi(playlistId, apiKey);
           if (!liveItems || !liveItems.length) return;
 
+          // Featured video = first item in playlist order.
+          maybeSetFeaturedFromItems(liveItems, 'api');
+
+          // Cache raw playlist order so we can infer featured later.
+          writeCache(playlistId, liveItems);
+
           const orderedLiveItems = moveFeaturedToEnd(liveItems);
-          writeCache(playlistId, orderedLiveItems);
 
           // Avoid jarring update if user already started scrolling.
           if (!atStart(viewport)) return;
