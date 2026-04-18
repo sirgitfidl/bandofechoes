@@ -10,54 +10,8 @@
   }
 
   function getApiKey() {
-    const fromWindow = (window.BOE_YT_API_KEY || '').trim();
-    if (fromWindow) return fromWindow;
-
-    // Optional escape hatch for local testing without modifying tracked files.
-    // In DevTools:
-    //   localStorage.setItem('BOE_YT_API_KEY', 'AIza...'); location.reload();
-    try {
-      const fromStorage = (localStorage.getItem('BOE_YT_API_KEY') || '').trim();
-      return fromStorage ? fromStorage : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function isDebug() {
-    try {
-      return /(?:^|[?&])ytdebug=1(?:&|$)/.test(String(window.location && window.location.search ? window.location.search : ''));
-    } catch {
-      return false;
-    }
-  }
-
-  function isForceRefresh() {
-    try {
-      return /(?:^|[?&])ytrefresh=1(?:&|$)/.test(String(window.location && window.location.search ? window.location.search : ''));
-    } catch {
-      return false;
-    }
-  }
-
-  function debugInfo(msg, extra) {
-    if (!isDebug()) return;
-    try {
-      // eslint-disable-next-line no-console
-      console.info('[boe]', msg, extra || '');
-    } catch {
-      // ignore
-    }
-  }
-
-  function debugWarn(msg, extra) {
-    if (!isDebug()) return;
-    try {
-      // eslint-disable-next-line no-console
-      console.warn('[boe]', msg, extra || '');
-    } catch {
-      // ignore
-    }
+    const k = (window.BOE_YT_API_KEY || '').trim();
+    return k ? k : null;
   }
 
   function setHidden(el, hidden) {
@@ -207,9 +161,6 @@
       } catch {
         details = String(bodyText || '').slice(0, 180);
       }
-
-      const redactedUrl = String(url).replace(/([?&]key=)[^&]+/i, '$1REDACTED');
-      debugWarn('YouTube API request failed', { status: res.status, url: redactedUrl, details });
       throw new Error(details ? `HTTP ${res.status}: ${details}` : `HTTP ${res.status}`);
     }
 
@@ -350,23 +301,7 @@
 
     /** @type {any[]} */
     const localItems = (window.BOE_YT_PLAYLISTS && window.BOE_YT_PLAYLISTS[playlistId]) || [];
-    const forceRefresh = isForceRefresh();
-    const cachedItems = forceRefresh ? null : readCache(playlistId, 6 * 60 * 60 * 1000);
-
-    // Expose a tiny debug state for troubleshooting (no secrets).
-    // This helps confirm whether the live fetch path is being taken.
-    try {
-      window.__boeYtCarousel = window.__boeYtCarousel || {};
-      window.__boeYtCarousel[playlistId] = {
-        forceRefresh,
-        usedCache: Boolean(cachedItems && cachedItems.length),
-        usedSnapshot: Boolean(!cachedItems && localItems && localItems.length),
-        attemptedLiveFetch: false,
-        liveFetchError: null,
-      };
-    } catch {
-      // ignore
-    }
+    const cachedItems = readCache(playlistId, 6 * 60 * 60 * 1000);
 
     // Fast path: show cached or bundled data immediately.
     if (cachedItems && cachedItems.length) {
@@ -379,45 +314,11 @@
 
     // Live refresh (runtime-dynamic) when an API key is provided.
     const apiKey = getApiKey();
-    let storageKeyLength = null;
-    let storageKeyReadable = true;
-    try {
-      storageKeyLength = String(localStorage.getItem('BOE_YT_API_KEY') || '').trim().length;
-    } catch (e) {
-      storageKeyReadable = false;
-      storageKeyLength = null;
-    }
-
-    debugInfo('YouTube playlist init', {
-      playlistId,
-      forceRefresh,
-      automation: isAutomation(),
-      apiKeyPresent: Boolean(apiKey),
-      apiKeyLength: apiKey ? apiKey.length : 0,
-      storageKeyReadable,
-      storageKeyLength,
-    });
-
-    if (!apiKey) {
-      debugWarn('No BOE_YT_API_KEY detected; skipping live fetch (using snapshot/cache).');
-    }
-
     if (apiKey && !isAutomation()) {
       (async () => {
         try {
-          try {
-            if (window.__boeYtCarousel && window.__boeYtCarousel[playlistId]) {
-              window.__boeYtCarousel[playlistId].attemptedLiveFetch = true;
-            }
-          } catch {
-            // ignore
-          }
-
-          debugInfo('Fetching YouTube playlist via API…');
           const liveItems = await fetchPlaylistItemsViaApi(playlistId, apiKey);
           if (!liveItems || !liveItems.length) return;
-
-          debugInfo(`YouTube API returned ${liveItems.length} items.`);
 
           writeCache(playlistId, liveItems);
 
@@ -436,16 +337,6 @@
             // eslint-disable-next-line no-console
             console.warn('[boe] YouTube playlist live fetch failed; using fallback.', err);
           }
-
-          try {
-            if (window.__boeYtCarousel && window.__boeYtCarousel[playlistId]) {
-              window.__boeYtCarousel[playlistId].liveFetchError = String(err && err.message ? err.message : err);
-            }
-          } catch {
-            // ignore
-          }
-
-          debugWarn('YouTube playlist live fetch failed; using fallback.', err);
         }
       })();
     }
