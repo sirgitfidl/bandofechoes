@@ -190,8 +190,29 @@
   async function fetchJson(url) {
     const res = await fetch(url, { headers: { accept: 'application/json' } });
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+      let bodyText = '';
+      try {
+        bodyText = await res.text();
+      } catch {
+        bodyText = '';
+      }
+
+      // Try to extract a useful message from the API error payload.
+      let details = '';
+      try {
+        const parsed = JSON.parse(bodyText);
+        const msg = parsed?.error?.message;
+        const reason = parsed?.error?.errors?.[0]?.reason;
+        details = [msg, reason].filter(Boolean).join(' | ');
+      } catch {
+        details = String(bodyText || '').slice(0, 180);
+      }
+
+      const redactedUrl = String(url).replace(/([?&]key=)[^&]+/i, '$1REDACTED');
+      debugWarn('YouTube API request failed', { status: res.status, url: redactedUrl, details });
+      throw new Error(details ? `HTTP ${res.status}: ${details}` : `HTTP ${res.status}`);
     }
+
     return await res.json();
   }
 
