@@ -38,9 +38,14 @@
     return id ? id : null;
   }
 
-  function setHidden(el, hidden) {
+  function setArrowHidden(el, hidden) {
     if (!el) return;
-    el.hidden = Boolean(hidden);
+    const isHidden = Boolean(hidden);
+    el.classList.toggle('is-hidden', isHidden);
+    el.disabled = isHidden;
+    el.setAttribute('aria-hidden', isHidden ? 'true' : 'false');
+    if (isHidden) el.setAttribute('tabindex', '-1');
+    else el.removeAttribute('tabindex');
   }
 
   function pauseYouTubeIframe(iframe) {
@@ -258,16 +263,16 @@
   function updateArrows(root, viewport, leftBtn, rightBtn) {
     const scrollable = isScrollable(viewport);
     if (!scrollable) {
-      setHidden(leftBtn, true);
-      setHidden(rightBtn, true);
+      setArrowHidden(leftBtn, true);
+      setArrowHidden(rightBtn, true);
       return;
     }
 
     const showLeft = !atStart(viewport);
     const showRight = !atEnd(viewport);
 
-    setHidden(leftBtn, !showLeft);
-    setHidden(rightBtn, !showRight);
+    setArrowHidden(leftBtn, !showLeft);
+    setArrowHidden(rightBtn, !showRight);
   }
 
   function buildEmbedUrl(videoId) {

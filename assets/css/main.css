@@ -422,17 +422,22 @@ header .logo {
 /* YouTube playlist tiles carousel (Support section) */
 .yt-carousel {
     margin-top: 26px;
-    position: relative;
+}
+
+.yt-carousel-shell {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
 }
 
 .yt-carousel-viewport {
+    flex: 1 1 auto;
+    min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     border-radius: 12px;
-    /* Reserve space for arrows so they don't overlap tiles */
-    padding: 10px 48px;
 }
 
 .yt-carousel-viewport::-webkit-scrollbar {
@@ -443,7 +448,7 @@ header .logo {
 .yt-carousel-track {
     display: flex;
     gap: 14px;
-    padding: 0;
+    padding: 10px;
     align-items: stretch;
 }
 
@@ -536,10 +541,9 @@ header .logo {
 }
 
 .yt-carousel-arrow {
-    position: absolute;
-    /* Center on thumbnail area: 10px viewport padding + half of 16:9 height */
-    top: calc(10px + (clamp(220px, 36vw, 340px) * 9 / 32));
-    transform: translateY(-50%);
+    flex: 0 0 auto;
+    /* Center on thumbnail area: 10px track padding + half of 16:9 height */
+    margin-top: calc(10px + (clamp(220px, 36vw, 340px) * 9 / 32) - 18px);
     width: 36px;
     height: 36px;
     border-radius: 999px;
@@ -552,15 +556,13 @@ header .logo {
     justify-content: center;
     font-size: 22px;
     line-height: 1;
-    z-index: 2;
 }
 
-.yt-carousel-arrow.right {
-    right: 6px;
-}
-
-.yt-carousel-arrow.left {
-    left: 6px;
+.yt-carousel-arrow.is-hidden,
+.yt-carousel-arrow:disabled {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .yt-carousel-arrow:hover,
