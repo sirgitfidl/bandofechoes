@@ -14,6 +14,11 @@
     return k ? k : null;
   }
 
+  function getFeaturedVideoId() {
+    const id = (window.BOE_FEATURED_VIDEO_ID || '').trim();
+    return id ? id : null;
+  }
+
   function setHidden(el, hidden) {
     if (!el) return;
     el.hidden = Boolean(hidden);
@@ -84,13 +89,6 @@
 
     thumb.appendChild(img);
 
-    if (item.length) {
-      const dur = document.createElement('span');
-      dur.className = 'yt-duration';
-      dur.textContent = item.length;
-      thumb.appendChild(dur);
-    }
-
     const meta = document.createElement('div');
     meta.className = 'yt-meta';
 
@@ -111,6 +109,27 @@
       .map((x) => (x && x.videoId ? String(x.videoId) : ''))
       .filter(Boolean)
       .join(',');
+  }
+
+  function moveFeaturedToEnd(items) {
+    if (!Array.isArray(items) || !items.length) return items;
+
+    const featuredId = getFeaturedVideoId();
+    if (!featuredId) return items;
+
+    const featuredItems = [];
+    const rest = [];
+
+    for (const it of items) {
+      if (!it || !it.videoId) continue;
+      if (String(it.videoId) === featuredId) featuredItems.push(it);
+      else rest.push(it);
+    }
+
+    if (!featuredItems.length) return items;
+
+    // Avoid duplicates: keep the first occurrence, move it to the end.
+    return [...rest, featuredItems[0]];
   }
 
   function cacheKey(playlistId) {
@@ -167,25 +186,6 @@
     return await res.json();
   }
 
-  function parseIso8601DurationToSeconds(iso) {
-    const m = String(iso || '').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-    if (!m) return 0;
-    const h = Number(m[1] || 0);
-    const min = Number(m[2] || 0);
-    const s = Number(m[3] || 0);
-    return h * 3600 + min * 60 + s;
-  }
-
-  function formatSeconds(seconds) {
-    const total = Math.max(0, Math.floor(Number(seconds) || 0));
-    const h = Math.floor(total / 3600);
-    const m = Math.floor((total % 3600) / 60);
-    const s = total % 60;
-    const pad2 = (n) => String(n).padStart(2, '0');
-    if (h > 0) return `${h}:${pad2(m)}:${pad2(s)}`;
-    return `${m}:${pad2(s)}`;
-  }
-
   async function fetchPlaylistItemsViaApi(playlistId, apiKey) {
     const collected = [];
     let pageToken = '';
@@ -219,39 +219,11 @@
           thumbs.default?.url ||
           `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
-        collected.push({ videoId, title, thumbnailUrl, length: '' });
+        collected.push({ videoId, title, thumbnailUrl });
       }
 
       pageToken = String(json.nextPageToken || '').trim();
       if (!pageToken) break;
-    }
-
-    // Enrich with durations (videos.list) in batches of 50.
-    const ids = collected.map((x) => x.videoId).filter(Boolean);
-    const durationById = new Map();
-
-    for (let i = 0; i < ids.length; i += 50) {
-      const chunk = ids.slice(i, i + 50);
-      if (!chunk.length) continue;
-      const url = new URL('https://www.googleapis.com/youtube/v3/videos');
-      url.searchParams.set('part', 'contentDetails');
-      url.searchParams.set('id', chunk.join(','));
-      url.searchParams.set('key', apiKey);
-
-      const json = await fetchJson(url.toString());
-      const items = Array.isArray(json.items) ? json.items : [];
-      for (const it of items) {
-        const id = String(it?.id || '').trim();
-        const iso = it?.contentDetails?.duration;
-        if (!id || !iso) continue;
-        const sec = parseIso8601DurationToSeconds(iso);
-        if (sec > 0) durationById.set(id, formatSeconds(sec));
-      }
-    }
-
-    for (const it of collected) {
-      const d = durationById.get(it.videoId);
-      if (d) it.length = d;
     }
 
     return collected;
@@ -273,7 +245,9 @@
     const renderItems = (items) => {
       track.innerHTML = '';
 
-      if (!items || !items.length) {
+      const orderedItems = moveFeaturedToEnd(items);
+
+      if (!orderedItems || !orderedItems.length) {
         // Fallback: keep a minimal affordance if data isn't available.
         const fallback = document.createElement('a');
         fallback.className = 'btn';
@@ -288,12 +262,12 @@
         return;
       }
 
-      for (const item of items) {
+      for (const item of orderedItems) {
         if (!item || !item.videoId) continue;
         track.appendChild(buildTile(item, playlistId, playlistUrl));
       }
 
-      currentSig = signature(items);
+      currentSig = signature(orderedItems);
 
       viewport.scrollLeft = 0;
       updateArrows(root, viewport, leftBtn, rightBtn);
@@ -316,14 +290,15 @@
           const liveItems = await fetchPlaylistItemsViaApi(playlistId, apiKey);
           if (!liveItems || !liveItems.length) return;
 
-          writeCache(playlistId, liveItems);
+          const orderedLiveItems = moveFeaturedToEnd(liveItems);
+          writeCache(playlistId, orderedLiveItems);
 
           // Avoid jarring update if user already started scrolling.
           if (!atStart(viewport)) return;
 
-          const liveSig = signature(liveItems);
+          const liveSig = signature(orderedLiveItems);
           if (liveSig && liveSig !== currentSig) {
-            renderItems(liveItems);
+            renderItems(orderedLiveItems);
           }
         } catch (err) {
           // Ignore network/API failures; keep fallback.
