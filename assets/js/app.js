@@ -131,14 +131,19 @@ function loadScriptOnce(src, markerAttr) {
           (controller) => {
             window.__boeSpotifyController = controller;
 
+            let lastIsPaused = true;
+
             try {
               controller.addListener('playback_update', (e) => {
                 const paused = Boolean(e && e.data && typeof e.data.isPaused !== 'undefined' ? e.data.isPaused : true);
-                if (!paused) {
+                // Only react when Spotify *starts* playing.
+                if (lastIsPaused && !paused) {
                   try {
                     window.dispatchEvent(new CustomEvent('boe:media-play', { detail: { type: 'spotify', source: 'spotify-api' } }));
                   } catch { }
                 }
+
+                lastIsPaused = paused;
               });
             } catch { }
           }

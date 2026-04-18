@@ -414,6 +414,8 @@ header .logo {
 
 .spotify-embed {
     margin-top: 32px;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 /* YouTube playlist tiles carousel (Support section) */
