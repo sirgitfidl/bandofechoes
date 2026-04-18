@@ -161,6 +161,16 @@
   }
 
   function resetSpotifyEmbed() {
+    try {
+      const controller = window.__boeSpotifyController;
+      if (controller && typeof controller.pause === 'function') {
+        controller.pause();
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
     const wrap = document.querySelector('[data-testid="spotify-embed"]');
     if (!wrap) return;
     const iframe = wrap.querySelector('iframe');
