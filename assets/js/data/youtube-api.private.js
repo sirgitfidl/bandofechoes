@@ -6,4 +6,4 @@
 //
 // IMPORTANT: This key is still visible to site visitors in the browser.
 // Protect it by restricting HTTP referrers in Google Cloud Console.
-window.BOE_YT_API_KEY = '';
+window.BOE_YT_API_KEY = 'AIzaSyBvdyHDyBd8dYgKhtXRPuc6dr1AsWSsY6M';
