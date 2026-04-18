@@ -83,17 +83,6 @@ test.describe('Home page', () => {
             await expect(mainPage.emailLink).toHaveAttribute('href', /^mailto:/);
         });
 
-        await test.step('verify Spotify player embed is present', async () => {
-            await mainPage.sectionSupport.scrollIntoViewIfNeeded();
-            await expect(mainPage.spotifyEmbed).toBeVisible();
-            await expect(mainPage.spotifyIframe).toBeVisible();
-            await expect(mainPage.spotifyIframe).toHaveAttribute(
-                'src',
-                /https:\/\/open\.spotify\.com\/embed\/artist\/02Mwc9O3vBzaRF9RnZGgVS\b/
-            );
-            await expect(mainPage.spotifyIframe).toHaveAttribute('width', '100%');
-            await expect(mainPage.spotifyIframe).toHaveAttribute('height', '352');
-        });
     });
 
     test('puzzle solve chord shows overlay and allows closing', async ({ mainPage }: { mainPage: MainPage }) => {

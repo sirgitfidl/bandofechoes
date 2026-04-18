@@ -165,36 +165,6 @@
     }
   }
 
-  function resetSpotifyEmbed() {
-    try {
-      const controller = window.__boeSpotifyController;
-      if (controller && typeof controller.pause === 'function') {
-        controller.pause();
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    const wrap = document.querySelector('[data-testid="spotify-embed"]');
-    if (!wrap) return;
-    const iframe = wrap.querySelector('iframe');
-    if (!iframe) return;
-
-    const src = iframe.getAttribute('src') || '';
-    const stored = iframe.getAttribute('data-boe-src') || '';
-    const stableSrc = stored || src;
-    if (!stableSrc) return;
-
-    if (!stored) iframe.setAttribute('data-boe-src', stableSrc);
-
-    // Force a reload to stop playback (cross-origin embeds can't be paused directly).
-    iframe.removeAttribute('src');
-    window.requestAnimationFrame(() => {
-      iframe.setAttribute('src', stableSrc);
-    });
-  }
-
   function installMediaCoordinator() {
     if (window.__boeMediaCoordinatorInstalled) return;
     window.__boeMediaCoordinatorInstalled = true;
@@ -204,30 +174,12 @@
       const type = String(detail.type || '').toLowerCase();
       if (type === 'youtube') {
         pauseOtherYouTubeIframes(detail.iframe);
-        resetSpotifyEmbed();
-      }
-      if (type === 'spotify') {
-        pauseOtherYouTubeIframes(null);
       }
     });
 
     // Expose registration for other scripts (hero video).
     window.__boeRegisterYouTubeIframe = registerYouTubeIframe;
 
-    // Clicking/tapping the Spotify iframe is detectable on the iframe element.
-    const spotifyWrap = document.querySelector('[data-testid="spotify-embed"]');
-    if (spotifyWrap) {
-      const notifySpotify = () => {
-        try {
-          window.dispatchEvent(new CustomEvent('boe:media-play', { detail: { type: 'spotify' } }));
-        } catch {
-          // ignore
-        }
-      };
-
-      spotifyWrap.addEventListener('pointerdown', notifySpotify, { capture: true, passive: true });
-      spotifyWrap.addEventListener('keydown', notifySpotify, { capture: true, passive: true });
-    }
   }
 
   function clamp(n, min, max) {

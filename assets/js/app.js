@@ -25,35 +25,6 @@ function isAutomation() {
   }
 }
 
-function parseSpotifyArtistId(url) {
-  try {
-    const u = new URL(String(url || ''));
-    const m = u.pathname.match(/\/artist\/([A-Za-z0-9]{10,})/);
-    return m ? m[1] : null;
-  } catch {
-    return null;
-  }
-}
-
-function loadScriptOnce(src, markerAttr) {
-  return new Promise((resolve) => {
-    try {
-      const existing = document.querySelector(`script[${markerAttr}]`);
-      if (existing) return resolve(true);
-      const s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      s.defer = true;
-      s.setAttribute(markerAttr, '1');
-      s.onload = () => resolve(true);
-      s.onerror = () => resolve(false);
-      (document.head || document.documentElement).appendChild(s);
-    } catch {
-      resolve(false);
-    }
-  });
-}
-
 (function init() {
   const year = document.getElementById('year'); if (year) year.textContent = new Date().getFullYear();
 
@@ -94,63 +65,6 @@ function loadScriptOnce(src, markerAttr) {
   const yt = document.getElementById('ytFooter'); if (yt) yt.href = CONFIG.youtubeHandleUrl;
   const sp = document.getElementById('spFooter'); if (sp) sp.href = CONFIG.spotifyUrl;
   const pt = document.getElementById('ptFooter'); if (pt) pt.href = CONFIG.patreonUrl;
-
-  // Spotify IFrame API: allows real play detection + programmatic pause.
-  // Skip under automation so tests keep using the static iframe.
-  (async () => {
-    if (isAutomation()) return;
-
-    const wrap = document.querySelector('[data-testid="spotify-embed"]');
-    if (!wrap) return;
-
-    const artistId = parseSpotifyArtistId(CONFIG.spotifyUrl);
-    if (!artistId) return;
-
-    // Define callback BEFORE loading the script to avoid missing the readiness signal.
-    const apiReady = new Promise((resolve) => {
-      window.onSpotifyIframeApiReady = (IFrameAPI) => resolve(IFrameAPI);
-    });
-
-    const ok = await loadScriptOnce('https://open.spotify.com/embed/iframe-api/v1', 'data-boe-spotify-iframe-api');
-    if (!ok) return;
-
-    const IFrameAPI = await apiReady;
-    if (!IFrameAPI || typeof IFrameAPI.createController !== 'function') return;
-
-    try {
-      try {
-        // Replace the static iframe with an API-managed controller.
-        wrap.innerHTML = '';
-        IFrameAPI.createController(
-          wrap,
-          {
-            width: '100%',
-            height: '352',
-            uri: `spotify:artist:${artistId}`
-          },
-          (controller) => {
-            window.__boeSpotifyController = controller;
-
-            let lastIsPaused = true;
-
-            try {
-              controller.addListener('playback_update', (e) => {
-                const paused = Boolean(e && e.data && typeof e.data.isPaused !== 'undefined' ? e.data.isPaused : true);
-                // Only react when Spotify *starts* playing.
-                if (lastIsPaused && !paused) {
-                  try {
-                    window.dispatchEvent(new CustomEvent('boe:media-play', { detail: { type: 'spotify', source: 'spotify-api' } }));
-                  } catch { }
-                }
-
-                lastIsPaused = paused;
-              });
-            } catch { }
-          }
-        );
-      } catch { }
-    } catch { }
-  })();
 
   // hamburger menu wiring (restore)
   const navToggle = document.getElementById('navToggle');
