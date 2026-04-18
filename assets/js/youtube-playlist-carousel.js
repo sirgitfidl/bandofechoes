@@ -14,6 +14,14 @@
     return k ? k : null;
   }
 
+  function isDebug() {
+    try {
+      return /(?:^|[?&])ytdebug=1(?:&|$)/.test(String(window.location && window.location.search ? window.location.search : ''));
+    } catch {
+      return false;
+    }
+  }
+
   function setHidden(el, hidden) {
     if (!el) return;
     el.hidden = Boolean(hidden);
@@ -299,8 +307,17 @@
     if (apiKey && !isAutomation()) {
       (async () => {
         try {
+          if (isDebug()) {
+            // eslint-disable-next-line no-console
+            console.info('[boe] Fetching YouTube playlist via API…');
+          }
           const liveItems = await fetchPlaylistItemsViaApi(playlistId, apiKey);
           if (!liveItems || !liveItems.length) return;
+
+          if (isDebug()) {
+            // eslint-disable-next-line no-console
+            console.info(`[boe] YouTube API returned ${liveItems.length} items.`);
+          }
 
           writeCache(playlistId, liveItems);
 
@@ -316,6 +333,11 @@
           // But make local debugging easier when an API key is present.
           const host = String(window.location && window.location.hostname ? window.location.hostname : '');
           if (host === 'localhost' || host === '127.0.0.1') {
+            // eslint-disable-next-line no-console
+            console.warn('[boe] YouTube playlist live fetch failed; using fallback.', err);
+          }
+
+          if (isDebug()) {
             // eslint-disable-next-line no-console
             console.warn('[boe] YouTube playlist live fetch failed; using fallback.', err);
           }
