@@ -95,6 +95,41 @@
       }
     });
 
+    const isYouTubeEmbedIframe = (node) => {
+      if (!node || node.tagName !== 'IFRAME') return false;
+      const src = String(node.getAttribute('src') || '');
+      return src.includes('youtube.com/embed') || src.includes('youtube-nocookie.com/embed');
+    };
+
+    const notifyYouTubeInteraction = (iframe) => {
+      if (!isYouTubeEmbedIframe(iframe)) return;
+      try {
+        window.dispatchEvent(new CustomEvent('boe:media-play', { detail: { type: 'youtube', source: 'iframe', iframe } }));
+      } catch {
+        // ignore
+      }
+    };
+
+    // Cross-origin: we can't observe play events inside the iframe.
+    // But we *can* detect user interaction with the iframe element itself.
+    document.addEventListener(
+      'pointerdown',
+      (e) => {
+        const t = e && e.target ? e.target : null;
+        if (t && t.tagName === 'IFRAME') notifyYouTubeInteraction(t);
+      },
+      { capture: true, passive: true }
+    );
+
+    document.addEventListener(
+      'focusin',
+      (e) => {
+        const t = e && e.target ? e.target : null;
+        if (t && t.tagName === 'IFRAME') notifyYouTubeInteraction(t);
+      },
+      true
+    );
+
     // Clicking/tapping the Spotify iframe is detectable on the iframe element.
     const spotifyWrap = document.querySelector('[data-testid="spotify-embed"]');
     if (spotifyWrap) {
