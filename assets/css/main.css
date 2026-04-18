@@ -416,6 +416,7 @@ header .logo {
     margin-top: 32px;
     border-radius: 12px;
     overflow: hidden;
+    background: var(--card);
 }
 
 /* YouTube playlist tiles carousel (Support section) */
