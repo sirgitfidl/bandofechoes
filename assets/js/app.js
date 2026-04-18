@@ -31,18 +31,21 @@ function isAutomation() {
   // click-to-play hero
   const wrap = document.getElementById('playerWrap');
   const poster = document.getElementById('poster');
-  // Allow HTML data-video to override CONFIG so future swaps don't require JS edit
-  if (wrap && wrap.dataset && wrap.dataset.video) {
-    CONFIG.featuredVideoId = wrap.dataset.video;
-  }
-  if (wrap && poster && CONFIG.featuredVideoId) {
+  if (wrap && poster) {
     poster.addEventListener('click', (e) => {
       e.preventDefault();
+      const featuredId = String(
+        (wrap && wrap.dataset && wrap.dataset.video) ||
+          window.BOE_FEATURED_VIDEO_ID ||
+          CONFIG.featuredVideoId ||
+          ''
+      ).trim();
+      if (!featuredId) return;
       const f = document.createElement('iframe');
       f.className = 'video-frame';
       f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       f.allowFullscreen = true;
-      f.src = `https://www.youtube.com/embed/${CONFIG.featuredVideoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
+      f.src = `https://www.youtube.com/embed/${featuredId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
       wrap.innerHTML = ''; wrap.appendChild(f);
 
       try {
@@ -54,7 +57,7 @@ function isAutomation() {
       try {
         window.dispatchEvent(
           new CustomEvent('boe:media-play', {
-            detail: { type: 'youtube', source: 'hero', videoId: CONFIG.featuredVideoId, iframe: f }
+            detail: { type: 'youtube', source: 'hero', videoId: featuredId, iframe: f }
           })
         );
       } catch { }

@@ -456,8 +456,10 @@
     if (!playlistId || !viewport || !track || !leftBtn || !rightBtn) return;
 
     let currentSig = '';
+    let lastItems = [];
 
     const renderItems = (items) => {
+      lastItems = Array.isArray(items) ? items : [];
       track.innerHTML = '';
 
       const orderedItems = moveFeaturedToEnd(items);
@@ -487,6 +489,19 @@
       viewport.scrollLeft = 0;
       updateArrows(root, viewport, leftBtn, rightBtn);
     };
+
+    // If the featured video is resolved after we rendered, re-apply ordering.
+    on(window, 'boe:featured-video', () => {
+      try {
+        if (!lastItems || !lastItems.length) return;
+        if (!atStart(viewport)) return;
+        const ordered = moveFeaturedToEnd(lastItems);
+        const sig = signature(ordered);
+        if (sig && sig !== currentSig) renderItems(ordered);
+      } catch {
+        // ignore
+      }
+    });
 
     const cachedItems = readCache(playlistId, 6 * 60 * 60 * 1000);
 
