@@ -476,7 +476,8 @@ header .logo {
     font-variant-numeric: tabular-nums;
     letter-spacing: .08em;
     font-weight: 750;
-    font-size: clamp(18px, 3.4vw, 26px);
+    font-size: clamp(28px, 5.6vw, 52px);
+    line-height: 1.1;
     color: var(--fg);
 }
 
