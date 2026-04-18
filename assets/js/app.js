@@ -36,6 +36,14 @@ const debugVals = () => { };
       f.allowFullscreen = true;
       f.src = `https://www.youtube.com/embed/${CONFIG.featuredVideoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
       wrap.innerHTML = ''; wrap.appendChild(f);
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent('boe:media-play', {
+            detail: { type: 'youtube', source: 'hero', videoId: CONFIG.featuredVideoId, iframe: f }
+          })
+        );
+      } catch { }
     });
   }
 

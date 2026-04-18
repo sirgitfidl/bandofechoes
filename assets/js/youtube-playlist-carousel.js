@@ -4,6 +4,14 @@
     return (root || document).querySelector(sel);
   }
 
+  function on(win, eventName, handler, opts) {
+    try {
+      win.addEventListener(eventName, handler, opts);
+    } catch {
+      // ignore
+    }
+  }
+
   function isAutomation() {
     // Keep tests stable: avoid hard network dependency under automation.
     return Boolean(navigator && navigator.webdriver);
@@ -22,6 +30,85 @@
   function setHidden(el, hidden) {
     if (!el) return;
     el.hidden = Boolean(hidden);
+  }
+
+  function pauseYouTubeIframe(iframe) {
+    if (!iframe) return;
+    try {
+      iframe.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }),
+        '*'
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  function pauseOtherYouTubeIframes(exceptIframe) {
+    try {
+      document
+        .querySelectorAll(
+          'iframe[src*="youtube.com/embed"], iframe[src*="youtube-nocookie.com/embed"]'
+        )
+        .forEach((f) => {
+          if (exceptIframe && f === exceptIframe) return;
+          pauseYouTubeIframe(f);
+        });
+    } catch {
+      // ignore
+    }
+  }
+
+  function resetSpotifyEmbed() {
+    const wrap = document.querySelector('[data-testid="spotify-embed"]');
+    if (!wrap) return;
+    const iframe = wrap.querySelector('iframe');
+    if (!iframe) return;
+
+    const src = iframe.getAttribute('src') || '';
+    const stored = iframe.getAttribute('data-boe-src') || '';
+    const stableSrc = stored || src;
+    if (!stableSrc) return;
+
+    if (!stored) iframe.setAttribute('data-boe-src', stableSrc);
+
+    // Force a reload to stop playback (cross-origin embeds can't be paused directly).
+    iframe.removeAttribute('src');
+    window.requestAnimationFrame(() => {
+      iframe.setAttribute('src', stableSrc);
+    });
+  }
+
+  function installMediaCoordinator() {
+    if (window.__boeMediaCoordinatorInstalled) return;
+    window.__boeMediaCoordinatorInstalled = true;
+
+    on(window, 'boe:media-play', (ev) => {
+      const detail = ev && ev.detail ? ev.detail : {};
+      const type = String(detail.type || '').toLowerCase();
+      if (type === 'youtube') {
+        pauseOtherYouTubeIframes(detail.iframe);
+        resetSpotifyEmbed();
+      }
+      if (type === 'spotify') {
+        pauseOtherYouTubeIframes(null);
+      }
+    });
+
+    // Clicking/tapping the Spotify iframe is detectable on the iframe element.
+    const spotifyWrap = document.querySelector('[data-testid="spotify-embed"]');
+    if (spotifyWrap) {
+      const notifySpotify = () => {
+        try {
+          window.dispatchEvent(new CustomEvent('boe:media-play', { detail: { type: 'spotify' } }));
+        } catch {
+          // ignore
+        }
+      };
+
+      spotifyWrap.addEventListener('pointerdown', notifySpotify, { capture: true, passive: true });
+      spotifyWrap.addEventListener('keydown', notifySpotify, { capture: true, passive: true });
+    }
   }
 
   function clamp(n, min, max) {
@@ -73,6 +160,8 @@
     const u = new URL(`https://www.youtube.com/embed/${encodeURIComponent(videoId)}`);
     u.searchParams.set('autoplay', '1');
     u.searchParams.set('rel', '0');
+    u.searchParams.set('modestbranding', '1');
+    u.searchParams.set('enablejsapi', '1');
     return u.toString();
   }
 
@@ -121,7 +210,19 @@
 
       if (thumb.querySelector('iframe')) return;
       thumb.innerHTML = '';
-      thumb.appendChild(buildIframe(item.videoId, item.title || 'YouTube video'));
+
+      const iframe = buildIframe(item.videoId, item.title || 'YouTube video');
+      thumb.appendChild(iframe);
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent('boe:media-play', {
+            detail: { type: 'youtube', source: 'carousel', videoId: item.videoId, iframe }
+          })
+        );
+      } catch {
+        // ignore
+      }
     });
     thumb.appendChild(playBtn);
 
@@ -379,6 +480,7 @@
   }
 
   function boot() {
+    installMediaCoordinator();
     const root = document.querySelector('[data-testid="yt-playlist"]');
     if (!root) return;
     init(root);
