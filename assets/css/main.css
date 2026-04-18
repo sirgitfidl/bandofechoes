@@ -431,6 +431,8 @@ header .logo {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     border-radius: 12px;
+    /* Reserve space for arrows so they don't overlap tiles */
+    padding: 10px 48px;
 }
 
 .yt-carousel-viewport::-webkit-scrollbar {
@@ -441,7 +443,7 @@ header .logo {
 .yt-carousel-track {
     display: flex;
     gap: 14px;
-    padding: 10px;
+    padding: 0;
     align-items: stretch;
 }
 
@@ -535,7 +537,7 @@ header .logo {
 
 .yt-carousel-arrow {
     position: absolute;
-    /* Center on thumbnail area: 10px track padding + half of 16:9 height */
+    /* Center on thumbnail area: 10px viewport padding + half of 16:9 height */
     top: calc(10px + (clamp(220px, 36vw, 340px) * 9 / 32));
     transform: translateY(-50%);
     width: 36px;
@@ -554,11 +556,11 @@ header .logo {
 }
 
 .yt-carousel-arrow.right {
-    right: 10px;
+    right: 6px;
 }
 
 .yt-carousel-arrow.left {
-    left: 10px;
+    left: 6px;
 }
 
 .yt-carousel-arrow:hover,
