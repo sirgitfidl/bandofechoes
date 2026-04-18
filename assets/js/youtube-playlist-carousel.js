@@ -358,12 +358,23 @@
 
     // Live refresh (runtime-dynamic) when an API key is provided.
     const apiKey = getApiKey();
+    let storageKeyLength = null;
+    let storageKeyReadable = true;
+    try {
+      storageKeyLength = String(localStorage.getItem('BOE_YT_API_KEY') || '').trim().length;
+    } catch (e) {
+      storageKeyReadable = false;
+      storageKeyLength = null;
+    }
+
     debugInfo('YouTube playlist init', {
       playlistId,
       forceRefresh,
       automation: isAutomation(),
       apiKeyPresent: Boolean(apiKey),
       apiKeyLength: apiKey ? apiKey.length : 0,
+      storageKeyReadable,
+      storageKeyLength,
     });
 
     if (!apiKey) {
