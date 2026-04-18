@@ -106,6 +106,25 @@ header {
     border-bottom: 1px solid var(--border);
 }
 
+header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../images/random_images/apcLogo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    /* Fit within the header height to avoid cropping */
+    background-size: auto 70%;
+    opacity: .12;
+    pointer-events: none;
+    z-index: 0;
+}
+
+header .wrap {
+    position: relative;
+    z-index: 1;
+}
+
 .wrap {
     max-width: var(--maxw);
     margin: 0 auto;
@@ -422,6 +441,34 @@ header .logo {
 
 .next-video-countdown {
     margin-top: 32px;
+    min-height: clamp(210px, 26vw, 340px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.next-video-countdown {
+    position: relative;
+    overflow: hidden;
+}
+
+.next-video-countdown::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../images/random_images/apcLogo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: .12;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.next-video-countdown > * {
+    position: relative;
+    z-index: 1;
 }
 
 .next-video-countdown .countdown-timer {
