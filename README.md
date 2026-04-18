@@ -15,7 +15,7 @@ YouTube playlist tiles:
 - The site loads an optional override file at [assets/js/data/youtube-api.private.js](assets/js/data/youtube-api.private.js).
    - In git, this file can stay as an empty placeholder (no secret committed).
    - In production, it should be generated at deploy time from a GitHub Secret (see GitHub Pages section below).
-- If no API key is set (or the API fails), the site falls back to the bundled snapshot at [assets/js/data/youtube-playlist-items.js](assets/js/data/youtube-playlist-items.js).
+- If no API key is set (or the API fails), the carousel won’t load live data; it will show a "View playlist on YouTube" fallback.
 
 GitHub Pages (recommended for keeping the key out of git):
 - If you publish Pages directly from the `main` branch, you cannot inject a secret at deploy time.
