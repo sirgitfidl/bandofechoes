@@ -15,12 +15,6 @@
     "title": "Right In Two – Tool (Acoustic Cover) | Band of Echoes",
     "length": "8:54",
     "thumbnailUrl": "https://i.ytimg.com/vi/yIyU3hoZU0g/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLClXz7004ruFFwblPsQ6-cC5SCDow"
-  },
-  {
-    "videoId": "yOBj6pLNnic",
-    "title": "Hurt – Nine Inch Nails (Acoustic Cover) | Band of Echoes",
-    "length": "5:00",
-    "thumbnailUrl": "https://i.ytimg.com/vi/yOBj6pLNnic/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB5PFdp9pMzeY9rpUxphgN5bH45Eg"
   }
 ];
 })();
