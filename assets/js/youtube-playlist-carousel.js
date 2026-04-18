@@ -10,8 +10,18 @@
   }
 
   function getApiKey() {
-    const k = (window.BOE_YT_API_KEY || '').trim();
-    return k ? k : null;
+    const fromWindow = (window.BOE_YT_API_KEY || '').trim();
+    if (fromWindow) return fromWindow;
+
+    // Optional escape hatch for local testing without modifying tracked files.
+    // In DevTools:
+    //   localStorage.setItem('BOE_YT_API_KEY', 'AIza...'); location.reload();
+    try {
+      const fromStorage = (localStorage.getItem('BOE_YT_API_KEY') || '').trim();
+      return fromStorage ? fromStorage : null;
+    } catch {
+      return null;
+    }
   }
 
   function isDebug() {
@@ -19,6 +29,34 @@
       return /(?:^|[?&])ytdebug=1(?:&|$)/.test(String(window.location && window.location.search ? window.location.search : ''));
     } catch {
       return false;
+    }
+  }
+
+  function isForceRefresh() {
+    try {
+      return /(?:^|[?&])ytrefresh=1(?:&|$)/.test(String(window.location && window.location.search ? window.location.search : ''));
+    } catch {
+      return false;
+    }
+  }
+
+  function debugInfo(msg, extra) {
+    if (!isDebug()) return;
+    try {
+      // eslint-disable-next-line no-console
+      console.info('[boe]', msg, extra || '');
+    } catch {
+      // ignore
+    }
+  }
+
+  function debugWarn(msg, extra) {
+    if (!isDebug()) return;
+    try {
+      // eslint-disable-next-line no-console
+      console.warn('[boe]', msg, extra || '');
+    } catch {
+      // ignore
     }
   }
 
@@ -291,7 +329,23 @@
 
     /** @type {any[]} */
     const localItems = (window.BOE_YT_PLAYLISTS && window.BOE_YT_PLAYLISTS[playlistId]) || [];
-    const cachedItems = readCache(playlistId, 6 * 60 * 60 * 1000);
+    const forceRefresh = isForceRefresh();
+    const cachedItems = forceRefresh ? null : readCache(playlistId, 6 * 60 * 60 * 1000);
+
+    // Expose a tiny debug state for troubleshooting (no secrets).
+    // This helps confirm whether the live fetch path is being taken.
+    try {
+      window.__boeYtCarousel = window.__boeYtCarousel || {};
+      window.__boeYtCarousel[playlistId] = {
+        forceRefresh,
+        usedCache: Boolean(cachedItems && cachedItems.length),
+        usedSnapshot: Boolean(!cachedItems && localItems && localItems.length),
+        attemptedLiveFetch: false,
+        liveFetchError: null,
+      };
+    } catch {
+      // ignore
+    }
 
     // Fast path: show cached or bundled data immediately.
     if (cachedItems && cachedItems.length) {
@@ -304,20 +358,34 @@
 
     // Live refresh (runtime-dynamic) when an API key is provided.
     const apiKey = getApiKey();
+    debugInfo('YouTube playlist init', {
+      playlistId,
+      forceRefresh,
+      automation: isAutomation(),
+      apiKeyPresent: Boolean(apiKey),
+      apiKeyLength: apiKey ? apiKey.length : 0,
+    });
+
+    if (!apiKey) {
+      debugWarn('No BOE_YT_API_KEY detected; skipping live fetch (using snapshot/cache).');
+    }
+
     if (apiKey && !isAutomation()) {
       (async () => {
         try {
-          if (isDebug()) {
-            // eslint-disable-next-line no-console
-            console.info('[boe] Fetching YouTube playlist via API…');
+          try {
+            if (window.__boeYtCarousel && window.__boeYtCarousel[playlistId]) {
+              window.__boeYtCarousel[playlistId].attemptedLiveFetch = true;
+            }
+          } catch {
+            // ignore
           }
+
+          debugInfo('Fetching YouTube playlist via API…');
           const liveItems = await fetchPlaylistItemsViaApi(playlistId, apiKey);
           if (!liveItems || !liveItems.length) return;
 
-          if (isDebug()) {
-            // eslint-disable-next-line no-console
-            console.info(`[boe] YouTube API returned ${liveItems.length} items.`);
-          }
+          debugInfo(`YouTube API returned ${liveItems.length} items.`);
 
           writeCache(playlistId, liveItems);
 
@@ -337,10 +405,15 @@
             console.warn('[boe] YouTube playlist live fetch failed; using fallback.', err);
           }
 
-          if (isDebug()) {
-            // eslint-disable-next-line no-console
-            console.warn('[boe] YouTube playlist live fetch failed; using fallback.', err);
+          try {
+            if (window.__boeYtCarousel && window.__boeYtCarousel[playlistId]) {
+              window.__boeYtCarousel[playlistId].liveFetchError = String(err && err.message ? err.message : err);
+            }
+          } catch {
+            // ignore
           }
+
+          debugWarn('YouTube playlist live fetch failed; using fallback.', err);
         }
       })();
     }
