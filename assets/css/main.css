@@ -504,6 +504,89 @@ header .logo {
     letter-spacing: .08em;
 }
 
+.support-benefits {
+    margin: 10px 0 18px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px 16px;
+}
+
+.support-benefits li {
+    margin: 0;
+    position: relative;
+    padding-left: 18px;
+    line-height: 1.35;
+}
+
+.support-benefits li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: .6em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    transform: translateY(-50%);
+}
+
+@media (min-width: 760px) {
+    .support-benefits {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.support-blurb {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.support-lead {
+    font-size: clamp(16px, 1.7vw, 19px);
+    font-weight: 650;
+}
+
+.support-kicker {
+    color: var(--muted);
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+.support-memberships {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    background: color-mix(in oklab, var(--card) 70%, var(--bg));
+    text-align: center;
+}
+
+.support-memberships h3 {
+    margin: 0 0 10px;
+}
+
+.support-ctas {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.support-hero-image {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.support-hero-image img {
+    display: block;
+    width: 100%;
+    max-width: min(92vw, var(--maxw));
+    height: auto;
+}
+
 /* YouTube playlist tiles carousel (Support section) */
 .yt-carousel {
     margin-top: 40px;

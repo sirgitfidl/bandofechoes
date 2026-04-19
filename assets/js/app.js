@@ -3,7 +3,7 @@ const CONFIG = {
   featuredVideoId: 'qqMLXwzeRE0', // updated hero video
   youtubeHandleUrl: 'https://youtube.com/@BandOfEchoes',
   spotifyUrl: 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS',
-  patreonUrl: 'https://patreon.com/bandofechoes'
+  patreonUrl: 'https://www.patreon.com/cw/BandofEchoes/membership'
 };
 
 // helpers

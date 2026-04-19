@@ -67,9 +67,9 @@ test.describe('Home page', () => {
         await test.step('verify destinations and attributes for links', async () => {
             await expect(mainPage.ytFooter).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
             await expect(mainPage.spFooter).toHaveAttribute('href', 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS');
-            await expect(mainPage.ptFooter).toHaveAttribute('href', 'https://patreon.com/bandofechoes');
-            await expect(mainPage.patreonCta2).toHaveAttribute('href', 'https://www.patreon.com/bandofechoes');
-            await expect(mainPage.subFallback).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes?sub_confirmation=1');
+            await expect(mainPage.ptFooter).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
+            await expect(mainPage.patreonCta2).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
+            await expect(mainPage.subFallback).toHaveAttribute('href', 'https://www.youtube.com/@bandofechoes/join');
             await expect(mainPage.ytFooter).toHaveAttribute('target', '_blank');
             await expect(mainPage.spFooter).toHaveAttribute('target', '_blank');
             await expect(mainPage.ptFooter).toHaveAttribute('target', '_blank');

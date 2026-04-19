@@ -43,7 +43,7 @@
           "sameAs": [
             "https://youtube.com/@BandOfEchoes",
             "https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS",
-            "https://www.patreon.com/bandofechoes"
+            "https://www.patreon.com/cw/BandofEchoes/membership"
           ]
         },
         {
@@ -86,7 +86,7 @@
   <!-- Preload brand font to avoid FOUT in header -->
   <link rel="preload" href="assets/fonts/MaragsaDisplay-GO6PD.otf" as="font" type="font/otf" crossorigin>
 
-  <link rel="stylesheet" href="assets/css/main.css?v=20260418-10">
+  <link rel="stylesheet" href="assets/css/main.css?v=20260419-7">
   <link rel="stylesheet" href="assets/css/app-dynamic.css">
 </head>
 
@@ -138,9 +138,7 @@
     <section id="about" class="section cols" data-testid="section-about">
       <div class="card pad">
 
-        <p class="text-justify">Band of Echoes is an acoustic duo creating dynamic acoustic covers — reimagining songs by Tool, Nine Inch Nails, Alice In
-          Chains, Soundgarden, Metallica, and more. Featuring the intricate interplay of cello and acoustic guitar, layered with intertwined male and female
-          vocals, they transform heavy rock into raw, emotional acoustic arrangements.</p>
+        <p class="text-justify">Band of Echoes is an acoustic duo reimagining songs by Tool, Nine Inch Nails, Alice In Chains, Soundgarden, Metallica, and more. Through the interplay of cello, acoustic guitar, and layered, harmonized vocals, they transform heavy rock into immersive acoustic arrangements.</p>
         <!--<p class="quote text-justify" id="quote">“World‑class musicians. Duo sounds like a band.” — Name, Outlet</p>-->
       </div>
     </section>
@@ -241,21 +239,9 @@
       </div>
     </section>
 
-    <!-- SUPPORT: Patreon embed / CTA -->
-    <section id="support" class="section cols" data-testid="section-support">
+    <!-- MUSIC VIDEOS: Countdown + Playlist -->
+    <section class="section cols" data-testid="section-music-videos">
       <div class="card pad">
-        <h2 style="margin-top:0">Support</h2>
-        <p class="text-justify">Into what we’re making and have an insatiable yearning for more? Patreon is the most
-          reliable way to help
-          keep this train a rollin’.</p>
-        <p class="text-justify"><em>Plus you get access to cool stuff like tabs/sheets, video lessons, high-res audio downloads, and more!</em></p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a id="patreonCta2" class="btn primary" href="https://www.patreon.com/bandofechoes" target="_blank"
-            rel="noopener" data-testid="cta-patreon">Become a Patron</a>
-          <a class="btn" id="subFallback" href="https://youtube.com/@BandOfEchoes?sub_confirmation=1" target="_blank"
-            rel="noopener" data-testid="cta-subscribe">Subscribe on YouTube</a>
-        </div>
-
         <div class="next-video-countdown" data-testid="next-release-countdown" aria-label="Countdown to next video">
           <div class="countdown-timer" data-testid="countdown-timer" aria-live="polite">--d --h --m --s</div>
 
@@ -275,7 +261,45 @@
             <button class="yt-carousel-arrow right is-hidden" type="button" aria-label="Scroll right" data-testid="yt-carousel-right">›</button>
           </div>
         </div>
+      </div>
+    </section>
 
+    <!-- SUPPORT: Patreon / Memberships -->
+    <section id="support" class="section cols" data-testid="section-support">
+      <div class="card pad">
+        <h2 style="margin-top:0">Support</h2>
+        <div class="support-blurb" aria-label="Support options">
+          <p class="text-justify support-lead">Into what we’re making and have an insatiable yearning for more?</p>
+          <p class="text-justify">Patreon is the most direct way to support what we’re doing and help us keep making more of it.</p>
+
+          <p class="text-justify support-kicker">On Patreon:</p>
+          <ul class="support-benefits" aria-label="Patreon benefits">
+            <li>Tabs and sheet music</li>
+            <li>Early access to music videos and audio releases</li>
+            <li>Full video lessons and breakdowns</li>
+            <li>Direct messaging access</li>
+            <li>Lesson support chats</li>
+            <li>High-res audio downloads</li>
+            <li>The occasional behind-the-scenes chaos</li>
+            <li>4K high bitrate music video downloads</li>
+          </ul>
+
+          <p class="text-justify">If you just want early access to videos, <a href="https://www.youtube.com/@bandofechoes/join" target="_blank" rel="noopener">YouTube Memberships</a> will get you that a week early.</p>
+
+          <div class="support-memberships" aria-label="Memberships">
+            <h3>Memberships</h3>
+            <div class="support-ctas">
+              <a id="patreonCta2" class="btn primary" href="https://www.patreon.com/cw/BandofEchoes/membership" target="_blank"
+                rel="noopener" data-testid="cta-patreon">Get the Full Experience on Patreon</a>
+              <a class="btn" id="subFallback" href="https://www.youtube.com/@bandofechoes/join" target="_blank"
+                rel="noopener" data-testid="cta-subscribe">Get Early Access on YouTube</a>
+            </div>
+          </div>
+
+          <div class="support-hero-image" aria-label="Band of Echoes photo">
+            <img src="assets/images/band_photos/hero_images/hero_1.png" alt="Band of Echoes" loading="lazy" decoding="async">
+          </div>
+        </div>
       </div>
     </section>
 
@@ -352,7 +376,7 @@
         "sameAs": [
           "https://youtube.com/@BandOfEchoes",
           "https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS",
-          "https://www.patreon.com/bandofechoes"
+          "https://www.patreon.com/cw/BandofEchoes/membership"
         ],
         "member": [
           {"@type":"Person","name":"Eric"},
@@ -368,6 +392,8 @@
   <script src="assets/js/orientation-guard.js" defer></script>
   <script src="assets/js/data/youtube-api.js" defer></script>
   <script src="assets/js/data/youtube-api.private.js?v=20260417-2" defer></script>
+  <script src="assets/js/data/google-analytics.js?v=20260419-2" defer></script>
+  <script src="assets/js/analytics.js?v=20260419-1" defer></script>
   <script src="assets/js/data/next-release.js?v=20260418-1" defer></script>
   <script src="assets/js/next-release-countdown.js?v=20260418-2" defer></script>
   <script src="assets/js/data/youtube-playlist.js?v=20260418-1" defer></script>
