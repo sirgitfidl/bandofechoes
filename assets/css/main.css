@@ -286,8 +286,12 @@ nav a:hover {
     scroll-margin-top: 0;
 }
 
+#music-videos.section {
+    padding-bottom: 8px;
+}
+
 #support.section {
-    padding-top: 18px;
+    padding-top: 10px;
     padding-bottom: 0px;
     scroll-margin-top: 110px;
 }

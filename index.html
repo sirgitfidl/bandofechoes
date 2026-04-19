@@ -86,11 +86,12 @@
   <!-- Preload brand font to avoid FOUT in header -->
   <link rel="preload" href="assets/fonts/MaragsaDisplay-GO6PD.otf" as="font" type="font/otf" crossorigin>
 
-  <link rel="stylesheet" href="assets/css/main.css?v=20260419-9">
+  <link rel="stylesheet" href="assets/css/main.css?v=20260419-10">
   <link rel="stylesheet" href="assets/css/app-dynamic.css">
 </head>
 
 <body>
+  <div id="top" tabindex="-1" aria-hidden="true"></div>
   <a href="#main" class="skip" data-testid="skip-link">Skip to content</a>
 
   <header>
@@ -108,7 +109,7 @@
           <span></span><span></span><span></span>
         </button>
         <div id="navMenu" class="menu" role="menu" aria-hidden="true" data-testid="nav-menu">
-          <a role="menuitem" href="#about" data-testid="menu-about">About</a>
+          <a role="menuitem" href="#top" data-testid="menu-about">About</a>
           <a role="menuitem" href="#music-videos" data-testid="menu-music-videos">Music Videos</a>
           <a role="menuitem" href="#support" data-testid="menu-support">Support</a>
           <a role="menuitem" href="#contact" data-testid="menu-contact">Contact</a>
