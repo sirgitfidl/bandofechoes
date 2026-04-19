@@ -178,24 +178,34 @@
   }
 
   function startCountdown(root, targetDate) {
-    const timerEl = $('[data-testid="countdown-timer"]', root);
-    if (!timerEl) return;
+    const mainTimerEl = $('[data-testid="countdown-timer"]', root);
+    const patreonTimerEl = $('[data-testid="countdown-timer-patreon"]', root);
 
-    function tick() {
-      const now = Date.now();
-      const diff = targetDate.getTime() - now;
+    const startOne = (timerEl, date) => {
+      if (!timerEl || !date) return;
 
-      if (diff <= 0) {
-        timerEl.textContent = '00d 00h 00m 00s';
-        return;
+      function tick() {
+        const now = Date.now();
+        const diff = date.getTime() - now;
+
+        if (diff <= 0) {
+          timerEl.textContent = '00d 00h 00m 00s';
+          return;
+        }
+
+        const { days, hours, minutes, seconds } = formatCountdown(diff);
+        timerEl.textContent = `${pad2(days)}d ${pad2(hours)}h ${pad2(minutes)}m ${pad2(seconds)}s`;
+        window.setTimeout(tick, 250);
       }
 
-      const { days, hours, minutes, seconds } = formatCountdown(diff);
-      timerEl.textContent = `${pad2(days)}d ${pad2(hours)}h ${pad2(minutes)}m ${pad2(seconds)}s`;
-      window.setTimeout(tick, 250);
-    }
+      tick();
+    };
 
-    tick();
+    startOne(mainTimerEl, targetDate);
+
+    // Patreon Early Access is exactly one week earlier.
+    const earlyAccessDate = new Date(targetDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    startOne(patreonTimerEl, earlyAccessDate);
   }
 
   async function boot() {

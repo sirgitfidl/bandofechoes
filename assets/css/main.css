@@ -481,6 +481,26 @@ header .logo {
     color: var(--fg);
 }
 
+.next-video-countdown .countdown-secondary {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    text-align: right;
+}
+
+.next-video-countdown .countdown-secondary-title {
+    font-size: clamp(11px, 1.4vw, 13px);
+    font-weight: 650;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.next-video-countdown .countdown-timer--small {
+    font-size: clamp(13px, 1.8vw, 16px);
+    font-weight: 750;
+    letter-spacing: .08em;
+}
+
 /* YouTube playlist tiles carousel (Support section) */
 .yt-carousel {
     margin-top: 40px;
