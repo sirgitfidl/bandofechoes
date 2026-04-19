@@ -374,6 +374,14 @@
       const candidate = candidateItem && candidateItem.videoId ? String(candidateItem.videoId).trim() : '';
       if (!candidate) return;
 
+      // Always keep the featured title in sync (used by the hero "Latest release" line).
+      try {
+        const t = cleanTitle(candidateItem && candidateItem.title ? candidateItem.title : '');
+        if (t) window.BOE_FEATURED_VIDEO_TITLE = t;
+      } catch {
+        // ignore
+      }
+
       const current = String(window.BOE_FEATURED_VIDEO_ID || '').trim();
       if (current === candidate) return;
 
