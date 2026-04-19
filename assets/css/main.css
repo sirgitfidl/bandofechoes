@@ -560,10 +560,10 @@ header .logo {
 
 .support-memberships {
     margin-top: 16px;
-    border: 1px solid var(--border);
+    border: 2px solid color-mix(in oklab, var(--border) 55%, var(--accent));
     border-radius: 12px;
-    padding: 14px;
-    background: color-mix(in oklab, var(--card) 70%, var(--bg));
+    padding: 18px;
+    background: color-mix(in oklab, var(--card) 84%, var(--bg));
     text-align: center;
 }
 
@@ -573,9 +573,22 @@ header .logo {
 
 .support-ctas {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
+}
+
+.support-memberships .btn {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+}
+
+.support-memberships .btn.primary {
+    border: 1px solid color-mix(in oklab, var(--accent) 70%, var(--border));
+}
+
+.support-memberships .support-ctas .btn {
+    flex: 1 1 260px;
 }
 
 .support-hero-image {
