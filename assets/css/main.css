@@ -107,17 +107,7 @@ header {
 }
 
 header::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url('../images/random_images/apcLogo.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    /* Fit within the header height to avoid cropping */
-    background-size: auto 70%;
-    opacity: .12;
-    pointer-events: none;
-    z-index: 0;
+    content: none;
 }
 
 header .wrap {
@@ -582,8 +572,8 @@ header .logo {
 
 .support-hero-image img {
     display: block;
-    width: 100%;
-    max-width: min(92vw, var(--maxw));
+    width: 80%;
+    max-width: min(92vw, calc(var(--maxw) * 0.8));
     height: auto;
 }
 
