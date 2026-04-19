@@ -135,7 +135,7 @@
 
       <div class="hero-latest" data-testid="hero-latest" aria-live="polite" hidden>
         <span class="hero-latest-label">Latest release:</span>
-        <span id="heroLatestTitle" class="hero-latest-title" data-testid="hero-latest-title"></span>
+        <a id="heroLatestLink" class="hero-latest-title" data-testid="hero-latest-title" href="#" target="_blank" rel="noopener"></a>
       </div>
     </section>
 
@@ -254,7 +254,7 @@
           <div class="countdown-timer" data-testid="countdown-timer" aria-live="polite">--d --h --m --s</div>
 
           <a class="countdown-secondary" data-testid="patreon-early-access" aria-label="Patreon Early Access countdown link" href="https://www.patreon.com/cw/BandofEchoes/membership" target="_blank" rel="noopener">
-            <div class="countdown-secondary-title">Patreon Early Access</div>
+            <div class="countdown-secondary-title">Members-Only Early Access</div>
             <div class="countdown-timer countdown-timer--small" data-testid="countdown-timer-patreon" aria-live="polite">--d --h --m --s</div>
           </a>
         </div>
@@ -275,12 +275,12 @@
     <!-- SUPPORT: Patreon / Memberships -->
     <section id="support" class="section cols" data-testid="section-support">
       <div class="card pad">
-        <h2 id="support-heading" style="margin-top:0">Support Us</h2>
+        <h2 id="support-heading" style="margin-top:0">Support</h2>
         <div class="support-blurb" aria-label="Support options">
           <p class="text-justify support-lead">Into what we’re making and have an insatiable yearning for more?</p>
-          <p class="text-justify">Patreon is the most direct way to support what we’re doing and help us keep making more of it.</p>
+          <p class="text-justify">Patreon is the most direct way to support what we’re doing and help us keep making more of this.</p>
 
-          <p class="text-justify support-kicker">On Patreon:</p>
+          <p class="text-justify support-kicker">Patreon</p>
           <ul class="support-benefits" aria-label="Patreon benefits">
             <li>Tabs and sheet music</li>
             <li>Early access to music videos and audio releases</li>
@@ -292,7 +292,10 @@
             <li>4K high bitrate music video downloads</li>
           </ul>
 
-          <p class="text-justify">If you just want early access to videos, <a href="https://www.youtube.com/@bandofechoes/join" target="_blank" rel="noopener">YouTube Memberships</a> will get you that a week early.</p>
+          <p class="text-justify support-kicker">YouTube Memberships</p>
+          <ul class="support-benefits" aria-label="YouTube Memberships benefits">
+            <li>Early access to music videos</li>
+          </ul>
 
           <div class="support-memberships" aria-label="Memberships">
             <h3>Memberships</h3>
@@ -412,7 +415,7 @@
   <script src="assets/js/data/solve-phrases.js" defer></script>
   <script src="assets/js/polaroid-randomizer.js" defer></script>
   <script src="assets/js/collage-puzzle.js" defer></script>
-  <script src="assets/js/app.js?v=20260419-1" defer></script>
+  <script src="assets/js/app.js?v=20260419-2" defer></script>
 </body>
 
 </html>

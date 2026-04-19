@@ -30,18 +30,26 @@ function isAutomation() {
 
   // Hero: Latest release text (populated from playlist carousel data)
   const heroLatest = document.querySelector('[data-testid="hero-latest"]');
-  const heroLatestTitle = document.getElementById('heroLatestTitle');
-  const setHeroLatestTitle = (title) => {
-    if (!heroLatest || !heroLatestTitle) return;
+  const heroLatestLink = document.getElementById('heroLatestLink');
+  const setHeroLatest = (title, videoId) => {
+    if (!heroLatest || !heroLatestLink) return;
     const t = String(title || '').trim();
-    if (!t) return;
-    heroLatestTitle.textContent = t;
+    const id = String(videoId || '').trim();
+    if (!t || !id) return;
+
+    heroLatestLink.textContent = t;
+    heroLatestLink.href = `https://youtu.be/${encodeURIComponent(id)}`;
     heroLatest.hidden = false;
   };
-  try { setHeroLatestTitle(window.BOE_FEATURED_VIDEO_TITLE); } catch { }
+  try {
+    setHeroLatest(window.BOE_FEATURED_VIDEO_TITLE, window.BOE_FEATURED_VIDEO_ID);
+  } catch { }
   window.addEventListener('boe:featured-video', (e) => {
     try {
-      setHeroLatestTitle(e && e.detail ? e.detail.title : '');
+      setHeroLatest(
+        e && e.detail ? e.detail.title : '',
+        e && e.detail ? e.detail.videoId : ''
+      );
     } catch { }
   });
 
