@@ -351,13 +351,15 @@
     return `BOE_YT_PLAYLIST_CACHE_${playlistId}`;
   }
 
-  function dispatchFeatured(videoId, source) {
+  function dispatchFeatured(videoId, source, title) {
     try {
       const id = String(videoId || '').trim();
       if (!id) return;
+      const safeTitle = cleanTitle(String(title || ''));
+      if (safeTitle) window.BOE_FEATURED_VIDEO_TITLE = safeTitle;
       window.dispatchEvent(
         new CustomEvent('boe:featured-video', {
-          detail: { videoId: id, source: String(source || 'playlist') }
+          detail: { videoId: id, title: safeTitle, source: String(source || 'playlist') }
         })
       );
     } catch {
@@ -368,14 +370,15 @@
   function maybeSetFeaturedFromItems(items, source) {
     try {
       if (!Array.isArray(items) || !items.length) return;
-      const candidate = items[0] && items[0].videoId ? String(items[0].videoId).trim() : '';
+      const candidateItem = items[0] || null;
+      const candidate = candidateItem && candidateItem.videoId ? String(candidateItem.videoId).trim() : '';
       if (!candidate) return;
 
       const current = String(window.BOE_FEATURED_VIDEO_ID || '').trim();
       if (current === candidate) return;
 
       window.BOE_FEATURED_VIDEO_ID = candidate;
-      dispatchFeatured(candidate, source);
+      dispatchFeatured(candidate, source, candidateItem && candidateItem.title ? candidateItem.title : '');
     } catch {
       // ignore
     }

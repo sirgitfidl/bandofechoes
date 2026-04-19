@@ -28,6 +28,23 @@ function isAutomation() {
 (function init() {
   const year = document.getElementById('year'); if (year) year.textContent = new Date().getFullYear();
 
+  // Hero: Latest release text (populated from playlist carousel data)
+  const heroLatest = document.querySelector('[data-testid="hero-latest"]');
+  const heroLatestTitle = document.getElementById('heroLatestTitle');
+  const setHeroLatestTitle = (title) => {
+    if (!heroLatest || !heroLatestTitle) return;
+    const t = String(title || '').trim();
+    if (!t) return;
+    heroLatestTitle.textContent = t;
+    heroLatest.hidden = false;
+  };
+  try { setHeroLatestTitle(window.BOE_FEATURED_VIDEO_TITLE); } catch { }
+  window.addEventListener('boe:featured-video', (e) => {
+    try {
+      setHeroLatestTitle(e && e.detail ? e.detail.title : '');
+    } catch { }
+  });
+
   // click-to-play hero
   const wrap = document.getElementById('playerWrap');
   const poster = document.getElementById('poster');
