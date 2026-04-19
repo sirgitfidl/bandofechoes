@@ -486,6 +486,9 @@ header .logo {
     right: 12px;
     bottom: 12px;
     text-align: right;
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
 }
 
 .next-video-countdown .countdown-secondary-title {
