@@ -290,6 +290,11 @@ nav a:hover {
     padding-bottom: 8px;
 }
 
+#music-videos-heading,
+#support-heading {
+    scroll-margin-top: 92px;
+}
+
 #support.section {
     padding-top: 10px;
     padding-bottom: 0px;
