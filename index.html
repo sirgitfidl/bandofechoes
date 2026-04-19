@@ -86,7 +86,7 @@
   <!-- Preload brand font to avoid FOUT in header -->
   <link rel="preload" href="assets/fonts/MaragsaDisplay-GO6PD.otf" as="font" type="font/otf" crossorigin>
 
-  <link rel="stylesheet" href="assets/css/main.css?v=20260419-8">
+  <link rel="stylesheet" href="assets/css/main.css?v=20260419-9">
   <link rel="stylesheet" href="assets/css/app-dynamic.css">
 </head>
 
@@ -108,8 +108,8 @@
           <span></span><span></span><span></span>
         </button>
         <div id="navMenu" class="menu" role="menu" aria-hidden="true" data-testid="nav-menu">
-          <a role="menuitem" href="#main" data-testid="menu-watch">Watch</a>
           <a role="menuitem" href="#about" data-testid="menu-about">About</a>
+          <a role="menuitem" href="#music-videos" data-testid="menu-music-videos">Music Videos</a>
           <a role="menuitem" href="#support" data-testid="menu-support">Support</a>
           <a role="menuitem" href="#contact" data-testid="menu-contact">Contact</a>
         </div>
@@ -240,7 +240,7 @@
     </section>
 
     <!-- MUSIC VIDEOS: Countdown + Playlist -->
-    <section class="section cols" data-testid="section-music-videos">
+    <section id="music-videos" class="section cols" data-testid="section-music-videos">
       <div class="card pad">
         <div class="next-video-countdown" data-testid="next-release-countdown" aria-label="Countdown to next video">
           <div class="countdown-timer" data-testid="countdown-timer" aria-live="polite">--d --h --m --s</div>

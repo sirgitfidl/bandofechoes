@@ -281,8 +281,9 @@ nav a:hover {
 
 /* Tighter spacing between About → Support → Contact */
 #about.section {
-    padding-top: 6px;
+    padding-top: 0;
     padding-bottom: 6px;
+    scroll-margin-top: 0;
 }
 
 #support.section {

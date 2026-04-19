@@ -116,7 +116,7 @@ export class MainPage {
         }
     }
 
-    async clickMenu(label: 'Watch' | 'About' | 'Support' | 'Contact') {
+    async clickMenu(label: 'Home' | 'About' | 'Music Videos' | 'Support' | 'Contact') {
         await this.openNav();
         await this.navMenu.getByRole('link', { name: label }).click();
     }

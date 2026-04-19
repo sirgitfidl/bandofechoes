@@ -79,7 +79,7 @@ function isAutomation() {
       navMenu.classList.add('open');
       navMenu.setAttribute('aria-hidden', 'false');
       navToggle.setAttribute('aria-expanded', 'true');
-      (navMenu.querySelector('a') || navMenu)?.focus?.();
+      (navMenu.querySelector('a:not([hidden])') || navMenu)?.focus?.();
     };
     const closeMenu = () => {
       navMenu.classList.remove('open');
@@ -101,5 +101,6 @@ function isAutomation() {
     });
     navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
   }
+
 })();
 // (orientation guard moved to orientation-guard.js)
