@@ -298,6 +298,11 @@ nav a:hover {
 
 #contact.section {
     padding-top: 2px;
+    padding-bottom: 0;
+}
+
+#contact .pad>*:last-child {
+    margin-bottom: 0;
 }
 
 /* Keep collage from overlapping the hero */
@@ -380,7 +385,7 @@ nav a:hover {
 
 footer {
     border-top: 1px solid var(--border);
-    margin-top: 40px;
+    margin-top: 0;
 }
 
 .foot {
