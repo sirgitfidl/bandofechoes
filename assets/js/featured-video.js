@@ -2,6 +2,8 @@
   function applyFeaturedVideo(videoId) {
     const id = String(videoId || '').trim();
     if (!id) return;
+    // YouTube IDs are URL-safe; ensure we never inject unexpected characters into URLs/JSON-LD.
+    if (!/^[A-Za-z0-9_-]{6,}$/.test(id)) return;
 
     const posterLink = document.getElementById('poster');
     const playerWrap = document.getElementById('playerWrap');

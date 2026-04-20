@@ -27,8 +27,16 @@
         frame.setAttribute('data-testid', 'mixer-iframe');
         frame.style.cssText = 'position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#0b0d12';
 
-        // Always listen for close requests from the iframe (works cross-origin)
+        // Always listen for close requests from the iframe
+        const expectedOrigin = (() => {
+            try { return new URL(frame.src, window.location.href).origin; }
+            catch (_) { return (window.location && window.location.origin) ? window.location.origin : ''; }
+        })();
         const onMsg = (e) => {
+            try {
+                if (frame && frame.contentWindow && e.source !== frame.contentWindow) return;
+                if (expectedOrigin && e.origin !== expectedOrigin) return;
+            } catch (_) { return; }
             const data = e.data;
             if (!data || data.__mixerMsg !== true) return;
             if (data.type === 'MIXER_CLOSE') dismiss();

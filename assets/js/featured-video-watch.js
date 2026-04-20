@@ -6,6 +6,7 @@
   const go = (videoId) => {
     const id = String(videoId || '').trim();
     if (!id) return false;
+    if (!/^[A-Za-z0-9_-]{6,}$/.test(id)) return false;
     const url = `https://youtu.be/${encodeURIComponent(id)}`;
     if (a) a.href = url;
     // Use replace() so "back" doesn’t land on the redirect page.
