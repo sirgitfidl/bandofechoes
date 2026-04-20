@@ -107,7 +107,7 @@
     const toLoad = CH_NAMES.filter(ch => !buffers.has(ch));
     if (!toLoad.length) return;
 
-    showLoading(`Loading stems (0/${toLoad.length})…`);
+    showLoading(`Loading stems (0/${toLoad.length} this may take a few moments)…`);
     let done = 0;
     try {
       await Promise.all(toLoad.map(async ch => {
