@@ -1241,6 +1241,15 @@ input[type=email] {
     #watch .polaroid {
         margin: 2px 2px;
     }
+
+    /* Mobile: reduce gap between polaroids and countdown */
+    #watch {
+        padding-bottom: 18px;
+    }
+
+    #music-videos.section {
+        padding-top: 12px;
+    }
 }
 
 /* Utility classes */
