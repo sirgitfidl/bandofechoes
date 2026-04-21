@@ -311,25 +311,27 @@ nav a:hover {
 }
 
 /* Tighter spacing between About → Support → Contact */
-#about.section {
+#about-section.section {
     padding-top: 0;
     padding-bottom: 6px;
-    scroll-margin-top: 0;
 }
 
-#music-videos.section {
+#music-videos-section.section {
     padding-bottom: 8px;
 }
 
-#music-videos-heading,
-#support-heading {
+#about {
+    scroll-margin-top: 64px;
+}
+
+#music-videos,
+#support {
     scroll-margin-top: 92px;
 }
 
-#support.section {
+#support-section.section {
     padding-top: 10px;
     padding-bottom: 0px;
-    scroll-margin-top: 110px;
 }
 
 #contact.section {
@@ -348,11 +350,11 @@ nav a:hover {
 }
 
 /* Tighten gap between About (quote) and Polaroids */
-#about .pad {
+#about-section .pad {
     padding-bottom: 8px;
 }
 
-#about .pad>*:last-child {
+#about-section .pad>*:last-child {
     margin-bottom: 0;
 }
 
@@ -1262,7 +1264,7 @@ input[type=email] {
         padding-bottom: 18px;
     }
 
-    #music-videos.section {
+    #music-videos-section.section {
         padding-top: 12px;
     }
 }
