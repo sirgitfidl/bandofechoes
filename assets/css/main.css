@@ -155,6 +155,21 @@ header .wrap {
     opacity: 0.8;
 }
 
+/* Brand title is now a link; keep the exact same appearance (no underline/color shift on hover) */
+.brand h1 a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.brand h1 a:hover,
+.brand h1 a:focus {
+    color: inherit;
+    text-decoration: none;
+}
+
 .brand h1 .title-of {
     font-size: 0.576em;
     display: inline-flex;
