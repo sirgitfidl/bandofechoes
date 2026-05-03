@@ -34,7 +34,7 @@
 			}
 
 			.page-header img {
-				width: min(520px, 88vw);
+				width: min(260px, 44vw);
 				height: auto;
 				display: block;
 				filter: none;
@@ -68,6 +68,10 @@
 				padding: 16px;
 			}
 
+			.card[hidden] {
+				display: none;
+			}
+
 			.drink-title {
 				margin: 0 0 12px;
 				font-size: 18px;
@@ -81,6 +85,11 @@
 
 			label {
 				font-weight: 600;
+			}
+
+			.required-asterisk {
+				color: #fb7185;
+				margin-left: 4px;
 			}
 
 			textarea,
@@ -183,7 +192,7 @@
 			<form id="commentForm">
 				<div id="drinkCards"></div>
 
-				<section class="card">
+				<section class="card" id="finalQuestionCard">
 					<div class="field">
 						<label for="favoriteDrink">Which drink was your favorite?</label>
 						<select id="favoriteDrink" name="favoriteDrink">
@@ -200,7 +209,7 @@
 					</div>
 				</section>
 
-				<section class="card">
+				<section class="card" id="downloadCard">
 					<div class="actions">
 						<button id="downloadBtn" type="button" class="secondary">Download comment card</button>
 						<span id="status" class="status" role="status" aria-live="polite"></span>
@@ -233,9 +242,10 @@
 				const strengthName = `${prefix}_strength`;
 				const priceName = `${prefix}_price`;
 				const orderAgainName = `${prefix}_orderAgain`;
+				const nextLabel = drinkNumber === DRINK_COUNT ? "Final Question" : "Next Drink";
 
 				return `
-					<section class="card" aria-labelledby="${prefix}_title">
+					<section class="card drink-card" data-drink-index="${index}" aria-labelledby="${prefix}_title">
 						<h2 class="drink-title" id="${prefix}_title">Drink ${drinkNumber}</h2>
 
 						<div class="field">
@@ -249,30 +259,33 @@
 						</div>
 
 						<div class="field">
-							<label>Is it too strong, not strong enough, just right?</label>
-							<div class="choice-row" role="radiogroup" aria-label="Strength">
-								<label class="choice"><input type="radio" name="${strengthName}" value="Too strong" /> Too strong</label>
-								<label class="choice"><input type="radio" name="${strengthName}" value="Not strong enough" /> Not strong enough</label>
-								<label class="choice"><input type="radio" name="${strengthName}" value="Just right" /> Just right</label>
-							</div>
+							<label for="${strengthName}">Is it too strong, not strong enough, just right?</label>
+							<select id="${strengthName}" name="${strengthName}">
+								<option value="" selected>(select one)</option>
+								<option value="Too strong">Too strong</option>
+								<option value="Not strong enough">Not strong enough</option>
+								<option value="Just right">Just right</option>
+							</select>
 						</div>
 
 						<div class="field">
-							<label>Would you pay $12-$16 for this at a restaurant?</label>
-							<div class="choice-row" role="radiogroup" aria-label="Price">
-								<label class="choice"><input type="radio" name="${priceName}" value="Yes" /> Yes</label>
-								<label class="choice"><input type="radio" name="${priceName}" value="No" /> No</label>
-								<label class="choice"><input type="radio" name="${priceName}" value="Maybe" /> Maybe</label>
-							</div>
+							<label for="${priceName}">Would you pay $12-$16 for this at a restaurant?</label>
+							<select id="${priceName}" name="${priceName}">
+								<option value="" selected>(select one)</option>
+								<option value="Yes">Yes</option>
+								<option value="Maybe">Maybe</option>
+								<option value="No">No</option>
+							</select>
 						</div>
 
 						<div class="field">
-							<label>Would you order this again?</label>
-							<div class="choice-row" role="radiogroup" aria-label="Order again">
-								<label class="choice"><input type="radio" name="${orderAgainName}" value="Yes" /> Yes</label>
-								<label class="choice"><input type="radio" name="${orderAgainName}" value="Maybe" /> Maybe</label>
-								<label class="choice"><input type="radio" name="${orderAgainName}" value="No" /> No</label>
-							</div>
+							<label for="${orderAgainName}">Would you order this again?</label>
+							<select id="${orderAgainName}" name="${orderAgainName}">
+								<option value="" selected>(select one)</option>
+								<option value="Yes">Yes</option>
+								<option value="Maybe">Maybe</option>
+								<option value="No">No</option>
+							</select>
 						</div>
 
 						<div class="field">
@@ -281,13 +294,17 @@
 						</div>
 
 						<div class="field">
-							<label for="${prefix}_score">Give your score 1-10</label>
-							<input id="${prefix}_score" name="${prefix}_score" type="number" min="1" max="10" step="1" inputmode="numeric" />
+							<label for="${prefix}_score">Give your score 1-10 <span class="required-asterisk" aria-hidden="true">*</span></label>
+							<input id="${prefix}_score" name="${prefix}_score" type="number" min="1" max="10" step="1" inputmode="numeric" required />
 						</div>
 
 						<div class="field">
 							<label for="${prefix}_improve">If not a 10, what would make this a 10?</label>
 							<textarea id="${prefix}_improve" name="${prefix}_improve"></textarea>
+						</div>
+
+						<div class="actions">
+							<button type="button" class="secondary pager-next" data-next-index="${index + 1}" disabled>${nextLabel}</button>
 						</div>
 					</section>
 				`;
@@ -358,6 +375,88 @@
 			}
 
 			renderDrinkCards();
+
+			const finalQuestionCardEl = document.getElementById("finalQuestionCard");
+			const downloadCardEl = document.getElementById("downloadCard");
+
+			let currentStep = 0; // 0..DRINK_COUNT-1 = drinks, DRINK_COUNT = final question
+
+			function setStep(step) {
+				const clamped = Math.max(0, Math.min(DRINK_COUNT, step));
+				currentStep = clamped;
+
+				const drinkCardEls = document.querySelectorAll(".drink-card");
+				drinkCardEls.forEach((card) => {
+					const idx = Number(card.getAttribute("data-drink-index"));
+					card.hidden = currentStep !== idx;
+				});
+
+				const isFinal = currentStep === DRINK_COUNT;
+				finalQuestionCardEl.hidden = !isFinal;
+				downloadCardEl.hidden = !isFinal;
+
+				syncPagerState();
+
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			}
+
+			function isValidScoreInput(inputEl) {
+				if (!inputEl) return false;
+				if (!(inputEl instanceof HTMLInputElement)) return false;
+				if (!inputEl.value) return false;
+				const n = Number(inputEl.value);
+				return Number.isFinite(n) && n >= 1 && n <= 10;
+			}
+
+			function syncPagerState() {
+				if (currentStep < 0 || currentStep >= DRINK_COUNT) return;
+				const currentCard = document.querySelector(`.drink-card[data-drink-index="${currentStep}"]`);
+				if (!(currentCard instanceof HTMLElement)) return;
+
+				const scoreInput = currentCard.querySelector('input[type="number"][name$="_score"]');
+				const nextBtn = currentCard.querySelector(".pager-next");
+				if (!(nextBtn instanceof HTMLButtonElement)) return;
+
+				nextBtn.disabled = !isValidScoreInput(scoreInput);
+			}
+
+			// Avoid accidental form submit causing navigation/reload.
+			formEl.addEventListener("submit", (e) => e.preventDefault());
+
+			formEl.addEventListener("input", (e) => {
+				const target = e.target;
+				if (!(target instanceof HTMLInputElement)) return;
+				if (!target.name.endsWith("_score")) return;
+				syncPagerState();
+			});
+
+			formEl.addEventListener("change", (e) => {
+				const target = e.target;
+				if (!(target instanceof HTMLInputElement)) return;
+				if (!target.name.endsWith("_score")) return;
+				syncPagerState();
+			});
+
+			document.addEventListener("click", (e) => {
+				const target = e.target;
+				if (!(target instanceof HTMLElement)) return;
+				if (!target.classList.contains("pager-next")) return;
+
+				const nextIndexAttr = target.getAttribute("data-next-index");
+				const nextDrinkIndex = nextIndexAttr ? Number(nextIndexAttr) : NaN;
+				if (!Number.isFinite(nextDrinkIndex)) return;
+
+				if (nextDrinkIndex >= DRINK_COUNT) {
+					setStep(DRINK_COUNT);
+				} else {
+					setStep(nextDrinkIndex);
+				}
+			});
+
+			// Initialize pagination state.
+			finalQuestionCardEl.hidden = true;
+			downloadCardEl.hidden = true;
+			setStep(0);
 
 			downloadBtn.addEventListener("click", () => {
 				const submission = collectSubmission();
