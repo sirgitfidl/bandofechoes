@@ -232,13 +232,14 @@
 				const prefix = `drink${drinkNumber}`;
 				const strengthName = `${prefix}_strength`;
 				const priceName = `${prefix}_price`;
+				const orderAgainName = `${prefix}_orderAgain`;
 
 				return `
 					<section class="card" aria-labelledby="${prefix}_title">
 						<h2 class="drink-title" id="${prefix}_title">Drink ${drinkNumber}</h2>
 
 						<div class="field">
-							<label for="${prefix}_idea">If you have an idea of what this drink is, what is it?</label>
+							<label for="${prefix}_idea">What drink does this remind you of?</label>
 							<textarea id="${prefix}_idea" name="${prefix}_idea"></textarea>
 						</div>
 
@@ -266,6 +267,15 @@
 						</div>
 
 						<div class="field">
+							<label>Would you order this again?</label>
+							<div class="choice-row" role="radiogroup" aria-label="Order again">
+								<label class="choice"><input type="radio" name="${orderAgainName}" value="Yes" /> Yes</label>
+								<label class="choice"><input type="radio" name="${orderAgainName}" value="Maybe" /> Maybe</label>
+								<label class="choice"><input type="radio" name="${orderAgainName}" value="No" /> No</label>
+							</div>
+						</div>
+
+						<div class="field">
 							<label for="${prefix}_likeMost">What do you like most about this drink?</label>
 							<textarea id="${prefix}_likeMost" name="${prefix}_likeMost"></textarea>
 						</div>
@@ -276,7 +286,7 @@
 						</div>
 
 						<div class="field">
-							<label for="${prefix}_improve">If it's less than 10, what could be improved?</label>
+							<label for="${prefix}_improve">If not a 10, what would make this a 10?</label>
 							<textarea id="${prefix}_improve" name="${prefix}_improve"></textarea>
 						</div>
 					</section>
@@ -319,6 +329,7 @@
 						dominantFlavors: getTextValue(formData, `${prefix}_flavors`),
 						strength: getRadioValue(formData, `${prefix}_strength`),
 						wouldPay12to16: getRadioValue(formData, `${prefix}_price`),
+						wouldOrderAgain: getRadioValue(formData, `${prefix}_orderAgain`),
 						likeMost: getTextValue(formData, `${prefix}_likeMost`),
 						score1to10: getNumberValue(formData, `${prefix}_score`),
 						improvementIfLessThan10: getTextValue(formData, `${prefix}_improve`),
@@ -360,6 +371,7 @@
 							d.dominantFlavors,
 							d.strength,
 							d.wouldPay12to16,
+							d.wouldOrderAgain,
 							d.likeMost,
 							d.improvementIfLessThan10,
 						].some((x) => String(x || "").trim().length > 0) ||
