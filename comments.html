@@ -24,21 +24,21 @@
 			main {
 				max-width: 980px;
 				margin: 0 auto;
-				padding: 24px 16px 64px;
+				padding: 16px 16px 64px;
 			}
 
 			.page-header {
 				display: flex;
 				justify-content: center;
-				margin: 6px 0 18px;
+				margin: 0 0 14px;
 			}
 
 			.page-header img {
-				width: min(260px, 44vw);
+				width: min(208px, 35vw);
 				height: auto;
 				display: block;
 				filter: none;
-				opacity: 1;
+				opacity: 0.85;
 			}
 
 			header {
@@ -112,7 +112,7 @@
 
 			textarea {
 				resize: vertical;
-				min-height: 84px;
+				min-height: 0;
 			}
 
 			.choice-row {
@@ -250,12 +250,12 @@
 
 						<div class="field">
 							<label for="${prefix}_idea">What drink does this remind you of?</label>
-							<textarea id="${prefix}_idea" name="${prefix}_idea" required></textarea>
+							<textarea id="${prefix}_idea" name="${prefix}_idea" required rows="1"></textarea>
 						</div>
 
 						<div class="field">
 							<label for="${prefix}_flavors">What are the dominant flavors?</label>
-							<textarea id="${prefix}_flavors" name="${prefix}_flavors" required></textarea>
+							<textarea id="${prefix}_flavors" name="${prefix}_flavors" required rows="1"></textarea>
 						</div>
 
 						<div class="field">
@@ -290,7 +290,7 @@
 
 						<div class="field">
 							<label for="${prefix}_likeMost">What do you like most about this drink?</label>
-							<textarea id="${prefix}_likeMost" name="${prefix}_likeMost" required></textarea>
+							<textarea id="${prefix}_likeMost" name="${prefix}_likeMost" required rows="1"></textarea>
 						</div>
 
 						<div class="field">
@@ -312,7 +312,7 @@
 
 						<div class="field improve-field" id="${prefix}_improveField" hidden>
 							<label for="${prefix}_improve">What would make this a 10?</label>
-							<textarea id="${prefix}_improve" name="${prefix}_improve"></textarea>
+							<textarea id="${prefix}_improve" name="${prefix}_improve" rows="1"></textarea>
 						</div>
 
 						<div class="actions">
