@@ -72,6 +72,10 @@
 				display: none;
 			}
 
+			[hidden] {
+				display: none !important;
+			}
+
 			.drink-title {
 				margin: 0 0 12px;
 				font-size: 18px;
@@ -87,10 +91,6 @@
 				font-weight: 600;
 			}
 
-			.required-asterisk {
-				color: #fb7185;
-				margin-left: 4px;
-			}
 
 			textarea,
 			input[type="text"],
@@ -250,17 +250,17 @@
 
 						<div class="field">
 							<label for="${prefix}_idea">What drink does this remind you of?</label>
-							<textarea id="${prefix}_idea" name="${prefix}_idea"></textarea>
+							<textarea id="${prefix}_idea" name="${prefix}_idea" required></textarea>
 						</div>
 
 						<div class="field">
 							<label for="${prefix}_flavors">What are the dominant flavors?</label>
-							<textarea id="${prefix}_flavors" name="${prefix}_flavors"></textarea>
+							<textarea id="${prefix}_flavors" name="${prefix}_flavors" required></textarea>
 						</div>
 
 						<div class="field">
 							<label for="${strengthName}">Is it too strong, not strong enough, just right?</label>
-							<select id="${strengthName}" name="${strengthName}">
+							<select id="${strengthName}" name="${strengthName}" required>
 								<option value="" selected>(select one)</option>
 								<option value="Too strong">Too strong</option>
 								<option value="Not strong enough">Not strong enough</option>
@@ -270,7 +270,7 @@
 
 						<div class="field">
 							<label for="${priceName}">Would you pay $12-$16 for this at a restaurant?</label>
-							<select id="${priceName}" name="${priceName}">
+							<select id="${priceName}" name="${priceName}" required>
 								<option value="" selected>(select one)</option>
 								<option value="Yes">Yes</option>
 								<option value="Maybe">Maybe</option>
@@ -280,7 +280,7 @@
 
 						<div class="field">
 							<label for="${orderAgainName}">Would you order this again?</label>
-							<select id="${orderAgainName}" name="${orderAgainName}">
+							<select id="${orderAgainName}" name="${orderAgainName}" required>
 								<option value="" selected>(select one)</option>
 								<option value="Yes">Yes</option>
 								<option value="Maybe">Maybe</option>
@@ -290,16 +290,28 @@
 
 						<div class="field">
 							<label for="${prefix}_likeMost">What do you like most about this drink?</label>
-							<textarea id="${prefix}_likeMost" name="${prefix}_likeMost"></textarea>
+							<textarea id="${prefix}_likeMost" name="${prefix}_likeMost" required></textarea>
 						</div>
 
 						<div class="field">
-							<label for="${prefix}_score">Give your score 1-10 <span class="required-asterisk" aria-hidden="true">*</span></label>
-							<input id="${prefix}_score" name="${prefix}_score" type="number" min="1" max="10" step="1" inputmode="numeric" required />
+							<label for="${prefix}_score">Give your score 1-10</label>
+							<select id="${prefix}_score" name="${prefix}_score" required>
+								<option value="" selected>(select one)</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+							</select>
 						</div>
 
-						<div class="field">
-							<label for="${prefix}_improve">If not a 10, what would make this a 10?</label>
+						<div class="field improve-field" id="${prefix}_improveField" hidden>
+							<label for="${prefix}_improve">What would make this a 10?</label>
 							<textarea id="${prefix}_improve" name="${prefix}_improve"></textarea>
 						</div>
 
@@ -400,12 +412,14 @@
 				window.scrollTo({ top: 0, behavior: "smooth" });
 			}
 
-			function isValidScoreInput(inputEl) {
-				if (!inputEl) return false;
-				if (!(inputEl instanceof HTMLInputElement)) return false;
-				if (!inputEl.value) return false;
-				const n = Number(inputEl.value);
-				return Number.isFinite(n) && n >= 1 && n <= 10;
+			function isFilledControl(controlEl) {
+				if (!controlEl) return false;
+				if (controlEl instanceof HTMLSelectElement) return String(controlEl.value || "").trim().length > 0;
+				if (controlEl instanceof HTMLTextAreaElement) return String(controlEl.value || "").trim().length > 0;
+				if (controlEl instanceof HTMLInputElement) {
+					return String(controlEl.value || "").trim().length > 0;
+				}
+				return false;
 			}
 
 			function syncPagerState() {
@@ -413,29 +427,46 @@
 				const currentCard = document.querySelector(`.drink-card[data-drink-index="${currentStep}"]`);
 				if (!(currentCard instanceof HTMLElement)) return;
 
-				const scoreInput = currentCard.querySelector('input[type="number"][name$="_score"]');
 				const nextBtn = currentCard.querySelector(".pager-next");
 				if (!(nextBtn instanceof HTMLButtonElement)) return;
 
-				nextBtn.disabled = !isValidScoreInput(scoreInput);
+				const ideaEl = currentCard.querySelector("textarea[name$='_idea']");
+				const flavorsEl = currentCard.querySelector("textarea[name$='_flavors']");
+				const strengthEl = currentCard.querySelector("select[name$='_strength']");
+				const priceEl = currentCard.querySelector("select[name$='_price']");
+				const orderAgainEl = currentCard.querySelector("select[name$='_orderAgain']");
+				const likeMostEl = currentCard.querySelector("textarea[name$='_likeMost']");
+				const scoreEl = currentCard.querySelector("select[name$='_score']");
+				const improveEl = currentCard.querySelector("textarea[name$='_improve']");
+
+				const scoreIsValid = isFilledControl(scoreEl);
+				const scoreValue = scoreEl instanceof HTMLSelectElement ? Number(scoreEl.value) : NaN;
+				const needsImprove = scoreIsValid && scoreValue < 10;
+				const improveOk = !needsImprove || isFilledControl(improveEl);
+
+				const improveFieldEl = currentCard.querySelector(".improve-field");
+				if (improveFieldEl instanceof HTMLElement) {
+					improveFieldEl.hidden = !needsImprove;
+				}
+
+				const allRequiredOk =
+					isFilledControl(ideaEl) &&
+					isFilledControl(flavorsEl) &&
+					isFilledControl(strengthEl) &&
+					isFilledControl(priceEl) &&
+					isFilledControl(orderAgainEl) &&
+					isFilledControl(likeMostEl) &&
+					scoreIsValid &&
+					improveOk;
+
+				nextBtn.disabled = !allRequiredOk;
 			}
 
 			// Avoid accidental form submit causing navigation/reload.
 			formEl.addEventListener("submit", (e) => e.preventDefault());
 
-			formEl.addEventListener("input", (e) => {
-				const target = e.target;
-				if (!(target instanceof HTMLInputElement)) return;
-				if (!target.name.endsWith("_score")) return;
-				syncPagerState();
-			});
-
-			formEl.addEventListener("change", (e) => {
-				const target = e.target;
-				if (!(target instanceof HTMLInputElement)) return;
-				if (!target.name.endsWith("_score")) return;
-				syncPagerState();
-			});
+			formEl.addEventListener("input", () => syncPagerState());
+			formEl.addEventListener("change", () => syncPagerState());
 
 			document.addEventListener("click", (e) => {
 				const target = e.target;
