@@ -202,8 +202,7 @@
 
 				<section class="card">
 					<div class="actions">
-						<button type="submit">Save Comment Card</button>
-						<button id="downloadBtn" type="button" class="secondary">Download Saved JSON</button>
+						<button id="downloadBtn" type="button" class="secondary">Download JSON</button>
 						<span id="status" class="status" role="status" aria-live="polite"></span>
 					</div>
 				</section>
@@ -212,27 +211,11 @@
 
 		<script>
 			const DRINK_COUNT = 8;
-			const STORAGE_KEY = "commentCardsSubmissions_v1";
 
 			const drinkCardsEl = document.getElementById("drinkCards");
 			const formEl = document.getElementById("commentForm");
 			const statusEl = document.getElementById("status");
 			const downloadBtn = document.getElementById("downloadBtn");
-
-			function getSavedSubmissions() {
-				try {
-					const raw = localStorage.getItem(STORAGE_KEY);
-					if (!raw) return [];
-					const parsed = JSON.parse(raw);
-					return Array.isArray(parsed) ? parsed : [];
-				} catch {
-					return [];
-				}
-			}
-
-			function setSavedSubmissions(submissions) {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(submissions));
-			}
 
 			function setStatus(message, type = "ok") {
 				statusEl.textContent = message;
@@ -365,12 +348,10 @@
 
 			renderDrinkCards();
 
-			formEl.addEventListener("submit", (e) => {
-				e.preventDefault();
-
+			downloadBtn.addEventListener("click", () => {
 				const submission = collectSubmission();
 
-				// Minimal sanity check: if everything is blank, don’t save.
+				// Minimal sanity check: if everything is blank, don’t download.
 				const anyNonEmpty =
 					submission.favoriteDrink ||
 					submission.drinks.some((d) =>
@@ -386,22 +367,7 @@
 					);
 
 				if (!anyNonEmpty) {
-					setStatus("Nothing to save yet.", "error");
-					return;
-				}
-
-				const submissions = getSavedSubmissions();
-				submissions.push(submission);
-				setSavedSubmissions(submissions);
-
-				formEl.reset();
-				setStatus(`Saved (${submissions.length} total).`);
-			});
-
-			downloadBtn.addEventListener("click", () => {
-				const submissions = getSavedSubmissions();
-				if (submissions.length === 0) {
-					setStatus("No saved entries to download.", "error");
+					setStatus("Nothing to download yet.", "error");
 					return;
 				}
 
@@ -409,7 +375,7 @@
 				const yyyy = String(date.getFullYear());
 				const mm = String(date.getMonth() + 1).padStart(2, "0");
 				const dd = String(date.getDate()).padStart(2, "0");
-				downloadJson(`drink-comment-cards_${yyyy}-${mm}-${dd}.json`, submissions);
+				downloadJson(`drink-comment-card_${yyyy}-${mm}-${dd}.json`, submission);
 				setStatus("Downloaded JSON.");
 			});
 		</script>
