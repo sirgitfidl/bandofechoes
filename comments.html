@@ -181,6 +181,32 @@
 				font-size: 13px;
 				color: #c8cfda;
 			}
+
+			.download-complete {
+				min-height: calc(100vh - 32px);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 14px;
+				text-align: center;
+				padding: 16px;
+			}
+
+			.download-complete img {
+				width: min(240px, 65vw);
+				height: auto;
+				display: block;
+				opacity: 0.9;
+			}
+
+			.download-complete .message {
+				margin: 0;
+				color: #eef1f6;
+				font-weight: 700;
+				letter-spacing: 0.2px;
+				font-size: 20px;
+			}
 		</style>
 	</head>
 	<body>
@@ -216,6 +242,11 @@
 					</div>
 				</section>
 			</form>
+
+			<section id="downloadComplete" class="download-complete" hidden aria-label="Download complete message">
+				<img src="speakEasyOtter.png" alt="Speakeasy Otter" decoding="async" />
+				<p class="message">You better keep your mouth shut!</p>
+			</section>
 		</main>
 
 		<script>
@@ -223,6 +254,8 @@
 
 			const drinkCardsEl = document.getElementById("drinkCards");
 			const formEl = document.getElementById("commentForm");
+			const headerEl = document.querySelector(".page-header");
+			const downloadCompleteEl = document.getElementById("downloadComplete");
 			const statusEl = document.getElementById("status");
 			const downloadBtn = document.getElementById("downloadBtn");
 
@@ -386,6 +419,13 @@
 				URL.revokeObjectURL(url);
 			}
 
+			function showDownloadCompleteScreen() {
+				if (headerEl instanceof HTMLElement) headerEl.hidden = true;
+				formEl.hidden = true;
+				downloadCompleteEl.hidden = false;
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			}
+
 			renderDrinkCards();
 
 			const finalQuestionCardEl = document.getElementById("finalQuestionCard");
@@ -518,7 +558,7 @@
 				const mm = String(date.getMonth() + 1).padStart(2, "0");
 				const dd = String(date.getDate()).padStart(2, "0");
 				downloadJson(`drink-comment-card_${yyyy}-${mm}-${dd}.json`, submission);
-				setStatus("Downloaded JSON.");
+				showDownloadCompleteScreen();
 			});
 		</script>
 	</body>
