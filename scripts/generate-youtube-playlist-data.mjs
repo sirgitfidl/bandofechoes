@@ -105,6 +105,41 @@ function collectPlaylistItems(root, seen = new Set()) {
     compactVideoRenderer: 0
   };
 
+  function isUpcomingCandidate(candidate) {
+    if (!candidate || typeof candidate !== 'object') return false;
+
+    // YouTube varies, but upcoming premieres/livestreams often include one of:
+    // - upcomingEventData
+    // - thumbnailOverlayTimeStatusRenderer.style === 'UPCOMING'
+    // - overlay text like "UPCOMING" / "PREMIERE"
+    try {
+      if (candidate.upcomingEventData) return true;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const overlays = Array.isArray(candidate.thumbnailOverlays)
+        ? candidate.thumbnailOverlays
+        : [];
+      for (const ov of overlays) {
+        const r = ov?.thumbnailOverlayTimeStatusRenderer;
+        if (!r) continue;
+
+        const style = String(r.style || '').toUpperCase();
+        if (style === 'UPCOMING') return true;
+
+        const text =
+          (r.text?.simpleText ?? r.text?.runs?.[0]?.text ?? '').toString().toUpperCase();
+        if (text.includes('UPCOMING') || text.includes('PREMIERE')) return true;
+      }
+    } catch {
+      // ignore
+    }
+
+    return false;
+  }
+
   function walk(node) {
     if (!node || typeof node !== 'object') return;
     if (Array.isArray(node)) {
@@ -126,6 +161,12 @@ function collectPlaylistItems(root, seen = new Set()) {
     if (candidate) {
       const videoId = candidate.videoId;
       if (videoId && !seen.has(videoId)) {
+        // Exception: skip scheduled premieres / upcoming items.
+        if (isUpcomingCandidate(candidate)) {
+          seen.add(videoId);
+          // Still mark as seen so we don't accidentally pick it up from a
+          // different renderer later in the tree.
+        } else {
         const title =
           (candidate.title?.runs?.[0]?.text ?? candidate.title?.simpleText ?? '').trim();
         const length =
@@ -138,6 +179,7 @@ function collectPlaylistItems(root, seen = new Set()) {
         if (title) {
           items.push({ videoId, title, length, thumbnailUrl });
           seen.add(videoId);
+        }
         }
       }
     }

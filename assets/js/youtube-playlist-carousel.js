@@ -442,6 +442,57 @@
     return await res.json();
   }
 
+  function chunk(arr, size) {
+    const out = [];
+    const a = Array.isArray(arr) ? arr : [];
+    const s = Math.max(1, Number(size) || 1);
+    for (let i = 0; i < a.length; i += s) out.push(a.slice(i, i + s));
+    return out;
+  }
+
+  function isFutureIsoDate(iso) {
+    try {
+      const t = Date.parse(String(iso || ''));
+      if (!Number.isFinite(t)) return false;
+      return t > Date.now() + 5000;
+    } catch {
+      return false;
+    }
+  }
+
+  async function fetchUpcomingVideoIdSet(videoIds, apiKey) {
+    const ids = (Array.isArray(videoIds) ? videoIds : [])
+      .map((x) => String(x || '').trim())
+      .filter(Boolean);
+    if (!ids.length) return new Set();
+
+    const upcoming = new Set();
+
+    for (const group of chunk(ids, 50)) {
+      const url = new URL('https://www.googleapis.com/youtube/v3/videos');
+      url.searchParams.set('part', 'snippet,liveStreamingDetails');
+      url.searchParams.set('id', group.join(','));
+      url.searchParams.set('key', apiKey);
+
+      const json = await fetchJson(url.toString());
+      const items = Array.isArray(json.items) ? json.items : [];
+
+      for (const it of items) {
+        const id = String(it?.id || '').trim();
+        if (!id) continue;
+
+        // Treat scheduled livestreams / premieres as "upcoming" until they start.
+        const live = String(it?.snippet?.liveBroadcastContent || '').toLowerCase();
+        const scheduled = it?.liveStreamingDetails?.scheduledStartTime;
+        const isUpcoming = live === 'upcoming' || isFutureIsoDate(scheduled);
+
+        if (isUpcoming) upcoming.add(id);
+      }
+    }
+
+    return upcoming;
+  }
+
   async function fetchPlaylistItemsViaApi(playlistId, apiKey) {
     const collected = [];
     const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
@@ -472,6 +523,20 @@
         `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
       collected.push({ videoId, title, thumbnailUrl });
+    }
+
+    // Exception: ignore scheduled premieres (and other upcoming broadcasts)
+    // even if they appear at the top of the playlist.
+    try {
+      const upcoming = await fetchUpcomingVideoIdSet(
+        collected.map((x) => x.videoId),
+        apiKey
+      );
+      if (upcoming && upcoming.size) {
+        return collected.filter((x) => x && x.videoId && !upcoming.has(String(x.videoId)));
+      }
+    } catch {
+      // If the extra lookup fails, fall back to unfiltered data.
     }
 
     return collected;
@@ -536,20 +601,24 @@
       }
     });
 
+    // Live refresh (runtime-dynamic) when an API key is provided.
+    const apiKey = getApiKey();
+
     const cachedItems = readCache(playlistId, 6 * 60 * 60 * 1000);
 
     // Fast path: show cached or bundled data immediately.
     if (cachedItems && cachedItems.length) {
-      // If we can, set featured from the cached playlist order (first item).
-      // This lets the hero resolve without requiring a second API call.
-      maybeSetFeaturedFromItems(cachedItems, 'cache');
+      // Avoid selecting an "upcoming" premiere as featured from cache.
+      // When an API key is present we'll resolve featured from the live fetch
+      // (which filters upcoming videos) shortly after load.
+      if (!apiKey || isAutomation()) {
+        maybeSetFeaturedFromItems(cachedItems, 'cache');
+      }
       renderItems(cachedItems);
     } else {
       renderItems([]);
     }
 
-    // Live refresh (runtime-dynamic) when an API key is provided.
-    const apiKey = getApiKey();
     if (apiKey && !isAutomation()) {
       (async () => {
         try {
@@ -559,7 +628,7 @@
           // Featured video = first item in playlist order.
           maybeSetFeaturedFromItems(liveItems, 'api');
 
-          // Cache raw playlist order so we can infer featured later.
+          // Cache filtered playlist order so we can infer featured later.
           writeCache(playlistId, liveItems);
 
           const orderedLiveItems = moveFeaturedToEnd(liveItems);

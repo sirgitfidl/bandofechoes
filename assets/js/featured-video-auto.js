@@ -62,10 +62,67 @@
     }
   }
 
-  async function fetchLatestVideoId(playlistId, apiKey) {
+  function chunk(arr, size) {
+    const out = [];
+    const a = Array.isArray(arr) ? arr : [];
+    const s = Math.max(1, Number(size) || 1);
+    for (let i = 0; i < a.length; i += s) out.push(a.slice(i, i + s));
+    return out;
+  }
+
+  function isFutureIsoDate(iso) {
+    try {
+      const t = Date.parse(String(iso || ''));
+      if (!Number.isFinite(t)) return false;
+      return t > Date.now() + 5000;
+    } catch {
+      return false;
+    }
+  }
+
+  async function fetchUpcomingVideoIdSet(videoIds, apiKey) {
+    const ids = (Array.isArray(videoIds) ? videoIds : [])
+      .map((x) => String(x || '').trim())
+      .filter(Boolean);
+    if (!ids.length) return new Set();
+
+    const upcoming = new Set();
+
+    for (const group of chunk(ids, 50)) {
+      const url = new URL('https://www.googleapis.com/youtube/v3/videos');
+      url.searchParams.set('part', 'snippet,liveStreamingDetails');
+      url.searchParams.set('id', group.join(','));
+      url.searchParams.set('key', apiKey);
+
+      const res = await fetch(url.toString(), { headers: { accept: 'application/json' } });
+      if (!res.ok) continue;
+
+      let json;
+      try {
+        json = await res.json();
+      } catch {
+        json = null;
+      }
+
+      const items = Array.isArray(json?.items) ? json.items : [];
+      for (const it of items) {
+        const id = String(it?.id || '').trim();
+        if (!id) continue;
+
+        const live = String(it?.snippet?.liveBroadcastContent || '').toLowerCase();
+        const scheduled = it?.liveStreamingDetails?.scheduledStartTime;
+        const isUpcoming = live === 'upcoming' || isFutureIsoDate(scheduled);
+        if (isUpcoming) upcoming.add(id);
+      }
+    }
+
+    return upcoming;
+  }
+
+  async function fetchLatestNonUpcomingVideoId(playlistId, apiKey) {
     const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
     url.searchParams.set('part', 'contentDetails');
-    url.searchParams.set('maxResults', '1');
+    url.searchParams.set('maxResults', '10');
     url.searchParams.set('playlistId', playlistId);
     url.searchParams.set('key', apiKey);
 
@@ -73,9 +130,23 @@
     if (!res.ok) return null;
 
     const json = await res.json();
-    const first = Array.isArray(json.items) ? json.items[0] : null;
-    const id = first?.contentDetails?.videoId;
-    return id ? String(id).trim() : null;
+    const items = Array.isArray(json.items) ? json.items : [];
+    const ids = items
+      .map((x) => x?.contentDetails?.videoId)
+      .filter(Boolean)
+      .map((x) => String(x).trim())
+      .filter(Boolean);
+
+    if (!ids.length) return null;
+
+    // Ignore scheduled premieres (and other upcoming broadcasts).
+    const upcoming = await fetchUpcomingVideoIdSet(ids, apiKey);
+    for (const id of ids) {
+      if (upcoming && upcoming.has(id)) continue;
+      return id;
+    }
+
+    return null;
   }
 
   async function boot() {
@@ -87,20 +158,23 @@
 
     // Use a short cache to reduce quota while still tracking uploads quickly.
     const cached = readCache(playlistId, 15 * 60 * 1000);
-    if (cached) {
-      window.BOE_FEATURED_VIDEO_ID = cached;
-      dispatchFeatured(cached);
+
+    let live = null;
+    try {
+      live = await fetchLatestNonUpcomingVideoId(playlistId, apiKey);
+    } catch {
+      live = null;
     }
 
-    const live = await fetchLatestVideoId(playlistId, apiKey);
-    if (!live) return;
+    const chosen = live || cached;
+    if (!chosen) return;
 
-    if (String(window.BOE_FEATURED_VIDEO_ID || '').trim() !== live) {
-      window.BOE_FEATURED_VIDEO_ID = live;
-      dispatchFeatured(live);
+    if (String(window.BOE_FEATURED_VIDEO_ID || '').trim() !== chosen) {
+      window.BOE_FEATURED_VIDEO_ID = chosen;
+      dispatchFeatured(chosen);
     }
 
-    writeCache(playlistId, live);
+    if (live) writeCache(playlistId, live);
   }
 
   if (document.readyState === 'loading') {
