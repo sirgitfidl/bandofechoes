@@ -508,6 +508,12 @@ header .logo {
     z-index: 0;
 }
 
+/* When a premiere card is present, hide the background logo overlay */
+.next-video-countdown.has-premiere::before {
+    background-image: none;
+    opacity: 0;
+}
+
 .next-video-countdown > * {
     position: relative;
     z-index: 1;
@@ -602,8 +608,11 @@ header .logo {
     margin-top: 14px;
     width: min(720px, 92%);
     align-self: center;
-    text-align: right;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .next-video-countdown .countdown-secondary-title {
