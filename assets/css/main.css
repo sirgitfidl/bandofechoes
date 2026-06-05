@@ -486,6 +486,10 @@ header .logo {
     justify-content: center;
 }
 
+.next-video-countdown.has-premiere {
+    min-height: clamp(360px, 34vw, 560px);
+}
+
 .next-video-countdown {
     position: relative;
     overflow: hidden;
@@ -533,9 +537,9 @@ header .logo {
 
 .next-video-countdown .next-premiere-inner {
     display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 14px;
-    align-items: center;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: start;
     border: 1px solid var(--border);
     border-radius: 14px;
     background: color-mix(in oklab, var(--card) 86%, transparent);
@@ -556,10 +560,16 @@ header .logo {
     display: block;
 }
 
+.next-video-countdown .next-premiere-meta {
+    text-align: center;
+}
+
 .next-video-countdown .next-premiere-title {
     font-weight: 750;
     letter-spacing: .02em;
+    margin-top: 6px;
     margin-bottom: 8px;
+    font-size: clamp(15px, 2.2vw, 20px);
 }
 
 .next-video-countdown .next-premiere-countdown-label {
@@ -572,12 +582,6 @@ header .logo {
 
 .next-video-countdown .next-premiere .countdown-timer {
     font-size: clamp(18px, 3.4vw, 32px);
-}
-
-@media (max-width: 560px) {
-    .next-video-countdown .next-premiere-inner {
-        grid-template-columns: 1fr;
-    }
 }
 
 .next-video-countdown .countdown-secondary {

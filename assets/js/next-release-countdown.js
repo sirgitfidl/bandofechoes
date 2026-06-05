@@ -375,6 +375,12 @@
 
     // Insert card at the top (before the Patreon link).
     root.insertBefore(a, root.firstChild);
+
+    try {
+      root.classList.add('has-premiere');
+    } catch {
+      // ignore
+    }
   }
 
   async function resolveTargetDate(resolvedPremiere) {
