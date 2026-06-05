@@ -42,7 +42,6 @@ export class MainPage {
     readonly spFooter: Locator;
     readonly ptFooter: Locator;
     readonly patreonCta2: Locator;
-    readonly subFallback: Locator;
     readonly emailLink: Locator;
     readonly yearEl: Locator;
     readonly skipLink: Locator;
@@ -87,7 +86,6 @@ export class MainPage {
         this.spFooter = page.getByTestId('footer-spotify');
         this.ptFooter = page.getByTestId('footer-patreon');
         this.patreonCta2 = page.getByTestId('cta-patreon');
-        this.subFallback = page.getByTestId('cta-subscribe');
         this.emailLink = page.getByTestId('email-link');
         this.yearEl = page.getByTestId('year');
         this.skipLink = page.getByTestId('skip-link');

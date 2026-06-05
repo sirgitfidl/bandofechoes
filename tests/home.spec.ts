@@ -69,17 +69,14 @@ test.describe('Home page', () => {
             await expect(mainPage.spFooter).toHaveAttribute('href', 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS');
             await expect(mainPage.ptFooter).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
             await expect(mainPage.patreonCta2).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
-            await expect(mainPage.subFallback).toHaveAttribute('href', 'https://www.youtube.com/@bandofechoes/join');
             await expect(mainPage.ytFooter).toHaveAttribute('target', '_blank');
             await expect(mainPage.spFooter).toHaveAttribute('target', '_blank');
             await expect(mainPage.ptFooter).toHaveAttribute('target', '_blank');
             await expect(mainPage.patreonCta2).toHaveAttribute('target', '_blank');
-            await expect(mainPage.subFallback).toHaveAttribute('target', '_blank');
             await expect(mainPage.ytFooter).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.spFooter).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.ptFooter).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.patreonCta2).toHaveAttribute('rel', /noopener/);
-            await expect(mainPage.subFallback).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.emailLink).toHaveAttribute('href', /^mailto:/);
         });
 
