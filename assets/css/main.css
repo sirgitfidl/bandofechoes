@@ -701,7 +701,10 @@ header .logo {
 /* Support CTA: make the Patreon button a stronger call-to-action */
 #support-section .support-ctas {
     margin-top: 18px;
-    margin-bottom: 14px;
+}
+
+#support-section .support-hero-image {
+    margin-top: 32px;
 }
 
 #support-section .support-ctas .btn.primary {
