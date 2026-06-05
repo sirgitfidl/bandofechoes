@@ -8,6 +8,8 @@
     timeZone: 'America/Los_Angeles'
   };
 
+  const PLAYLIST_PREMIERE_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
+
   function $(sel, root) {
     return (root || document).querySelector(sel);
   }
@@ -21,6 +23,28 @@
     }
   }
 
+  function getPlaylistId() {
+    try {
+      const fromGlobal = (window.BOE_YT_PLAYLIST_ID || '').trim();
+      if (fromGlobal) return fromGlobal;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const el = document.querySelector('[data-testid="yt-playlist"]');
+      const id = (el && el.getAttribute('data-playlist-id')) || '';
+      return String(id).trim() || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function isAutomation() {
+    // Keep tests stable: avoid hard network dependency under automation.
+    return Boolean(navigator && navigator.webdriver);
+  }
+
   function getPremiereUrl() {
     try {
       const u = (window.BOE_NEXT_PREMIERE_URL || '').trim();
@@ -28,6 +52,15 @@
     } catch {
       return null;
     }
+  }
+
+  function buildYouTubeWatchUrl(videoId, playlistId) {
+    const v = String(videoId || '').trim();
+    if (!v) return null;
+    const url = new URL('https://www.youtube.com/watch');
+    url.searchParams.set('v', v);
+    if (playlistId) url.searchParams.set('list', String(playlistId));
+    return url.toString();
   }
 
   function parseYouTubeVideoId(url) {
@@ -113,6 +146,56 @@
     return `BOE_PREMIERE_START_${videoId}`;
   }
 
+  function playlistPremiereCacheKey(playlistId) {
+    return `BOE_NEXT_PREMIERE_FROM_PLAYLIST_${playlistId}`;
+  }
+
+  function readCachedPlaylistPremiere(playlistId, maxAgeMs) {
+    try {
+      const raw = localStorage.getItem(playlistPremiereCacheKey(playlistId));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.videoId || !parsed.scheduledStartTime || !parsed.fetchedAt) return null;
+      if (Date.now() - Number(parsed.fetchedAt) > maxAgeMs) return null;
+      return {
+        videoId: String(parsed.videoId),
+        scheduledStartTime: String(parsed.scheduledStartTime),
+        title: String(parsed.title || ''),
+        thumbnailUrl: String(parsed.thumbnailUrl || '')
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function writeCachedPlaylistPremiere(playlistId, data) {
+    try {
+      if (!playlistId || !data || !data.videoId || !data.scheduledStartTime) return;
+      localStorage.setItem(
+        playlistPremiereCacheKey(playlistId),
+        JSON.stringify({
+          videoId: String(data.videoId),
+          scheduledStartTime: String(data.scheduledStartTime),
+          title: String(data.title || ''),
+          thumbnailUrl: String(data.thumbnailUrl || ''),
+          fetchedAt: Date.now()
+        })
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  function isFutureIsoDate(iso) {
+    try {
+      const t = Date.parse(String(iso || ''));
+      if (!Number.isFinite(t)) return false;
+      return t > Date.now() + 5000;
+    } catch {
+      return false;
+    }
+  }
+
   function readCachedScheduledStart(videoId, maxAgeMs) {
     try {
       const raw = localStorage.getItem(cacheKey(videoId));
@@ -152,7 +235,154 @@
     return t ? String(t) : null;
   }
 
-  async function resolveTargetDate() {
+  function chunk(arr, size) {
+    const out = [];
+    const a = Array.isArray(arr) ? arr : [];
+    const s = Math.max(1, Number(size) || 1);
+    for (let i = 0; i < a.length; i += s) out.push(a.slice(i, i + s));
+    return out;
+  }
+
+  async function fetchNextPremiereFromPlaylist(playlistId, apiKey) {
+    const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
+    url.searchParams.set('part', 'contentDetails,snippet');
+    url.searchParams.set('maxResults', '25');
+    url.searchParams.set('playlistId', playlistId);
+    url.searchParams.set('key', apiKey);
+
+    const res = await fetch(url.toString(), { headers: { accept: 'application/json' } });
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    const items = Array.isArray(json.items) ? json.items : [];
+
+    const ordered = items
+      .map((x) => {
+        const videoId = String(x?.contentDetails?.videoId || '').trim();
+        if (!videoId) return null;
+
+        const title = String(x?.snippet?.title || '').trim();
+        const thumbs = x?.snippet?.thumbnails || {};
+        const thumbUrl =
+          (thumbs?.maxres?.url || thumbs?.standard?.url || thumbs?.high?.url || thumbs?.medium?.url || thumbs?.default?.url || '').trim() ||
+          `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+        return { videoId, title, thumbnailUrl: thumbUrl };
+      })
+      .filter(Boolean);
+
+    if (!ordered.length) return null;
+
+    // Fetch liveStreamingDetails for these IDs in batches.
+    const idList = ordered.map((x) => x.videoId);
+    const detailsById = new Map();
+
+    for (const group of chunk(idList, 50)) {
+      const vUrl = new URL('https://www.googleapis.com/youtube/v3/videos');
+      vUrl.searchParams.set('part', 'snippet,liveStreamingDetails');
+      vUrl.searchParams.set('id', group.join(','));
+      vUrl.searchParams.set('key', apiKey);
+
+      const vRes = await fetch(vUrl.toString(), { headers: { accept: 'application/json' } });
+      if (!vRes.ok) continue;
+
+      let vJson;
+      try {
+        vJson = await vRes.json();
+      } catch {
+        vJson = null;
+      }
+
+      const vItems = Array.isArray(vJson?.items) ? vJson.items : [];
+      for (const it of vItems) {
+        const id = String(it?.id || '').trim();
+        if (!id) continue;
+        const live = String(it?.snippet?.liveBroadcastContent || '').toLowerCase();
+        const scheduledStartTime = it?.liveStreamingDetails?.scheduledStartTime
+          ? String(it.liveStreamingDetails.scheduledStartTime)
+          : '';
+        const isUpcoming = live === 'upcoming' || isFutureIsoDate(scheduledStartTime);
+        detailsById.set(id, { isUpcoming, scheduledStartTime });
+      }
+    }
+
+    for (const meta of ordered) {
+      const details = detailsById.get(meta.videoId);
+      if (!details || !details.isUpcoming) continue;
+      const scheduledStartTime = String(details.scheduledStartTime || '').trim();
+      if (!isFutureIsoDate(scheduledStartTime)) continue;
+      return { ...meta, scheduledStartTime };
+    }
+
+    return null;
+  }
+
+  function installPremiereCard(root, premiere, playlistId) {
+    if (!root || !premiere || !premiere.videoId) return;
+    if (root.querySelector('[data-testid="next-premiere"]')) return;
+
+    const mainTimerEl = $('[data-testid="countdown-timer"]', root);
+    if (!mainTimerEl) return;
+
+    const href = buildYouTubeWatchUrl(premiere.videoId, playlistId) || buildYouTubeWatchUrl(premiere.videoId);
+    if (!href) return;
+
+    const a = document.createElement('a');
+    a.className = 'next-premiere';
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.setAttribute('data-testid', 'next-premiere');
+    a.setAttribute('aria-label', 'Upcoming YouTube premiere');
+
+    const inner = document.createElement('div');
+    inner.className = 'next-premiere-inner';
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'next-premiere-thumb';
+
+    const img = document.createElement('img');
+    img.alt = premiere.title ? `Upcoming premiere: ${premiere.title}` : 'Upcoming premiere';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.src = premiere.thumbnailUrl || `https://i.ytimg.com/vi/${encodeURIComponent(premiere.videoId)}/hqdefault.jpg`;
+    imgWrap.appendChild(img);
+
+    const meta = document.createElement('div');
+    meta.className = 'next-premiere-meta';
+
+    const title = document.createElement('div');
+    title.className = 'next-premiere-title';
+    title.textContent = premiere.title || 'Upcoming Premiere';
+
+    const label = document.createElement('div');
+    label.className = 'next-premiere-countdown-label';
+    label.textContent = 'Premieres in';
+
+    const countdownWrap = document.createElement('div');
+    countdownWrap.className = 'next-premiere-countdown';
+
+    // Move the existing main countdown timer into the premiere card.
+    countdownWrap.appendChild(label);
+    countdownWrap.appendChild(mainTimerEl);
+
+    meta.appendChild(title);
+    meta.appendChild(countdownWrap);
+
+    inner.appendChild(imgWrap);
+    inner.appendChild(meta);
+    a.appendChild(inner);
+
+    // Insert card at the top (before the Patreon link).
+    root.insertBefore(a, root.firstChild);
+  }
+
+  async function resolveTargetDate(resolvedPremiere) {
+    if (resolvedPremiere && resolvedPremiere.scheduledStartTime) {
+      const d = new Date(String(resolvedPremiere.scheduledStartTime));
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+
     const premiereUrl = getPremiereUrl();
     const apiKey = getApiKey();
 
@@ -212,8 +442,37 @@
     const root = document.querySelector('[data-testid="next-release-countdown"]');
     if (!root) return;
 
+    const apiKey = getApiKey();
+    const playlistId = getPlaylistId();
+
+    let playlistPremiere = null;
+    if (!isAutomation() && apiKey && playlistId) {
+      playlistPremiere = readCachedPlaylistPremiere(playlistId, PLAYLIST_PREMIERE_CACHE_MAX_AGE_MS);
+
+      if (!playlistPremiere) {
+        try {
+          const live = await fetchNextPremiereFromPlaylist(playlistId, apiKey);
+          if (live) {
+            playlistPremiere = live;
+            writeCachedPlaylistPremiere(playlistId, live);
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (playlistPremiere && playlistPremiere.videoId) {
+        const url = buildYouTubeWatchUrl(playlistPremiere.videoId, playlistId);
+        if (url) window.BOE_NEXT_PREMIERE_URL = url;
+      }
+    }
+
+    if (playlistPremiere && playlistPremiere.videoId) {
+      installPremiereCard(root, playlistPremiere, playlistId);
+    }
+
     try {
-      const target = await resolveTargetDate();
+      const target = await resolveTargetDate(playlistPremiere);
       startCountdown(root, target);
     } catch {
       // If anything goes wrong, fall back to the fixed date.
