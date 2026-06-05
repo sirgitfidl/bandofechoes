@@ -63,7 +63,7 @@
     return url.toString();
   }
 
-  function stripBandSuffix(title) {
+  function cleanPremiereTitle(title) {
     const t = String(title || '').trim();
     if (!t) return '';
     return t
@@ -72,18 +72,9 @@
       .trim();
   }
 
-  function formatSongBandTitle(title) {
-    const base = stripBandSuffix(title);
-    if (!base) return 'Upcoming Premiere';
-
-    // If already in the desired format, keep it.
-    if (/\s[–—-]\s*Band of Echoes\s*$/i.test(base)) return base;
-
-    // Most playlist titles are "Song – Artist". For the premiere card we want "Song – Band of Echoes".
-    const parts = base.split(/\s[–—-]\s/);
-    const song = String(parts[0] || '').trim();
-    if (!song) return `${base} – Band of Echoes`;
-    return `${song} – Band of Echoes`;
+  function formatSongArtistTitle(title) {
+    const base = cleanPremiereTitle(title);
+    return base || 'Upcoming Premiere';
   }
 
   function parseYouTubeVideoId(url) {
@@ -365,7 +356,7 @@
     imgWrap.className = 'next-premiere-thumb';
 
     const img = document.createElement('img');
-    const formattedTitle = formatSongBandTitle(premiere.title || '');
+    const formattedTitle = formatSongArtistTitle(premiere.title || '');
     img.alt = formattedTitle ? `Upcoming premiere: ${formattedTitle}` : 'Upcoming premiere';
     img.loading = 'lazy';
     img.decoding = 'async';
