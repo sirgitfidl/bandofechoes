@@ -490,6 +490,16 @@ header .logo {
     min-height: clamp(360px, 34vw, 560px);
 }
 
+.next-video-countdown.has-premiere .countdown-secondary {
+    position: static;
+    right: auto;
+    bottom: auto;
+    margin-top: 14px;
+    width: min(720px, 92%);
+    align-self: center;
+    text-align: right;
+}
+
 .next-video-countdown {
     position: relative;
     overflow: hidden;
