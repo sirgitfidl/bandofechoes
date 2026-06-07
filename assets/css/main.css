@@ -283,6 +283,7 @@ nav a:hover {
 .hero-latest-label {
     color: var(--muted);
     margin-right: 6px;
+    font-size: 18px;
 }
 
 .hero-latest-title {
@@ -621,7 +622,7 @@ header .logo {
 }
 
 .next-video-countdown .countdown-secondary-title {
-    font-size: clamp(11px, 1.4vw, 13px);
+    font-size: clamp(13px, 1.6vw, 15px);
     font-weight: 650;
     color: var(--muted);
     margin-bottom: 4px;
