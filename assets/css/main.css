@@ -23,7 +23,8 @@ body {
 
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Filosofia', 'filosofia-pt', 'Times New Roman', Times, serif;
+    font-size: 18px;
     background: var(--bg);
     color: var(--fg);
     line-height: 1.45;
@@ -308,6 +309,10 @@ nav a:hover {
 .section {
     padding: 24px 0;
     scroll-margin-top: 80px;
+}
+
+.section h2 {
+    text-transform: uppercase;
 }
 
 /* Tighter spacing between About → Support → Contact */
@@ -664,6 +669,10 @@ header .logo {
 .support-blurb {
     margin-bottom: 0;
     padding-bottom: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .support-lead {
@@ -675,6 +684,29 @@ header .logo {
     color: var(--muted);
     margin-top: 12px;
     margin-bottom: 6px;
+}
+
+.support-kicker--underline {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 5px;
+    text-decoration: none;
+}
+
+.support-kicker--underline::after {
+    content: '';
+    position: absolute;
+    left: -3em;
+    right: -3em;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, color-mix(in oklab, var(--muted) 70%, var(--fg)) 18%, color-mix(in oklab, var(--muted) 70%, var(--fg)) 82%, transparent 100%);
+    opacity: .9;
+    pointer-events: none;
+}
+
+#support-section .text-justify {
+    text-align: center;
 }
 
 .support-memberships {
@@ -740,6 +772,45 @@ header .logo {
     display: flex;
     justify-content: center;
     width: 100%;
+}
+
+#support-section .support-benefits {
+    width: min(840px, 100%);
+    margin: 12px auto 18px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px 18px;
+    text-align: left;
+}
+
+#support-section .support-benefits li {
+    margin: 0;
+    position: relative;
+    padding-left: 18px;
+    padding-right: 0;
+    line-height: 1.3;
+    font-size: clamp(15px, 1.45vw, 17px);
+    text-align: left;
+    white-space: nowrap;
+}
+
+#support-section .support-benefits li::before {
+    left: 0;
+    top: .6em;
+    transform: translateY(-50%);
+}
+
+#support-section .support-benefits li:nth-child(even) {
+    justify-self: end;
+    text-align: right;
+    padding-left: 0;
+    padding-right: 18px;
+}
+
+#support-section .support-benefits li:nth-child(even)::before {
+    left: auto;
+    right: 0;
 }
 
 .support-hero-image img {
@@ -1383,5 +1454,15 @@ input[type=email] {
 /* Utility classes */
 .text-justify {
     text-align: justify;
+    text-align-last: justify;
     text-justify: inter-word;
+    hyphens: auto;
+}
+
+.about-copy {
+    text-align: justify;
+    line-height: 1.55;
+    width: min(100%, 96ch);
+    max-width: 96ch;
+    margin: 0 auto;
 }
