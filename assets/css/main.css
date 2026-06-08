@@ -710,6 +710,20 @@ header .logo {
     text-align: center;
 }
 
+.support-intro {
+    text-align: center;
+    line-height: 1.5;
+    width: min(100%, 92ch);
+    max-width: 92ch;
+    margin: 0 auto;
+}
+
+@supports (text-wrap: balance) {
+    .support-intro {
+        text-wrap: balance;
+    }
+}
+
 .support-memberships {
     margin-top: 16px;
     width: 100%;
@@ -776,12 +790,16 @@ header .logo {
 }
 
 #support-section .support-benefits {
-    width: min(840px, 100%);
+    width: fit-content;
+    max-width: 100%;
     margin: 12px auto 18px;
     padding: 0;
     list-style: none;
     display: grid;
-    gap: 8px 18px;
+    grid-template-columns: repeat(2, max-content);
+    column-gap: clamp(18px, 3vw, 32px);
+    row-gap: 8px;
+    justify-content: center;
     text-align: left;
 }
 
@@ -812,6 +830,57 @@ header .logo {
 #support-section .support-benefits li:nth-child(even)::before {
     left: auto;
     right: 0;
+}
+
+@media (max-width: 960px) {
+    #support-section .support-benefits {
+        grid-template-columns: 1fr;
+        width: min(520px, 100%);
+        gap: 10px;
+        justify-content: center;
+    }
+
+    #support-section .support-benefits li {
+        justify-self: center;
+        text-align: center;
+        white-space: normal;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    #support-section .support-benefits li:nth-child(even) {
+        justify-self: center;
+        text-align: center;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    #support-section .support-benefits li::before {
+        left: 0;
+        right: auto;
+    }
+
+    #support-section .support-benefits li::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: .6em;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--accent);
+        transform: translateY(-50%);
+    }
+
+    #support-section .support-benefits li:nth-child(even)::before {
+        left: 0;
+        right: auto;
+    }
+
+    #support-section .support-benefits li:nth-child(even)::after {
+        right: 0;
+        left: auto;
+    }
 }
 
 .support-hero-image img {
