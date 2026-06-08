@@ -20,7 +20,7 @@ export class MainPage {
     readonly sectionWatch: Locator;
     readonly sectionAbout: Locator;
     readonly sectionSupport: Locator;
-    readonly sectionContact: Locator;
+    readonly sectionLinks: Locator;
 
     // Lightbox
     readonly lightbox: Locator;
@@ -37,10 +37,17 @@ export class MainPage {
     readonly mixerModal: Locator;
     readonly mixerIframe: FrameLocator;
 
-    // Footer and CTAs
-    readonly ytFooter: Locator;
-    readonly spFooter: Locator;
-    readonly ptFooter: Locator;
+    // Links and CTAs
+    readonly linksGroups: Locator;
+    readonly menuLinks: Locator;
+    readonly patreonLink: Locator;
+    readonly youtubeLink: Locator;
+    readonly spotifyLink: Locator;
+    readonly appleMusicLink: Locator;
+    readonly youtubeMusicLink: Locator;
+    readonly tidalLink: Locator;
+    readonly tiktokLink: Locator;
+    readonly instagramLink: Locator;
     readonly patreonCta2: Locator;
     readonly emailLink: Locator;
     readonly yearEl: Locator;
@@ -64,7 +71,7 @@ export class MainPage {
         this.sectionWatch = page.getByTestId('section-watch');
         this.sectionAbout = page.getByTestId('section-about');
         this.sectionSupport = page.getByTestId('section-support');
-        this.sectionContact = page.getByTestId('section-contact');
+        this.sectionLinks = page.getByTestId('section-links');
 
         // Lightbox
         this.lightbox = page.getByTestId('lightbox');
@@ -81,10 +88,17 @@ export class MainPage {
         this.mixerModal = page.getByTestId('mixer-modal');
         this.mixerIframe = page.frameLocator('[data-testid="mixer-iframe"]');
 
-        // Footer and CTAs
-        this.ytFooter = page.getByTestId('footer-youtube');
-        this.spFooter = page.getByTestId('footer-spotify');
-        this.ptFooter = page.getByTestId('footer-patreon');
+        // Links and CTAs
+        this.linksGroups = page.locator('.links-groups');
+        this.menuLinks = page.getByTestId('menu-links');
+        this.patreonLink = page.getByTestId('links-patreon');
+        this.youtubeLink = page.getByTestId('links-youtube');
+        this.spotifyLink = page.getByTestId('links-spotify');
+        this.appleMusicLink = page.getByTestId('links-apple-music');
+        this.youtubeMusicLink = page.getByTestId('links-youtube-music');
+        this.tidalLink = page.getByTestId('links-tidal');
+        this.tiktokLink = page.getByTestId('links-tiktok');
+        this.instagramLink = page.getByTestId('links-instagram');
         this.patreonCta2 = page.getByTestId('cta-patreon');
         this.emailLink = page.getByTestId('email-link');
         this.yearEl = page.getByTestId('year');
