@@ -41,11 +41,9 @@
   function setArrowHidden(el, hidden) {
     if (!el) return;
     const isHidden = Boolean(hidden);
-    el.classList.toggle('is-hidden', isHidden);
+    el.classList.toggle('is-disabled', isHidden);
     el.disabled = isHidden;
-    el.setAttribute('aria-hidden', isHidden ? 'true' : 'false');
-    if (isHidden) el.setAttribute('tabindex', '-1');
-    else el.removeAttribute('tabindex');
+    el.setAttribute('aria-disabled', isHidden ? 'true' : 'false');
   }
 
   function pauseYouTubeIframe(iframe) {

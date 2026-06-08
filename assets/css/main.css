@@ -1061,11 +1061,14 @@ header .logo {
     line-height: 1;
 }
 
-.yt-carousel-arrow.is-hidden,
+.yt-carousel-arrow.is-disabled,
 .yt-carousel-arrow:disabled {
-    opacity: 0;
-    visibility: hidden;
+    opacity: .38;
+    background: rgba(17, 17, 17, .55);
+    border-color: #313131;
+    color: #8e8e8e;
     pointer-events: none;
+    cursor: default;
 }
 
 .yt-carousel-arrow:hover,
