@@ -1231,15 +1231,15 @@ body.scrolled header {
 .play-btn {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
+    display: block;
 }
 
 .play-btn::before {
     content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: clamp(74px, 9vw, 98px);
     height: clamp(74px, 9vw, 98px);
     border-radius: 999px;
@@ -1251,7 +1251,10 @@ body.scrolled header {
 
 .play-btn::after {
     content: 'WATCH';
-    margin-top: -6px;
+    position: absolute;
+    left: 50%;
+    top: calc(50% + clamp(48px, 5.2vw, 58px));
+    transform: translateX(-50%);
     font-size: 11px;
     letter-spacing: .16em;
     font-weight: 700;
@@ -1261,10 +1264,12 @@ body.scrolled header {
 
 .play-btn .triangle {
     position: absolute;
+    left: 50%;
+    top: 50%;
     z-index: 1;
     width: 0;
     height: 0;
-    margin-left: 4px;
+    transform: translate(-50%, -50%);
     border-left: 24px solid #fff;
     border-top: 14px solid transparent;
     border-bottom: 14px solid transparent;
@@ -1279,7 +1284,7 @@ body.scrolled header {
 }
 
 .poster:hover .triangle {
-    transform: scale(1.06);
+    transform: translate(-50%, -50%) scale(1.06);
     filter: drop-shadow(0 8px 22px rgba(0, 0, 0, .7));
 }
 
