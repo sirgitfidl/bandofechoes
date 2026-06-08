@@ -1264,7 +1264,7 @@ body.scrolled header {
 
 .play-btn .triangle {
     position: absolute;
-    left: 50%;
+    left: calc(50% + 2px);
     top: 50%;
     z-index: 1;
     width: 0;
