@@ -1,9 +1,6 @@
 // Band of Echoes — app.js (sanity v5)
 const CONFIG = {
-  featuredVideoId: 'qqMLXwzeRE0', // updated hero video
-  youtubeHandleUrl: 'https://youtube.com/@BandOfEchoes',
-  spotifyUrl: 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS',
-  patreonUrl: 'https://www.patreon.com/cw/BandofEchoes/membership'
+  featuredVideoId: 'qqMLXwzeRE0' // updated hero video
 };
 
 // helpers
@@ -89,20 +86,16 @@ function isAutomation() {
     });
   }
 
-  // footer links
-  const yt = document.getElementById('ytFooter'); if (yt) yt.href = CONFIG.youtubeHandleUrl;
-  const sp = document.getElementById('spFooter'); if (sp) sp.href = CONFIG.spotifyUrl;
-  const pt = document.getElementById('ptFooter'); if (pt) pt.href = CONFIG.patreonUrl;
-
-  const footerLinks = document.querySelector('.footer-links');
-  const pulseFooterLinks = () => {
-    if (!footerLinks) return;
-    footerLinks.classList.remove('footer-links--pulse');
+  // links section pulse
+  const linksGroups = document.querySelector('.links-groups');
+  const pulseLinksSection = () => {
+    if (!linksGroups) return;
+    linksGroups.classList.remove('links-groups--pulse');
     // Force reflow so repeated clicks retrigger animation.
-    void footerLinks.offsetWidth;
-    footerLinks.classList.add('footer-links--pulse');
+    void linksGroups.offsetWidth;
+    linksGroups.classList.add('links-groups--pulse');
     window.setTimeout(() => {
-      try { footerLinks.classList.remove('footer-links--pulse'); } catch { }
+      try { linksGroups.classList.remove('links-groups--pulse'); } catch { }
     }, 2200);
   };
 
@@ -140,7 +133,7 @@ function isAutomation() {
     if (linksMenuItem) {
       linksMenuItem.addEventListener('click', () => {
         // Trigger only from explicit Links menu navigation, not scroll.
-        pulseFooterLinks();
+        pulseLinksSection();
       });
     }
     navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));

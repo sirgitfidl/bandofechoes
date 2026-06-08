@@ -88,7 +88,7 @@
   <!-- Preload brand font to avoid FOUT in header -->
   <link rel="preload" href="assets/fonts/MaragsaDisplay-GO6PD.otf" as="font" type="font/otf" crossorigin>
 
-  <link rel="stylesheet" href="assets/css/main.css?v=20260607-31">
+  <link rel="stylesheet" href="assets/css/main.css?v=20260607-38">
   <link rel="stylesheet" href="assets/css/app-dynamic.css">
 </head>
 
@@ -116,8 +116,7 @@
           <a role="menuitem" href="#about" data-testid="menu-about">About</a>
           <a role="menuitem" href="#music-videos" data-testid="menu-music-videos">Videos</a>
           <a role="menuitem" href="#support" data-testid="menu-support">Support</a>
-          <a role="menuitem" href="#contact" data-testid="menu-contact">Contact</a>
-          <a role="menuitem" href="#site-footer" data-testid="menu-links">Links</a>
+          <a role="menuitem" href="#links-section" data-testid="menu-links">Links</a>
         </div>
       </nav>
     </div>
@@ -315,20 +314,45 @@
     </section>
 
 
-    <!-- CONTACT / EMAIL -->
-    <section id="contact" class="section cols" data-testid="section-contact">
+    <section id="links-section" class="section cols" data-testid="section-links">
       <div class="card pad">
-        <h2 style="margin-top:0">Contact Us</h2>
-        <p>Booking / press: <a id="emailLink" class="btn" href="mailto:bandofechoescontact@gmail.com"
-            data-testid="email-link">email</a></p>
-        <!--<h3>Updates</h3>
-        <form id="emailForm" action="#" method="POST">
-          <input type="email" name="email" placeholder="your@email" required />
-          <button class="btn" type="submit">Get updates</button>
-        </form>
-        <p class="fine">We send very little. Unsubscribe anytime.</p>-->
+        <h2 style="margin-top:0">Links</h2>
+        <div class="links-groups" aria-label="Band of Echoes links">
+          <div class="links-group">
+            <h3 class="links-subheading">Support + Video</h3>
+            <p class="links-row">
+              <a href="https://www.patreon.com/cw/BandofEchoes/membership" target="_blank" rel="noopener" data-testid="links-patreon">Patreon</a>
+              ·
+              <a href="https://youtube.com/@BandOfEchoes" target="_blank" rel="noopener" data-testid="links-youtube">YouTube</a>
+            </p>
+          </div>
+          <div class="links-group">
+            <h3 class="links-subheading">Streaming</h3>
+            <p class="links-row">
+              <a href="https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS" target="_blank" rel="noopener" data-testid="links-spotify">Spotify</a>
+              ·
+              <a href="https://music.apple.com/us/artist/band-of-echoes/1859262959" target="_blank" rel="noopener" data-testid="links-apple-music">Apple Music</a>
+              ·
+              <a href="https://music.youtube.com/channel/UCvxe6T06QNZOOFmetbKHCdA" target="_blank" rel="noopener" data-testid="links-youtube-music">YouTube Music</a>
+              ·
+              <a href="https://tidal.com/artist/70905205" target="_blank" rel="noopener" data-testid="links-tidal">TIDAL</a>
+            </p>
+          </div>
+          <div class="links-group">
+            <h3 class="links-subheading">Social</h3>
+            <p class="links-row">
+              <a href="https://www.tiktok.com/@band.of.echoes" target="_blank" rel="noopener" data-testid="links-tiktok">TikTok</a>
+              ·
+              <a href="https://www.instagram.com/bandofechoes_/" target="_blank" rel="noopener" data-testid="links-instagram">Instagram</a>
+            </p>
+          </div>
+          <div class="links-group">
+            <h3 class="links-subheading">Connect With Us</h3>
+            <p class="links-row"><a id="emailLink" href="mailto:bandofechoescontact@gmail.com"
+                data-testid="email-link">Booking / press</a></p>
+          </div>
+        </div>
       </div>
-
     </section>
   </main>
 
@@ -343,11 +367,6 @@
   <footer id="site-footer">
     <div class="wrap foot">
       <span class="muted">© <span id="year" data-testid="year"></span> Band of Echoes</span>
-      <div class="footer-links">
-        <a id="ytFooter" href="#" target="_blank" rel="noopener" data-testid="footer-youtube">YouTube</a>
-        <a id="spFooter" href="#" target="_blank" rel="noopener" data-testid="footer-spotify">Spotify</a>
-        <a id="ptFooter" href="#" target="_blank" rel="noopener" data-testid="footer-patreon">Patreon</a>
-      </div>
     </div>
   </footer>
 
@@ -421,7 +440,7 @@
   <script src="assets/js/data/solve-phrases.js" defer></script>
   <script src="assets/js/polaroid-randomizer.js" defer></script>
   <script src="assets/js/collage-puzzle.js?v=20260607-1" defer></script>
-  <script src="assets/js/app.js?v=20260607-2" defer></script>
+  <script src="assets/js/app.js?v=20260607-3" defer></script>
 </body>
 
 </html>
