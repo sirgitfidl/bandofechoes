@@ -94,6 +94,18 @@ function isAutomation() {
   const sp = document.getElementById('spFooter'); if (sp) sp.href = CONFIG.spotifyUrl;
   const pt = document.getElementById('ptFooter'); if (pt) pt.href = CONFIG.patreonUrl;
 
+  const footerLinks = document.querySelector('.footer-links');
+  const pulseFooterLinks = () => {
+    if (!footerLinks) return;
+    footerLinks.classList.remove('footer-links--pulse');
+    // Force reflow so repeated clicks retrigger animation.
+    void footerLinks.offsetWidth;
+    footerLinks.classList.add('footer-links--pulse');
+    window.setTimeout(() => {
+      try { footerLinks.classList.remove('footer-links--pulse'); } catch { }
+    }, 2200);
+  };
+
   // hamburger menu wiring (restore)
   const navToggle = document.getElementById('navToggle');
   const navMenu = document.getElementById('navMenu');
@@ -124,6 +136,13 @@ function isAutomation() {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && navMenu.classList.contains('open')) closeMenu();
     });
+    const linksMenuItem = navMenu.querySelector('[data-testid="menu-links"]');
+    if (linksMenuItem) {
+      linksMenuItem.addEventListener('click', () => {
+        // Trigger only from explicit Links menu navigation, not scroll.
+        pulseFooterLinks();
+      });
+    }
     navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
   }
 
