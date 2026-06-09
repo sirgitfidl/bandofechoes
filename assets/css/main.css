@@ -1090,6 +1090,7 @@ header .logo {
     justify-content: center;
     cursor: pointer;
     z-index: 2;
+    transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
 .yt-thumb .yt-play-btn::before {
@@ -1101,6 +1102,15 @@ header .logo {
     border-bottom: 9px solid transparent;
     border-left: 14px solid currentColor;
     margin-left: 2px;
+}
+
+.yt-thumb:hover .yt-play-btn,
+.yt-thumb .yt-play-btn:hover,
+.yt-thumb .yt-play-btn:focus-visible {
+    background: color-mix(in oklab, var(--accent) 16%, #000 84%);
+    border-color: color-mix(in oklab, var(--accent) 56%, #fff 44%);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .65), 0 0 20px color-mix(in oklab, var(--accent) 42%, transparent);
+    transform: translate(-50%, -50%) scale(1.06);
 }
 
 .yt-meta {
