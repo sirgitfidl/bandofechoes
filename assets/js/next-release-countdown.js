@@ -63,6 +63,64 @@
     return url.toString();
   }
 
+  function getCountdownPreviewConfig() {
+    try {
+      const cfg = window.BOE_COUNTDOWN_PREVIEW;
+      return cfg && typeof cfg === 'object' ? cfg : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function getNextReleaseScheduleConfig() {
+    try {
+      const cfg = window.BOE_NEXT_RELEASE_SCHEDULE;
+      return cfg && typeof cfg === 'object' ? cfg : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function resolveConfiguredUpcomingDate() {
+    const cfg = getNextReleaseScheduleConfig();
+    const upcoming = cfg && cfg.upcoming ? cfg.upcoming : null;
+    if (!upcoming) return null;
+
+    try {
+      const d = zonedTimeToUtc(upcoming);
+      return Number.isNaN(d.getTime()) ? null : d;
+    } catch {
+      return null;
+    }
+  }
+
+  function normalizePreviewImagePath(input) {
+    const raw = String(input || '').trim();
+    if (!raw) return null;
+
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('/') || raw.startsWith('assets/')) {
+      return raw;
+    }
+
+    if (!/^[A-Za-z0-9_.-]+$/.test(raw)) return null;
+    return `assets/images/random_images/${raw}`;
+  }
+
+  function setCountdownPreview(root, mode) {
+    if (!root) return;
+    const cfg = getCountdownPreviewConfig();
+    if (!cfg) return;
+
+    const preferred = mode === 'upcoming'
+      ? cfg.upcomingPreview || cfg.currentPreview
+      : cfg.currentPreview || cfg.upcomingPreview;
+
+    const normalizedPath = normalizePreviewImagePath(preferred);
+    if (!normalizedPath) return;
+
+    root.style.setProperty('--countdown-preview-image', `url('${normalizedPath}')`);
+  }
+
   function cleanPremiereTitle(title) {
     const t = String(title || '').trim();
     if (!t) return '';
@@ -428,19 +486,29 @@
     return zonedTimeToUtc(FALLBACK);
   }
 
-  function startCountdown(root, targetDate) {
+  function startCountdown(root, targetDate, options = {}) {
     const mainTimerEl = $('[data-testid="countdown-timer"]', root);
     const patreonTimerEl = $('[data-testid="countdown-timer-patreon"]', root);
+    const previewMode = options.previewMode === 'upcoming' ? 'upcoming' : 'current';
 
-    const startOne = (timerEl, date) => {
+    // Use configured preview for the current countdown phase.
+    setCountdownPreview(root, previewMode);
+    patreonTimerEl?.classList.remove('countdown-timer--available');
+
+    const startOne = (timerEl, date, options = {}) => {
       if (!timerEl || !date) return;
+
+      const onComplete =
+        typeof options.onComplete === 'function'
+          ? options.onComplete
+          : () => { timerEl.textContent = '00d 00h 00m 00s'; };
 
       function tick() {
         const now = Date.now();
         const diff = date.getTime() - now;
 
         if (diff <= 0) {
-          timerEl.textContent = '00d 00h 00m 00s';
+          onComplete();
           return;
         }
 
@@ -452,11 +520,28 @@
       tick();
     };
 
-    startOne(mainTimerEl, targetDate);
+    startOne(mainTimerEl, targetDate, {
+      onComplete: () => {
+        const upcomingDate = resolveConfiguredUpcomingDate();
+        if (previewMode !== 'upcoming' && upcomingDate && upcomingDate.getTime() > Date.now() + 1000) {
+          // Current cycle is over; immediately roll the page forward to the next configured release.
+          startCountdown(root, upcomingDate, { previewMode: 'upcoming' });
+          return;
+        }
+
+        mainTimerEl.textContent = '00d 00h 00m 00s';
+        setCountdownPreview(root, 'upcoming');
+      }
+    });
 
     // Patreon Early Access is exactly one week earlier.
     const earlyAccessDate = new Date(targetDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-    startOne(patreonTimerEl, earlyAccessDate);
+    startOne(patreonTimerEl, earlyAccessDate, {
+      onComplete: () => {
+        patreonTimerEl.textContent = 'Available on Patreon now!';
+        patreonTimerEl.classList.add('countdown-timer--available');
+      }
+    });
   }
 
   async function boot() {

@@ -592,7 +592,7 @@ header .logo {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url('../images/random_images/apcLogo.png');
+    background-image: var(--countdown-preview-image, url('../images/random_images/apcLogo.png'));
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -719,6 +719,12 @@ header .logo {
     font-size: clamp(13px, 1.8vw, 16px);
     font-weight: 750;
     letter-spacing: .08em;
+}
+
+.next-video-countdown .countdown-timer--available {
+    letter-spacing: 0;
+    font-variant-numeric: normal;
+    font-weight: 700;
 }
 
 .support-benefits {
