@@ -592,8 +592,8 @@ header .logo {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url('../images/random_images/apcLogo.png');
-    /*TODO: check this out --- background-image: var(--countdown-preview-image, url('../images/random_images/apcLogo.png'));*/
+    background-image: url('../images/random_images/metallicaLogo.png');
+    /*TODO: check this out --- background-image: var(--countdown-preview-image, url('../images/random_images/metallicaLogo.png'));*/
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
