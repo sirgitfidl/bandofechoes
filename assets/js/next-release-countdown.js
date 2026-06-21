@@ -1,8 +1,8 @@
 (function () {
   const FALLBACK = {
     year: 2026,
-    month: 6,
-    day: 18,
+    month: 8,
+    day: 13,
     hour: 10,
     minute: 0,
     timeZone: 'America/Los_Angeles'

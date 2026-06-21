@@ -10,7 +10,7 @@ window.BOE_NEXT_PREMIERE_URL = '';
 // - currentPreview: image shown until main premiere goes live.
 // - upcomingPreview: image automatically shown after main countdown expires.
 window.BOE_COUNTDOWN_PREVIEW = {
-  currentPreview: 'apcLogo.png',
+  currentPreview: 'metallicaLogo.png',
   upcomingPreview: 'metallicaLogo.png'
 };
 
