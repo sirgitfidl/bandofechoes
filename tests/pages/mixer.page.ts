@@ -5,6 +5,9 @@ export class MixerPage {
     readonly page: Page;
     readonly wrap: Locator;
     readonly title: Locator;
+    readonly subtitle: Locator;
+    readonly titleHeading: Locator;
+    readonly audioEls: Locator;
     readonly groups: {
         instruments: Locator;
         vocals: Locator;
@@ -30,6 +33,9 @@ export class MixerPage {
         this.page = page;
         this.wrap = page.getByTestId('mixer-wrap');
         this.title = page.getByTestId('mixer-title');
+        this.titleHeading = this.title.locator('h1');
+        this.subtitle = this.title.locator('.sub');
+        this.audioEls = page.locator('audio');
         this.groups = {
             instruments: page.getByTestId('group-instruments'),
             vocals: page.getByTestId('group-vocals'),
@@ -39,7 +45,7 @@ export class MixerPage {
             play: page.getByTestId('btn-play'),
             progress: page.getByTestId('progress'),
             time: page.getByTestId('time'),
-            close: page.getByTestId('btn-close'),
+            close: page.getByTestId('close-mixer-btn'),
         };
         this.strips = {
             guitar: new ChannelStrip(page, 'guitar'),

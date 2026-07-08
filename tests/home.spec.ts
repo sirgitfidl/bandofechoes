@@ -19,6 +19,29 @@ test.describe('Home page', () => {
         });
     });
 
+    test('hero, nav, and support start with the expected accessibility state', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify hero poster and latest-release placeholder state', async () => {
+            await expect(mainPage.heroPoster).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
+            await expect(mainPage.heroPoster).toHaveAttribute('target', '_blank');
+            await expect(mainPage.heroPoster).toHaveAttribute('rel', /noopener/);
+            await expect(mainPage.heroLatest).toHaveAttribute('hidden', '');
+            await expect(mainPage.heroLatest).toHaveAttribute('aria-live', 'polite');
+            await expect(mainPage.heroLatestTitle).toHaveAttribute('href', '#');
+        });
+
+        await test.step('verify nav accessibility defaults', async () => {
+            await expect(mainPage.navToggle).toHaveAttribute('aria-controls', 'navMenu');
+            await expect(mainPage.navToggle).toHaveAttribute('aria-expanded', 'false');
+            await expect(mainPage.navMenu).toHaveAttribute('role', 'menu');
+            await expect(mainPage.navMenu).toHaveAttribute('aria-hidden', 'true');
+        });
+
+        await test.step('verify support labels are present', async () => {
+            await expect(mainPage.supportBlurb).toHaveAttribute('aria-label', 'Support options');
+            await expect(mainPage.supportCtas).toHaveAttribute('aria-label', 'Patreon membership');
+        });
+    });
+
     test('nav opens/closes and escape closes; skip link is wired to #main', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('ensure overlay hidden', async () => {
             await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
@@ -55,6 +78,11 @@ test.describe('Home page', () => {
                     await mainPage.openLightboxFromFirstPolaroid();
                 }
             });
+            await test.step('verify lightbox controls appear when open', async () => {
+                await expect(mainPage.lightboxPrev).toBeVisible();
+                await expect(mainPage.lightboxNext).toBeVisible();
+                await expect(mainPage.lightboxClose).toBeVisible();
+            });
             await test.step('close lightbox if open', async () => {
                 if (await mainPage.lightbox.isVisible()) {
                     await mainPage.closeLightbox();
@@ -79,6 +107,153 @@ test.describe('Home page', () => {
             await mainPage.menuLinks.click();
             await expect(mainPage.page).toHaveURL(/#links-section$/);
             await expect(mainPage.linksGroups).toHaveClass(/links-groups--pulse/);
+        });
+    });
+
+    test('brand link and menu anchors target the current homepage sections', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify brand link returns to the top anchor', async () => {
+            await expect(mainPage.brandLink).toHaveAttribute('href', '#top');
+            await mainPage.brandLink.click();
+            await expect(mainPage.page).toHaveURL(/#top$/);
+        });
+
+        await test.step('verify menu items point to About, Videos, and Support sections', async () => {
+            await mainPage.openNav();
+            await expect(mainPage.menuAbout).toHaveAttribute('href', '#about');
+            await expect(mainPage.menuMusicVideos).toHaveAttribute('href', '#music-videos');
+            await expect(mainPage.menuSupport).toHaveAttribute('href', '#support');
+
+            await mainPage.menuAbout.click();
+            await expect(mainPage.page).toHaveURL(/#about$/);
+
+            await mainPage.openNav();
+            await mainPage.menuMusicVideos.click();
+            await expect(mainPage.page).toHaveURL(/#music-videos$/);
+
+            await mainPage.openNav();
+            await mainPage.menuSupport.click();
+            await expect(mainPage.page).toHaveURL(/#support$/);
+        });
+    });
+
+    test('about and support sections expose the current copy and benefits', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify About section heading and copy', async () => {
+            await expect(mainPage.sectionAbout).toBeVisible();
+            await expect(mainPage.sectionAbout.getByRole('heading', { name: 'About Us' })).toBeVisible();
+            await expect(mainPage.aboutCopy).toContainText('Band of Echoes reimagines heavy, atmospheric rock');
+            await expect(mainPage.aboutCopy).toContainText('Tool, Nine Inch Nails, Soundgarden, Metallica');
+        });
+
+        await test.step('verify Support section benefits and image', async () => {
+            await expect(mainPage.sectionSupport).toBeVisible();
+            await expect(mainPage.sectionSupport.getByRole('heading', { name: 'Support' })).toBeVisible();
+            await expect(mainPage.supportBenefits).toHaveCount(8);
+            await expect(mainPage.supportBenefits.nth(0)).toHaveText('Tabs and sheet music');
+            await expect(mainPage.supportBenefits.nth(7)).toHaveText('4K high bitrate music video downloads');
+            await expect(mainPage.supportHeroImage).toHaveAttribute('loading', 'lazy');
+            await expect(mainPage.supportHeroImage).toHaveAttribute('decoding', 'async');
+            await expect(mainPage.supportHeroImage).toHaveAttribute('alt', 'Band of Echoes');
+        });
+    });
+
+    test('polaroids preserve accessibility and lazy-loading markup', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify collage semantics and image attributes', async () => {
+            await expect(mainPage.sectionWatch.locator('.collage')).toHaveAttribute('aria-label', 'Photo collage');
+            await expect(mainPage.polaroids).toHaveCount(9);
+
+            const firstPolaroid = mainPage.polaroids.first();
+            await expect(firstPolaroid.locator('.face.back')).toHaveAttribute('aria-hidden', 'true');
+
+            const images = mainPage.page.locator('.collage .polaroid img');
+            const imageCount = await images.count();
+            for (let index = 0; index < imageCount; index++) {
+                await expect(images.nth(index)).toHaveAttribute('loading', 'lazy');
+                await expect(images.nth(index)).toHaveAttribute('decoding', 'async');
+            }
+        });
+    });
+
+    test('countdown and music video carousel scaffolding are wired', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify release countdown and Patreon early access link', async () => {
+            await expect(mainPage.sectionMusicVideos).toBeVisible();
+            await expect(mainPage.nextReleaseCountdown).toBeVisible();
+            await expect(mainPage.nextReleaseTimer).toHaveAttribute('aria-live', 'polite');
+            await expect(mainPage.patreonEarlyAccess).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
+            await expect(mainPage.patreonEarlyAccess).toHaveAttribute('target', '_blank');
+            await expect(mainPage.patreonEarlyAccess).toHaveAttribute('rel', /noopener/);
+            await expect(mainPage.patreonEarlyAccessTimer).toHaveAttribute('aria-live', 'polite');
+        });
+
+        await test.step('verify carousel shell is present with current playlist wiring', async () => {
+            await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-id', 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-url', 'https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(mainPage.ytCarouselShell).toBeVisible();
+            await expect(mainPage.ytCarouselViewport).toBeVisible();
+            await expect(mainPage.ytCarouselTrack).toBeVisible();
+            await expect(mainPage.ytCarouselLeft).toHaveClass(/is-hidden/);
+            await expect(mainPage.ytCarouselRight).toHaveClass(/is-hidden/);
+        });
+    });
+
+    test('head metadata and structured data remain current for SEO', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify core title, meta, and link tags', async () => {
+            await expect(mainPage.page).toHaveTitle('Band of Echoes | Acoustic Covers (Tool, NIN, Metallica)');
+            await expect(mainPage.page.locator('head meta[name="description"]')).toHaveAttribute('content', /Band of Echoes is an acoustic duo creating dark, dynamic acoustic covers/);
+            await expect(mainPage.page.locator('head meta[name="robots"]')).toHaveAttribute('content', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+            await expect(mainPage.page.locator('head meta[name="keywords"]')).toHaveAttribute('content', /Tool cover/);
+            await expect(mainPage.page.locator('head meta[name="color-scheme"]')).toHaveAttribute('content', 'light dark');
+            await expect(mainPage.page.locator('head link[rel="canonical"]')).toHaveAttribute('href', 'https://bandofechoes.com/');
+            await expect(mainPage.page.locator('head link[rel="me"]')).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
+            await expect(mainPage.page.locator('head link[rel="icon"]').first()).toHaveAttribute('href', 'favicon.ico');
+            await expect(mainPage.page.locator('head link[rel="shortcut icon"]')).toHaveAttribute('href', 'favicon.ico');
+        });
+
+        await test.step('verify Open Graph, Twitter, and performance hints', async () => {
+            await expect(mainPage.page.locator('head meta[property="og:title"]')).toHaveAttribute('content', 'Band of Echoes');
+            await expect(mainPage.page.locator('head meta[property="og:description"]')).toHaveAttribute('content', /Acoustic duo reimagining Tool, NIN, AIC, Soundgarden/);
+            await expect(mainPage.page.locator('head meta[property="og:site_name"]')).toHaveAttribute('content', 'Band of Echoes');
+            await expect(mainPage.page.locator('head meta[property="og:type"]')).toHaveAttribute('content', 'website');
+            await expect(mainPage.page.locator('head meta[property="og:image"]')).toHaveAttribute('content', 'https://bandofechoes.com/assets/images/band_photos/hero_images/ogImage.png');
+            await expect(mainPage.page.locator('head meta[property="og:image:alt"]')).toHaveAttribute('content', 'Band of Echoes');
+            await expect(mainPage.page.locator('head meta[property="og:url"]')).toHaveAttribute('content', 'https://bandofechoes.com/');
+            await expect(mainPage.page.locator('head meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+            await expect(mainPage.page.locator('head meta[name="twitter:title"]')).toHaveAttribute('content', 'Band of Echoes');
+            await expect(mainPage.page.locator('head meta[name="twitter:description"]')).toHaveAttribute('content', /Acoustic covers with cello \+ acoustic guitar/);
+            await expect(mainPage.page.locator('head meta[name="twitter:image"]')).toHaveAttribute('content', 'https://bandofechoes.com/assets/images/band_photos/polaroids/polaroid_01.png');
+            await expect(mainPage.page.locator('head link[rel="preconnect"][href="https://www.youtube.com"]')).toHaveCount(1);
+            await expect(mainPage.page.locator('head link[rel="preconnect"][href="https://i.ytimg.com"]')).toHaveCount(1);
+            await expect(mainPage.page.locator('head link[rel="preload"][href="assets/fonts/MaragsaDisplay-GO6PD.otf"]')).toHaveAttribute('as', 'font');
+        });
+
+        await test.step('verify JSON-LD blocks still describe the site and band', async () => {
+            const featuredSchema = JSON.parse(await mainPage.page.locator('script#schema-featured-video').textContent() || '{}');
+            expect(featuredSchema['@context']).toBe('https://schema.org');
+            expect(Array.isArray(featuredSchema['@graph'])).toBeTruthy();
+            expect(featuredSchema['@graph']).toEqual(expect.arrayContaining([
+                expect.objectContaining({ '@type': 'Organization', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
+                expect.objectContaining({ '@type': 'WebSite', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
+                expect.objectContaining({ '@type': 'WebPage', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
+                expect.objectContaining({ '@type': 'VideoObject', name: 'Band of Echoes — Featured Video' })
+            ]));
+
+            const baseSchema = JSON.parse(await mainPage.page.locator('script#schema').textContent() || '{}');
+            expect(baseSchema['@context']).toBe('https://schema.org');
+            expect(Array.isArray(baseSchema['@graph'])).toBeTruthy();
+            expect(baseSchema['@graph']).toEqual(expect.arrayContaining([
+                expect.objectContaining({ '@type': 'WebSite', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
+                expect.objectContaining({ '@type': 'MusicGroup', name: 'Band of Echoes', url: 'https://bandofechoes.com/' })
+            ]));
+
+            const musicGroup = baseSchema['@graph'].find((entry: { '@type'?: string }) => entry['@type'] === 'MusicGroup');
+            expect(musicGroup.sameAs).toEqual(expect.arrayContaining([
+                'https://youtube.com/@BandOfEchoes',
+                'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS',
+                'https://www.patreon.com/cw/BandofEchoes/membership'
+            ]));
+            expect(musicGroup.member).toEqual(expect.arrayContaining([
+                expect.objectContaining({ name: 'Eric' }),
+                expect.objectContaining({ name: 'Kathryn' })
+            ]));
         });
     });
 
@@ -120,6 +295,20 @@ test.describe('Home page', () => {
 
             await expect(mainPage.emailLink).toHaveAttribute('href', 'mailto:bandofechoescontact@gmail.com');
             await expect(mainPage.emailLink).not.toHaveAttribute('target', '_blank');
+        });
+    });
+
+    test('footer year and links section grouping remain current', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify link groups are still present in the expected order', async () => {
+            await expect(mainPage.linkGroups).toHaveCount(4);
+            await expect(mainPage.linkGroups.nth(0).getByRole('heading', { name: 'Support + Video' })).toBeVisible();
+            await expect(mainPage.linkGroups.nth(1).getByRole('heading', { name: 'Streaming' })).toBeVisible();
+            await expect(mainPage.linkGroups.nth(2).getByRole('heading', { name: 'Social' })).toBeVisible();
+            await expect(mainPage.linkGroups.nth(3).getByRole('heading', { name: 'Connect With Us' })).toBeVisible();
+        });
+
+        await test.step('verify footer year is populated from runtime', async () => {
+            await expect(mainPage.yearEl).toHaveText(String(new Date().getFullYear()));
         });
     });
 

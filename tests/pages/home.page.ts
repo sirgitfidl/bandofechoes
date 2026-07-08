@@ -8,6 +8,7 @@ export class MainPage {
 
     // Header / nav
     readonly brandTitle: Locator;
+    readonly brandLink: Locator;
     readonly navToggle: Locator;
     readonly navMenu: Locator;
     readonly navMenuItems: Locator;
@@ -15,16 +16,21 @@ export class MainPage {
     // Hero
     readonly heroPlayer: Locator;
     readonly heroPoster: Locator;
+    readonly heroLatest: Locator;
+    readonly heroLatestTitle: Locator;
 
     // Sections
     readonly sectionWatch: Locator;
     readonly sectionAbout: Locator;
+    readonly sectionMusicVideos: Locator;
     readonly sectionSupport: Locator;
     readonly sectionLinks: Locator;
 
     // Lightbox
     readonly lightbox: Locator;
     readonly lightboxClose: Locator;
+    readonly lightboxPrev: Locator;
+    readonly lightboxNext: Locator;
     readonly polaroids: Locator;
     readonly rotateLockOverlay: Locator;
     readonly mainRegion: Locator;
@@ -39,7 +45,11 @@ export class MainPage {
 
     // Links and CTAs
     readonly linksGroups: Locator;
+    readonly linkGroups: Locator;
     readonly menuLinks: Locator;
+    readonly menuAbout: Locator;
+    readonly menuMusicVideos: Locator;
+    readonly menuSupport: Locator;
     readonly patreonLink: Locator;
     readonly youtubeLink: Locator;
     readonly spotifyLink: Locator;
@@ -53,12 +63,28 @@ export class MainPage {
     readonly yearEl: Locator;
     readonly skipLink: Locator;
     readonly puzzleModal: Locator;
+    readonly aboutCopy: Locator;
+    readonly supportBenefits: Locator;
+    readonly supportBlurb: Locator;
+    readonly supportCtas: Locator;
+    readonly supportHeroImage: Locator;
+    readonly nextReleaseCountdown: Locator;
+    readonly nextReleaseTimer: Locator;
+    readonly patreonEarlyAccess: Locator;
+    readonly patreonEarlyAccessTimer: Locator;
+    readonly ytPlaylist: Locator;
+    readonly ytCarouselShell: Locator;
+    readonly ytCarouselViewport: Locator;
+    readonly ytCarouselTrack: Locator;
+    readonly ytCarouselLeft: Locator;
+    readonly ytCarouselRight: Locator;
 
     constructor(page: Page) {
         this.page = page;
 
         // Header / nav
         this.brandTitle = page.getByTestId('brand-title');
+        this.brandLink = page.getByTestId('brand-link');
         this.navToggle = page.getByTestId('nav-toggle');
         this.navMenu = page.getByTestId('nav-menu');
         this.navMenuItems = this.navMenu.locator('a[role="menuitem"]');
@@ -66,16 +92,21 @@ export class MainPage {
         // Hero
         this.heroPlayer = page.getByTestId('hero-player');
         this.heroPoster = page.getByTestId('hero-poster');
+        this.heroLatest = page.getByTestId('hero-latest');
+        this.heroLatestTitle = page.getByTestId('hero-latest-title');
 
         // Sections (ids in index.html)
         this.sectionWatch = page.getByTestId('section-watch');
         this.sectionAbout = page.getByTestId('section-about');
+        this.sectionMusicVideos = page.getByTestId('section-music-videos');
         this.sectionSupport = page.getByTestId('section-support');
         this.sectionLinks = page.getByTestId('section-links');
 
         // Lightbox
         this.lightbox = page.getByTestId('lightbox');
         this.lightboxClose = page.getByTestId('lightbox-close');
+        this.lightboxPrev = this.lightbox.getByRole('button', { name: 'Previous' });
+        this.lightboxNext = this.lightbox.getByRole('button', { name: 'Next' });
         this.polaroids = page.getByTestId('polaroid');
         this.rotateLockOverlay = page.getByTestId('rotate-lock-overlay');
         this.mainRegion = page.getByTestId('main');
@@ -90,7 +121,11 @@ export class MainPage {
 
         // Links and CTAs
         this.linksGroups = page.locator('.links-groups');
+        this.linkGroups = page.locator('.links-group');
         this.menuLinks = page.getByTestId('menu-links');
+        this.menuAbout = page.getByTestId('menu-about');
+        this.menuMusicVideos = page.getByTestId('menu-music-videos');
+        this.menuSupport = page.getByTestId('menu-support');
         this.patreonLink = page.getByTestId('links-patreon');
         this.youtubeLink = page.getByTestId('links-youtube');
         this.spotifyLink = page.getByTestId('links-spotify');
@@ -104,6 +139,21 @@ export class MainPage {
         this.yearEl = page.getByTestId('year');
         this.skipLink = page.getByTestId('skip-link');
         this.puzzleModal = page.getByTestId('puzzle-modal');
+        this.aboutCopy = page.locator('.about-copy');
+        this.supportBenefits = page.locator('.support-benefits li');
+        this.supportBlurb = page.locator('.support-blurb');
+        this.supportCtas = page.locator('.support-ctas');
+        this.supportHeroImage = page.locator('.support-hero-image img');
+        this.nextReleaseCountdown = page.getByTestId('next-release-countdown');
+        this.nextReleaseTimer = page.getByTestId('countdown-timer');
+        this.patreonEarlyAccess = page.getByTestId('patreon-early-access');
+        this.patreonEarlyAccessTimer = page.getByTestId('countdown-timer-patreon');
+        this.ytPlaylist = page.getByTestId('yt-playlist');
+        this.ytCarouselShell = page.getByTestId('yt-carousel-shell');
+        this.ytCarouselViewport = page.getByTestId('yt-carousel-viewport');
+        this.ytCarouselTrack = page.getByTestId('yt-carousel-track');
+        this.ytCarouselLeft = page.getByTestId('yt-carousel-left');
+        this.ytCarouselRight = page.getByTestId('yt-carousel-right');
     }
 
     async goto() {

@@ -11,9 +11,52 @@ test.describe('Mixer page', () => {
 
     test('loads and shows transport controls', async ({ mixerPage }) => {
         await test.step('verify core controls are visible', async () => {
+            await expect(mixerPage.titleHeading).toHaveText('Band of Echoes — “Right In Two”');
+            await expect(mixerPage.subtitle).toHaveText('Interactive Stem Mixer');
+            await expect(mixerPage.wrap).toHaveAttribute('role', 'application');
+            await expect(mixerPage.wrap).toHaveAttribute('aria-label', /Stem Mixer for 'Right In Two'/);
+            await expect(mixerPage.transport.rew).toBeVisible();
             await expect(mixerPage.transport.play).toBeVisible();
             await expect(mixerPage.transport.progress).toBeVisible();
+            await expect(mixerPage.transport.time).toHaveText('00:00 / 00:00');
+            await expect(mixerPage.transport.close).toBeVisible();
             await expect(mixerPage.strips.master.fader).toBeVisible();
+        });
+    });
+
+    test('exposes current mixer structure and initial defaults', async ({ mixerPage }) => {
+        await test.step('verify group banners and audio elements', async () => {
+            await expect(mixerPage.groups.instruments).toHaveAttribute('role', 'button');
+            await expect(mixerPage.groups.instruments).toHaveAttribute('tabindex', '0');
+            await expect(mixerPage.groups.vocals).toHaveAttribute('role', 'button');
+            await expect(mixerPage.groups.vocals).toHaveAttribute('tabindex', '0');
+            await expect(mixerPage.audioEls).toHaveCount(4);
+        });
+
+        await test.step('verify initial strip defaults', async () => {
+            await expect(mixerPage.strips.guitar.root.locator('.name')).toHaveText('Guitar');
+            await expect(mixerPage.strips.cello.root.locator('.name')).toHaveText('Cello');
+            await expect(mixerPage.strips.eric.root.locator('.name')).toHaveText('Eric Vocals');
+            await expect(mixerPage.strips.kathryn.root.locator('.name')).toHaveText('Kathryn Vocals');
+            await expect(mixerPage.strips.master.root.locator('.name')).toHaveText('Master');
+
+            for (const strip of Object.values(mixerPage.strips)) {
+                await expect(strip.fader).toHaveValue('70');
+                await expect(strip.db).toHaveText(/0\.0\s*dB/);
+                await expect(strip.mute).toHaveAttribute('aria-checked', 'false');
+            }
+
+            await expect(mixerPage.strips.guitar.solo!).toHaveAttribute('aria-checked', 'false');
+            await expect(mixerPage.strips.cello.solo!).toHaveAttribute('aria-checked', 'false');
+            await expect(mixerPage.strips.eric.solo!).toHaveAttribute('aria-checked', 'false');
+            await expect(mixerPage.strips.kathryn.solo!).toHaveAttribute('aria-checked', 'false');
+            expect(mixerPage.strips.master.solo).toBeUndefined();
+            await expect(mixerPage.unsoloAll).toHaveAttribute('role', 'button');
+        });
+
+        await test.step('verify loading overlay starts hidden', async () => {
+            await expect(mixerPage.loadingOverlay).toBeHidden();
+            await expect(mixerPage.loadingOverlay).toHaveAttribute('aria-busy', 'false');
         });
     });
 
