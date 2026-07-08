@@ -97,8 +97,8 @@ test.describe('Home page', () => {
             await expect(mainPage.appleMusicLink).toHaveAttribute('href', 'https://music.apple.com/us/artist/band-of-echoes/1859262959');
             await expect(mainPage.youtubeMusicLink).toHaveAttribute('href', 'https://music.youtube.com/channel/UCvxe6T06QNZOOFmetbKHCdA');
             await expect(mainPage.tidalLink).toHaveAttribute('href', 'https://tidal.com/artist/70905205');
-            await expect(mainPage.tiktokLink).toHaveAttribute('href', 'https://www.tiktok.com/@band.of.echoes');
-            await expect(mainPage.instagramLink).toHaveAttribute('href', 'https://www.instagram.com/bandofechoes_/');
+            await expect(mainPage.tiktokLink).toHaveAttribute('href', 'https://www.tiktok.com/@bandofechoes');
+            await expect(mainPage.instagramLink).toHaveAttribute('href', 'https://www.instagram.com/bandofechoes/');
         });
 
         await test.step('verify external links open safely and email is mailto', async () => {
