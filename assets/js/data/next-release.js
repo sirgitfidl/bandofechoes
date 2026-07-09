@@ -11,7 +11,7 @@ window.BOE_NEXT_PREMIERE_URL = '';
 // - upcomingPreview: image automatically shown after main countdown expires.
 window.BOE_COUNTDOWN_PREVIEW = {
   currentPreview: 'metallicaLogo.png',
-  upcomingPreview: 'metallicaLogo.png'
+  upcomingPreview: 'ninLogo.png'
 };
 
 // Two-stage release scheduling:
@@ -20,8 +20,8 @@ window.BOE_COUNTDOWN_PREVIEW = {
 window.BOE_NEXT_RELEASE_SCHEDULE = {
   upcoming: {
     year: 2026,
-    month: 8,
-    day: 13,
+    month: 10,
+    day: 15,
     hour: 10,
     minute: 0,
     timeZone: 'America/Los_Angeles'
