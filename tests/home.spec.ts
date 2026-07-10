@@ -265,6 +265,7 @@ test.describe('Home page', () => {
     test('head metadata and structured data remain current for SEO', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('verify core title, meta, and link tags', async () => {
             await expect(mainPage.page).toHaveTitle('Band of Echoes | Acoustic Covers (Tool, NIN, Metallica)');
+            await expect(mainPage.page.locator('head meta[name="viewport"]')).toHaveAttribute('content', 'width=device-width, initial-scale=1, minimum-scale=1');
             await expect(mainPage.page.locator('head meta[name="description"]')).toHaveAttribute('content', /Band of Echoes is an acoustic duo creating dark, dynamic acoustic covers/);
             await expect(mainPage.page.locator('head meta[name="robots"]')).toHaveAttribute('content', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
             await expect(mainPage.page.locator('head meta[name="keywords"]')).toHaveAttribute('content', /Tool cover/);
