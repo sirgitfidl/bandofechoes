@@ -33,9 +33,9 @@ export class MixerPage {
         this.page = page;
         this.wrap = page.getByTestId('mixer-wrap');
         this.title = page.getByTestId('mixer-title');
-        this.titleHeading = this.title.locator('h1');
-        this.subtitle = this.title.locator('.sub');
-        this.audioEls = page.locator('audio');
+        this.titleHeading = page.getByTestId('mixer-title-heading');
+        this.subtitle = page.getByTestId('mixer-subtitle');
+        this.audioEls = page.getByTestId('audio-stem');
         this.groups = {
             instruments: page.getByTestId('group-instruments'),
             vocals: page.getByTestId('group-vocals'),
@@ -83,6 +83,7 @@ export class ChannelStrip {
     readonly page: Page;
     readonly key: string;
     readonly root: Locator;
+    readonly name: Locator;
     readonly fader: Locator;
     readonly db: Locator;
     readonly solo?: Locator;
@@ -92,8 +93,9 @@ export class ChannelStrip {
         this.page = page;
         this.key = key;
         this.root = page.getByTestId(`strip-${key}`);
+        this.name = this.root.getByTestId('strip-name');
         this.fader = page.getByTestId(`fader-${key}`);
-        this.db = this.root.locator('.db');
+        this.db = this.root.getByTestId('strip-db');
         // master has no solo, others do
         this.solo = key === 'master' ? undefined : page.getByTestId(`solo-${key}`);
         this.mute = page.getByTestId(`mute-${key}`);

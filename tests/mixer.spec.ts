@@ -34,11 +34,11 @@ test.describe('Mixer page', () => {
         });
 
         await test.step('verify initial strip defaults', async () => {
-            await expect(mixerPage.strips.guitar.root.locator('.name')).toHaveText('Guitar');
-            await expect(mixerPage.strips.cello.root.locator('.name')).toHaveText('Cello');
-            await expect(mixerPage.strips.eric.root.locator('.name')).toHaveText('Eric Vocals');
-            await expect(mixerPage.strips.kathryn.root.locator('.name')).toHaveText('Kathryn Vocals');
-            await expect(mixerPage.strips.master.root.locator('.name')).toHaveText('Master');
+            await expect(mixerPage.strips.guitar.name).toHaveText('Guitar');
+            await expect(mixerPage.strips.cello.name).toHaveText('Cello');
+            await expect(mixerPage.strips.eric.name).toHaveText('Eric Vocals');
+            await expect(mixerPage.strips.kathryn.name).toHaveText('Kathryn Vocals');
+            await expect(mixerPage.strips.master.name).toHaveText('Master');
 
             for (const strip of Object.values(mixerPage.strips)) {
                 await expect(strip.fader).toHaveValue('70');

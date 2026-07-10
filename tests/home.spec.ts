@@ -262,6 +262,88 @@ test.describe('Home page', () => {
         });
     });
 
+    test('music video carousel falls back to the playlist link when automation has no cached items', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('reload with an empty playlist cache', async () => {
+            await mainPage.page.addInitScript(() => {
+                try {
+                    window.localStorage.removeItem('BOE_YT_PLAYLIST_CACHE_PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+                } catch { }
+                try {
+                    delete (window as Window & { BOE_FEATURED_VIDEO_ID?: string }).BOE_FEATURED_VIDEO_ID;
+                    delete (window as Window & { BOE_FEATURED_VIDEO_TITLE?: string }).BOE_FEATURED_VIDEO_TITLE;
+                } catch { }
+            });
+            await mainPage.page.goto('/');
+        });
+
+        await test.step('verify the playlist track exposes the YouTube fallback affordance', async () => {
+            const fallbackLink = mainPage.ytCarouselTrack.locator('a.btn');
+            await expect(fallbackLink).toHaveCount(1);
+            await expect(fallbackLink).toHaveText('View playlist on YouTube');
+            await expect(fallbackLink).toHaveAttribute('href', 'https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(fallbackLink).toHaveAttribute('target', '_blank');
+            await expect(fallbackLink).toHaveAttribute('rel', /noopener/);
+            await expect(mainPage.heroLatest).toHaveAttribute('hidden', '');
+        });
+    });
+
+    test('music video carousel renders cached tiles and updates the hero latest release', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('reload with a deterministic cached playlist payload', async () => {
+            await mainPage.page.addInitScript(() => {
+                const playlistId = 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0';
+                const items = [
+                    {
+                        videoId: 'video-001',
+                        title: 'First Song (Acoustic Cover) | Band of Echoes',
+                        thumbnailUrl: 'https://example.com/thumb-1.jpg'
+                    },
+                    {
+                        videoId: 'video-002',
+                        title: 'Second Song | Band of Echoes',
+                        thumbnailUrl: 'https://example.com/thumb-2.jpg'
+                    },
+                    {
+                        videoId: 'video-003',
+                        title: 'Third Song',
+                        thumbnailUrl: 'https://example.com/thumb-3.jpg'
+                    }
+                ];
+
+                try {
+                    window.localStorage.setItem(
+                        `BOE_YT_PLAYLIST_CACHE_${playlistId}`,
+                        JSON.stringify({ fetchedAt: Date.now(), items })
+                    );
+                } catch { }
+
+                try {
+                    delete (window as Window & { BOE_FEATURED_VIDEO_ID?: string }).BOE_FEATURED_VIDEO_ID;
+                    delete (window as Window & { BOE_FEATURED_VIDEO_TITLE?: string }).BOE_FEATURED_VIDEO_TITLE;
+                } catch { }
+            });
+            await mainPage.page.goto('/');
+        });
+
+        await test.step('verify the cached playlist populates the hero latest release', async () => {
+            await expect(mainPage.heroLatest).not.toHaveAttribute('hidden', '');
+            await expect(mainPage.heroLatestTitle).toHaveText('First Song');
+            await expect(mainPage.heroLatestTitle).toHaveAttribute('href', 'https://youtu.be/video-001');
+        });
+
+        await test.step('verify the carousel tiles render in featured-last order with cleaned titles', async () => {
+            const tiles = mainPage.ytCarouselTrack.locator('.yt-tile');
+            const titles = mainPage.ytCarouselTrack.locator('.yt-title');
+
+            await expect(tiles).toHaveCount(3);
+            await expect(titles.nth(0)).toHaveText('Second Song');
+            await expect(titles.nth(1)).toHaveText('Third Song');
+            await expect(titles.nth(2)).toHaveText('First Song');
+
+            await expect(titles.nth(0)).toHaveAttribute('href', 'https://www.youtube.com/watch?v=video-002&list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(titles.nth(2)).toHaveAttribute('href', 'https://www.youtube.com/watch?v=video-001&list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+        });
+    });
+
     test('head metadata and structured data remain current for SEO', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('verify core title, meta, and link tags', async () => {
             await expect(mainPage.page).toHaveTitle('Band of Echoes | Acoustic Covers (Tool, NIN, Metallica)');

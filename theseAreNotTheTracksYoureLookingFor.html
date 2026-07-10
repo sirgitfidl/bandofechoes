@@ -15,8 +15,8 @@
 <body>
   <!-- Title block above the console -->
   <header class="page-title" aria-label="Mix Title" data-testid="mixer-title">
-    <h1>Band of Echoes — “Right In Two”</h1>
-    <div class="sub">Interactive Stem Mixer</div>
+    <h1 data-testid="mixer-title-heading">Band of Echoes — “Right In Two”</h1>
+    <div class="sub" data-testid="mixer-subtitle">Interactive Stem Mixer</div>
   </header>
 
   <div class="mixer-wrap" role="application" aria-label="Stem Mixer for 'Right In Two'" data-testid="mixer-wrap">
@@ -36,10 +36,10 @@
     </div>
 
     <!-- Stems -->
-    <audio id="audio-guitar" preload="auto" src="assets/stems/right_in_two/rightInTwo_guitarStem.mp3"></audio>
-    <audio id="audio-cello" preload="auto" src="assets/stems/right_in_two/rightInTwo_celloStem.mp3"></audio>
-    <audio id="audio-eric" preload="auto" src="assets/stems/right_in_two/rightInTwo_ericStem.mp3"></audio>
-    <audio id="audio-kathryn" preload="auto" src="assets/stems/right_in_two/rightInTwo_katStem.mp3"></audio>
+    <audio id="audio-guitar" preload="auto" src="assets/stems/right_in_two/rightInTwo_guitarStem.mp3" data-testid="audio-stem"></audio>
+    <audio id="audio-cello" preload="auto" src="assets/stems/right_in_two/rightInTwo_celloStem.mp3" data-testid="audio-stem"></audio>
+    <audio id="audio-eric" preload="auto" src="assets/stems/right_in_two/rightInTwo_ericStem.mp3" data-testid="audio-stem"></audio>
+    <audio id="audio-kathryn" preload="auto" src="assets/stems/right_in_two/rightInTwo_katStem.mp3" data-testid="audio-stem"></audio>
 
     <div class="strips">
       <div class="group-banner instruments" role="button" tabindex="0" title="Solo Instruments"
@@ -48,10 +48,10 @@
       </div>
 
       <div class="strip" data-channel="guitar" data-testid="strip-guitar">
-        <div class="name">Guitar</div>
+        <div class="name" data-testid="strip-name">Guitar</div>
         <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Guitar fader"
           data-testid="fader-guitar" />
-        <div class="db" aria-live="polite">0.0 dB</div>
+        <div class="db" aria-live="polite" data-testid="strip-db">0.0 dB</div>
         <div class="row">
           <div class="chip solo" role="switch" aria-checked="false" aria-label="Guitar solo" data-testid="solo-guitar">
             SOLO</div>
@@ -62,10 +62,10 @@
       </div>
 
       <div class="strip" data-channel="cello" data-testid="strip-cello">
-        <div class="name">Cello</div>
+        <div class="name" data-testid="strip-name">Cello</div>
         <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Cello fader"
           data-testid="fader-cello" />
-        <div class="db" aria-live="polite">0.0 dB</div>
+        <div class="db" aria-live="polite" data-testid="strip-db">0.0 dB</div>
         <div class="row">
           <div class="chip solo" role="switch" aria-checked="false" aria-label="Cello solo" data-testid="solo-cello">
             SOLO</div>
@@ -76,10 +76,10 @@
       </div>
 
       <div class="strip" data-channel="eric" data-testid="strip-eric">
-        <div class="name">Eric Vocals</div>
+        <div class="name" data-testid="strip-name">Eric Vocals</div>
         <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Eric vocals fader"
           data-testid="fader-eric" />
-        <div class="db" aria-live="polite">0.0 dB</div>
+        <div class="db" aria-live="polite" data-testid="strip-db">0.0 dB</div>
         <div class="row">
           <div class="chip solo" role="switch" aria-checked="false" aria-label="Eric vocals solo"
             data-testid="solo-eric">SOLO</div>
@@ -90,10 +90,10 @@
       </div>
 
       <div class="strip" data-channel="kathryn" data-testid="strip-kathryn">
-        <div class="name">Kathryn Vocals</div>
+        <div class="name" data-testid="strip-name">Kathryn Vocals</div>
         <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Kathryn vocals fader"
           data-testid="fader-kathryn" />
-        <div class="db" aria-live="polite">0.0 dB</div>
+        <div class="db" aria-live="polite" data-testid="strip-db">0.0 dB</div>
         <div class="row">
           <div class="chip solo" role="switch" aria-checked="false" aria-label="Kathryn vocals solo"
             data-testid="solo-kathryn">SOLO</div>
@@ -104,10 +104,10 @@
       </div>
 
       <div class="strip" data-channel="master" data-testid="strip-master">
-        <div class="name">Master</div>
+        <div class="name" data-testid="strip-name">Master</div>
         <input class="fader" type="range" min="0" max="100" value="70" step="1" aria-label="Master fader"
           data-testid="fader-master" />
-        <div class="db" aria-live="polite">0.0 dB</div>
+        <div class="db" aria-live="polite" data-testid="strip-db">0.0 dB</div>
         <div class="row">
           <div class="chip mute" role="switch" aria-checked="false" aria-label="Master mute" data-testid="mute-master">
             MUTE</div>

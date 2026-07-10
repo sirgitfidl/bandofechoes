@@ -87,7 +87,7 @@ export class MainPage {
         this.brandLink = page.getByTestId('brand-link');
         this.navToggle = page.getByTestId('nav-toggle');
         this.navMenu = page.getByTestId('nav-menu');
-        this.navMenuItems = this.navMenu.locator('a[role="menuitem"]');
+        this.navMenuItems = this.navMenu.locator('[data-menu-item="true"]');
 
         // Hero
         this.heroPlayer = page.getByTestId('hero-player');
@@ -105,8 +105,8 @@ export class MainPage {
         // Lightbox
         this.lightbox = page.getByTestId('lightbox');
         this.lightboxClose = page.getByTestId('lightbox-close');
-        this.lightboxPrev = this.lightbox.getByRole('button', { name: 'Previous' });
-        this.lightboxNext = this.lightbox.getByRole('button', { name: 'Next' });
+        this.lightboxPrev = page.getByTestId('lightbox-prev');
+        this.lightboxNext = page.getByTestId('lightbox-next');
         this.polaroids = page.getByTestId('polaroid');
         this.rotateLockOverlay = page.getByTestId('rotate-lock-overlay');
         this.mainRegion = page.getByTestId('main');
@@ -120,8 +120,8 @@ export class MainPage {
         this.mixerIframe = page.frameLocator('[data-testid="mixer-iframe"]');
 
         // Links and CTAs
-        this.linksGroups = page.locator('.links-groups');
-        this.linkGroups = page.locator('.links-group');
+        this.linksGroups = page.getByTestId('links-groups');
+        this.linkGroups = page.getByTestId('links-group');
         this.menuLinks = page.getByTestId('menu-links');
         this.menuAbout = page.getByTestId('menu-about');
         this.menuMusicVideos = page.getByTestId('menu-music-videos');
@@ -139,11 +139,11 @@ export class MainPage {
         this.yearEl = page.getByTestId('year');
         this.skipLink = page.getByTestId('skip-link');
         this.puzzleModal = page.getByTestId('puzzle-modal');
-        this.aboutCopy = page.locator('.about-copy');
-        this.supportBenefits = page.locator('.support-benefits li');
-        this.supportBlurb = page.locator('.support-blurb');
-        this.supportCtas = page.locator('.support-ctas');
-        this.supportHeroImage = page.locator('.support-hero-image img');
+        this.aboutCopy = page.getByTestId('about-copy');
+        this.supportBenefits = page.getByTestId('support-benefit');
+        this.supportBlurb = page.getByTestId('support-blurb');
+        this.supportCtas = page.getByTestId('support-ctas');
+        this.supportHeroImage = page.getByTestId('support-hero-image');
         this.nextReleaseCountdown = page.getByTestId('next-release-countdown');
         this.nextReleaseTimer = page.getByTestId('countdown-timer');
         this.patreonEarlyAccess = page.getByTestId('patreon-early-access');
@@ -180,7 +180,14 @@ export class MainPage {
 
     async clickMenu(label: 'Home' | 'About' | 'Music Videos' | 'Support' | 'Contact') {
         await this.openNav();
-        await this.navMenu.getByRole('link', { name: label }).click();
+        const menuByLabel: Partial<Record<'Home' | 'About' | 'Music Videos' | 'Support' | 'Contact', Locator>> = {
+            About: this.menuAbout,
+            'Music Videos': this.menuMusicVideos,
+            Support: this.menuSupport,
+        };
+        const menuTarget = menuByLabel[label];
+        if (!menuTarget) throw new Error(`No test-id backed menu locator is configured for ${label}`);
+        await menuTarget.click();
     }
 
     // --- Hero helpers ---
@@ -239,7 +246,7 @@ export class MainPage {
     async openLightboxFromFirstPolaroid() {
         // Wait for puzzle script and at least one card with an image to appear
         await this.page.waitForFunction(() => !!(window as any).dumpPuzzleState, null, { timeout: 2000 }).catch(() => { });
-        const cards = this.page.locator('.collage figure.polaroid');
+        const cards = this.polaroids;
         await cards.first().waitFor({ state: 'visible', timeout: 4000 });
         await cards.first().scrollIntoViewIfNeeded();
 
@@ -338,7 +345,7 @@ export class MainPage {
         } catch { }
         // If still visible, click the backdrop (top-left corner targets the overlay element)
         if (await this.lightbox.isVisible()) {
-            try { await this.page.locator('#lightbox').click({ position: { x: 4, y: 4 } }); } catch { }
+            try { await this.lightbox.click({ position: { x: 4, y: 4 } }); } catch { }
         }
         // Final fallback: Escape
         if (await this.lightbox.isVisible()) {

@@ -113,10 +113,10 @@
           <span></span><span></span><span></span>
         </button>
         <div id="navMenu" class="menu" role="menu" aria-hidden="true" data-testid="nav-menu">
-          <a role="menuitem" href="#about" data-testid="menu-about">About</a>
-          <a role="menuitem" href="#music-videos" data-testid="menu-music-videos">Videos</a>
-          <a role="menuitem" href="#support" data-testid="menu-support">Support</a>
-          <a role="menuitem" href="#links-section" data-testid="menu-links">Links</a>
+          <a role="menuitem" href="#about" data-testid="menu-about" data-menu-item="true">About</a>
+          <a role="menuitem" href="#music-videos" data-testid="menu-music-videos" data-menu-item="true">Videos</a>
+          <a role="menuitem" href="#support" data-testid="menu-support" data-menu-item="true">Support</a>
+          <a role="menuitem" href="#links-section" data-testid="menu-links" data-menu-item="true">Links</a>
         </div>
       </nav>
     </div>
@@ -150,7 +150,7 @@
 
         <h2 id="about" style="margin-top:0">About Us</h2>
 
-        <p class="about-copy">Band of Echoes reimagines heavy, atmospheric rock through cello, acoustic guitar, and layered vocal harmonies, transforming songs by Tool, Nine Inch Nails, Soundgarden, Metallica, and more into immersive acoustic arrangements.</p>
+        <p class="about-copy" data-testid="about-copy">Band of Echoes reimagines heavy, atmospheric rock through cello, acoustic guitar, and layered vocal harmonies, transforming songs by Tool, Nine Inch Nails, Soundgarden, Metallica, and more into immersive acoustic arrangements.</p>
         <!--<p class="quote text-justify" id="quote">“World‑class musicians. Duo sounds like a band.” — Name, Outlet</p>-->
       </div>
     </section>
@@ -280,20 +280,20 @@
     <section id="support-section" class="section cols" data-testid="section-support">
       <div class="card pad">
         <h2 id="support" style="margin-top:0">Support</h2>
-        <div class="support-blurb" aria-label="Support options">
+        <div class="support-blurb" aria-label="Support options" data-testid="support-blurb">
           <p class="support-lead">If you enjoy our music and want to help us continue creating, consider supporting us through Patreon.</p>
           <p class="support-intro">It’s the most direct way to support the project and help keep this whole thing moving.<br><br></p>
 
           <p class="text-justify support-kicker">Patreon Benefits</p>
           <ul class="support-benefits" aria-label="Patreon benefits">
-            <li>Tabs and sheet music</li>
-            <li>Early access to music videos and audio releases</li>
-            <li>Full video lessons and breakdowns</li>
-            <li>Direct message access</li>
-            <li>Lesson discussion and troubleshooting</li>
-            <li>High-res audio downloads</li>
-            <li>The occasional behind-the-scenes chaos</li>
-            <li>4K high bitrate music video downloads</li>
+            <li data-testid="support-benefit">Tabs and sheet music</li>
+            <li data-testid="support-benefit">Early access to music videos and audio releases</li>
+            <li data-testid="support-benefit">Full video lessons and breakdowns</li>
+            <li data-testid="support-benefit">Direct message access</li>
+            <li data-testid="support-benefit">Lesson discussion and troubleshooting</li>
+            <li data-testid="support-benefit">High-res audio downloads</li>
+            <li data-testid="support-benefit">The occasional behind-the-scenes chaos</li>
+            <li data-testid="support-benefit">4K high bitrate music video downloads</li>
           </ul>
 
           <!--<p class="text-justify support-kicker">YouTube Memberships:</p>
@@ -301,13 +301,13 @@
             <li>Early access to music videos</li>
           </ul>-->
 
-          <div class="support-ctas" aria-label="Patreon membership">
+          <div class="support-ctas" aria-label="Patreon membership" data-testid="support-ctas">
             <a id="patreonCta2" class="btn primary" href="https://www.patreon.com/cw/BandofEchoes/membership" target="_blank"
               rel="noopener" data-testid="cta-patreon">Become a Member on Patreon</a>
           </div>
 
           <div class="support-hero-image" aria-label="Band of Echoes photo">
-            <img src="assets/images/band_photos/hero_images/hero_1.png" alt="Band of Echoes" loading="lazy" decoding="async">
+            <img src="assets/images/band_photos/hero_images/hero_1.png" alt="Band of Echoes" loading="lazy" decoding="async" data-testid="support-hero-image">
           </div>
         </div>
       </div>
@@ -317,8 +317,8 @@
     <section id="links-section" class="section cols" data-testid="section-links">
       <div class="card pad">
         <h2 style="margin-top:0">Links</h2>
-        <div class="links-groups" aria-label="Band of Echoes links">
-          <div class="links-group">
+        <div class="links-groups" aria-label="Band of Echoes links" data-testid="links-groups">
+          <div class="links-group" data-testid="links-group">
             <h3 class="links-subheading">Support + Video</h3>
             <p class="links-row">
               <a href="https://www.patreon.com/cw/BandofEchoes/membership" target="_blank" rel="noopener" data-testid="links-patreon">Patreon</a>
@@ -326,7 +326,7 @@
               <a href="https://youtube.com/@BandOfEchoes" target="_blank" rel="noopener" data-testid="links-youtube">YouTube</a>
             </p>
           </div>
-          <div class="links-group">
+          <div class="links-group" data-testid="links-group">
             <h3 class="links-subheading">Streaming</h3>
             <p class="links-row">
               <a href="https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS" target="_blank" rel="noopener" data-testid="links-spotify">Spotify</a>
@@ -338,7 +338,7 @@
               <a href="https://tidal.com/artist/70905205" target="_blank" rel="noopener" data-testid="links-tidal">TIDAL</a>
             </p>
           </div>
-          <div class="links-group">
+          <div class="links-group" data-testid="links-group">
             <h3 class="links-subheading">Social</h3>
             <p class="links-row">
               <a href="https://www.tiktok.com/@bandofechoes" target="_blank" rel="noopener" data-testid="links-tiktok">TikTok</a>
@@ -346,7 +346,7 @@
               <a href="https://www.instagram.com/bandofechoes/" target="_blank" rel="noopener" data-testid="links-instagram">Instagram</a>
             </p>
           </div>
-          <div class="links-group">
+          <div class="links-group" data-testid="links-group">
             <h3 class="links-subheading">Connect With Us</h3>
             <p class="links-row"><a id="emailLink" href="mailto:bandofechoescontact@gmail.com"
                 data-testid="email-link">Booking / Press</a></p>
@@ -359,9 +359,9 @@
   <!-- Lightbox overlay -->
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" data-testid="lightbox">
     <button class="lightbox-close" aria-label="Close" data-testid="lightbox-close">×</button>
-    <button class="lightbox-arrow prev" aria-label="Previous">‹</button>
+    <button class="lightbox-arrow prev" aria-label="Previous" data-testid="lightbox-prev">‹</button>
     <img id="lightboxImg" alt="">
-    <button class="lightbox-arrow next" aria-label="Next">›</button>
+    <button class="lightbox-arrow next" aria-label="Next" data-testid="lightbox-next">›</button>
   </div>
 
   <footer id="site-footer">
