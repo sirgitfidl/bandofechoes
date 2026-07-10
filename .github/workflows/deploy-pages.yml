@@ -1,7 +1,11 @@
 name: Deploy (GitHub Pages)
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - E2E (Playwright)
+    types:
+      - completed
     branches: [main]
   workflow_dispatch:
 
