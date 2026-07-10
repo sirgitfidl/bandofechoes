@@ -19,6 +19,73 @@ test.describe('Home page', () => {
         });
     });
 
+    test('mobile orientation lock covers landscape cleanly and restores scroll on return to portrait', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('reload as a touch device in portrait', async () => {
+            await mainPage.page.addInitScript(() => {
+                (window as Window & { __BOE_FORCE_TOUCH_DEVICE?: boolean }).__BOE_FORCE_TOUCH_DEVICE = true;
+                try {
+                    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, get: () => 5 });
+                } catch { }
+                try {
+                    Object.defineProperty(window, 'ontouchstart', { configurable: true, value: null });
+                } catch { }
+            });
+            await mainPage.page.setViewportSize({ width: 390, height: 844 });
+            await mainPage.page.goto('/');
+            await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
+        });
+
+        let initialScrollY = 0;
+
+        await test.step('scroll in portrait before rotating', async () => {
+            await mainPage.page.evaluate(() => window.scrollTo(0, 900));
+            await mainPage.page.waitForTimeout(100);
+            initialScrollY = await mainPage.page.evaluate(() => window.scrollY);
+            expect(initialScrollY).toBeGreaterThan(0);
+        });
+
+        await test.step('rotate to landscape and lock the page without blurred content bleed', async () => {
+            await mainPage.page.setViewportSize({ width: 844, height: 390 });
+            await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'false');
+            await expect(mainPage.page.locator('body')).toHaveClass(/orientation-locked/);
+
+            const landscapeState = await mainPage.page.evaluate(() => ({
+                top: document.body.style.top,
+                scrollY: window.scrollY,
+                headerFilter: getComputedStyle(document.querySelector('header') as Element).filter,
+                mainFilter: getComputedStyle(document.querySelector('main') as Element).filter
+            }));
+
+            expect(landscapeState.top).toMatch(/^-/);
+            expect(landscapeState.scrollY).toBe(0);
+            expect(Math.abs(parseInt(landscapeState.top, 10))).toBeGreaterThanOrEqual(initialScrollY - 2);
+            expect(landscapeState.headerFilter).toBe('none');
+            expect(landscapeState.mainFilter).toBe('none');
+        });
+
+        await test.step('rotate back to portrait and restore scrolling', async () => {
+            await mainPage.page.setViewportSize({ width: 390, height: 844 });
+            await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
+            await expect(mainPage.page.locator('body')).not.toHaveClass(/orientation-locked/);
+
+            const restoredState = await mainPage.page.evaluate(() => ({
+                top: document.body.style.top,
+                scrollY: window.scrollY
+            }));
+
+            expect(restoredState.top).toBe('');
+            expect(Math.abs(restoredState.scrollY - initialScrollY)).toBeLessThanOrEqual(2);
+
+            const canScrollFurther = await mainPage.page.evaluate(() => {
+                const before = window.scrollY;
+                window.scrollTo(0, before + 200);
+                return window.scrollY > before;
+            });
+
+            expect(canScrollFurther).toBeTruthy();
+        });
+    });
+
     test('hero, nav, and support start with the expected accessibility state', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('verify hero poster and latest-release placeholder state', async () => {
             await expect(mainPage.heroPoster).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');

@@ -46,6 +46,13 @@ body {
     font-family: inherit;
 }
 
+body.portrait-only.orientation-locked {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
 .rotate-lock-overlay .icon {
     font-size: 72px;
     line-height: 1;
@@ -61,16 +68,8 @@ body {
 
 /* Only activate on small touch screens */
 @media (max-width: 900px) and (orientation: landscape) {
-    body.portrait-only .rotate-lock-overlay {
+    body.portrait-only.orientation-locked .rotate-lock-overlay {
         display: flex;
-    }
-
-    body.portrait-only main,
-    body.portrait-only header,
-    body.portrait-only footer {
-        filter: blur(4px);
-        pointer-events: none;
-        user-select: none;
     }
 }
 
