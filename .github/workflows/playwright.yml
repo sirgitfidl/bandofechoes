@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install dependencies
@@ -40,11 +40,13 @@ jobs:
       - name: Run BVT suite for push and pull request events
         if: github.event_name == 'pull_request'
         env:
+          PLAYWRIGHT_HTML_OPEN: never
           PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: npm run test:ci:bvt
       - name: Run full Playwright suite for nightly and manual events
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
+          PLAYWRIGHT_HTML_OPEN: never
           PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: npm run test:ci:full
       - name: Stop server
