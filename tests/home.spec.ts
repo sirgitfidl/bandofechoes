@@ -478,7 +478,7 @@ test.describe('Homepage', () => {
                 await expect(maybeModal).toHaveCount(0);
             }
         });
-    });
+    }); 
 
     test('the mixer modal can be opened from the homepage and closed again', async ({ mainPage }: { mainPage: MainPage }) => {
         const hasOpen = await test.step('check whether the mixer modal API is available', async () => {
