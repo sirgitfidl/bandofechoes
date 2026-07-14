@@ -4,7 +4,11 @@
     "version": "0.0.0",
     "scripts": {
         "test": "playwright test",
+        "test:bvt": "playwright test --project=chromium --grep BVT",
+        "test:full": "playwright test",
         "test:ci": "playwright test --reporter=line",
+        "test:ci:bvt": "playwright test --project=chromium --grep BVT --reporter=line",
+        "test:ci:full": "playwright test --reporter=line",
         "serve": "http-server -p 3000 -c- .",
         "start": "npm run serve"
     },

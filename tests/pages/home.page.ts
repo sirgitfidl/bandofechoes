@@ -356,8 +356,12 @@ export class MainPage {
 
     // --- Puzzle helpers ---
     async triggerSolveChord() {
-        // Control+Shift+Alt+S should work cross‑platform (app listens for ctrlKey||metaKey)
-        await this.page.keyboard.press('Control+Shift+Alt+S');
+        await this.page.keyboard.down('Numpad1');
+        await this.page.keyboard.down('Numpad2');
+        await this.page.keyboard.down('Numpad3');
+        await this.page.keyboard.up('Numpad3');
+        await this.page.keyboard.up('Numpad2');
+        await this.page.keyboard.up('Numpad1');
     }
 
     async openSolveModal() {

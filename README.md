@@ -30,6 +30,14 @@ GitHub Pages (recommended for keeping the key out of git):
 3) Run tests (spins its own server on :3000 automatically):
    npm test
 
+Build verification tests (BVT):
+- `npm run test:bvt` runs the fast Chromium-only PR suite.
+- This repo uses BVT on `push` and `pull_request` events in GitHub Actions.
+- The nightly scheduled run and manual workflow dispatch use the full Playwright suite.
+
+Full suite:
+- `npm run test:full` runs the complete local Playwright suite.
+
 Notes:
 - The mixer fetches MP3 stems; file:// will block fetch and autoplay policies. Use the local server above.
 - If port 3000 is busy, change the port in package.json serve script and playwright.config.ts webServer.url/baseURL.

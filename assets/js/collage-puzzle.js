@@ -636,28 +636,30 @@
     // expose bits needed across modules
     window.openMixerModal = window.openMixerModal; // ensure present
 
-    // Solve shortcuts: complex chord always available; simple 'S' only in debug mode
+    // Solve shortcut: hold numpad 1, 2, and 3 together.
     if (!window.__puzzleSolveHotkeyInstalled) {
         window.__puzzleSolveHotkeyInstalled = true;
+        const pressedCodes = new Set();
+        const solveCodes = new Set(['Numpad1', 'Numpad2', 'Numpad3']);
+        const clearPressedCodes = () => pressedCodes.clear();
         document.addEventListener('keydown', (e) => {
             if (e.defaultPrevented) return;
             // Ignore when typing in inputs or editable fields
             const t = e.target;
             const tag = t && t.tagName ? String(t.tagName).toLowerCase() : '';
             if (tag === 'input' || tag === 'textarea' || (t && t.isContentEditable)) return;
-            const isS = (e.key === 's' || e.key === 'S');
-            const metaOrCtrl = e.metaKey || e.ctrlKey;
-            // Complex chord: Cmd/Ctrl + Shift + Alt + S
-            if (isS && metaOrCtrl && e.shiftKey && e.altKey) {
+
+            if (solveCodes.has(e.code)) pressedCodes.add(e.code);
+
+            if ([...solveCodes].every(code => pressedCodes.has(code))) {
                 e.preventDefault();
                 try { setSolved(true); } catch (_) { /* no-op */ }
-                return;
-            }
-            // Simple 'S' triggers solve (ignored while typing in fields)
-            if (isS && !metaOrCtrl && !e.altKey) {
-                e.preventDefault();
-                try { setSolved(true); } catch (_) { /* no-op */ }
+                clearPressedCodes();
             }
         });
+        document.addEventListener('keyup', (e) => {
+            if (solveCodes.has(e.code)) pressedCodes.delete(e.code);
+        });
+        window.addEventListener('blur', clearPressedCodes);
     }
 })();

@@ -3,24 +3,24 @@ import type MainPage from './pages/home.page';
 
 test.describe.configure({ mode: 'parallel' });
 
-test.describe('Home page', () => {
+test.describe('Homepage', () => {
     test.beforeEach(async ({ mainPage }: { mainPage: MainPage }) => {
         // Use portrait viewport across tests to avoid orientation overlay and reflows
         await mainPage.page.setViewportSize({ width: 800, height: 1200 });
         await mainPage.goto();
     });
 
-    test('hero poster click injects autoplaying YouTube iframe', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('ensure orientation overlay is hidden', async () => {
+    test('clicking the featured poster opens the autoplaying YouTube embed [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify the page starts unobstructed in portrait view', async () => {
             await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
         });
-        await test.step('click poster and verify iframe with autoplay', async () => {
+        await test.step('open the featured video and confirm the autoplaying embed loads', async () => {
             await mainPage.clickPosterInjectsIframe();
         });
     });
 
-    test('mobile orientation lock covers landscape cleanly and restores scroll on return to portrait', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('reload as a touch device in portrait', async () => {
+    test('rotating to landscape shows the rotate prompt and returning to portrait restores scrolling', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('reload as a touch device in portrait mode', async () => {
             await mainPage.page.addInitScript(() => {
                 (window as Window & { __BOE_FORCE_TOUCH_DEVICE?: boolean }).__BOE_FORCE_TOUCH_DEVICE = true;
                 try {
@@ -37,14 +37,14 @@ test.describe('Home page', () => {
 
         let initialScrollY = 0;
 
-        await test.step('scroll in portrait before rotating', async () => {
+        await test.step('scroll down in portrait before rotating', async () => {
             await mainPage.page.evaluate(() => window.scrollTo(0, 900));
             await mainPage.page.waitForTimeout(100);
             initialScrollY = await mainPage.page.evaluate(() => window.scrollY);
             expect(initialScrollY).toBeGreaterThan(0);
         });
 
-        await test.step('rotate to landscape and lock the page without blurred content bleed', async () => {
+        await test.step('rotate to landscape and confirm the page locks cleanly', async () => {
             await mainPage.page.setViewportSize({ width: 844, height: 390 });
             await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'false');
             await expect(mainPage.page.locator('body')).toHaveClass(/orientation-locked/);
@@ -63,7 +63,7 @@ test.describe('Home page', () => {
             expect(landscapeState.mainFilter).toBe('none');
         });
 
-        await test.step('rotate back to portrait and restore scrolling', async () => {
+        await test.step('rotate back to portrait and confirm scrolling returns', async () => {
             await mainPage.page.setViewportSize({ width: 390, height: 844 });
             await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
             await expect(mainPage.page.locator('body')).not.toHaveClass(/orientation-locked/);
@@ -86,8 +86,8 @@ test.describe('Home page', () => {
         });
     });
 
-    test('hero, nav, and support start with the expected accessibility state', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify hero poster and latest-release placeholder state', async () => {
+    test('hero, navigation, and support sections start with the expected accessibility defaults', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check the hero poster and latest-release placeholder state', async () => {
             await expect(mainPage.heroPoster).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
             await expect(mainPage.heroPoster).toHaveAttribute('target', '_blank');
             await expect(mainPage.heroPoster).toHaveAttribute('rel', /noopener/);
@@ -96,61 +96,61 @@ test.describe('Home page', () => {
             await expect(mainPage.heroLatestTitle).toHaveAttribute('href', '#');
         });
 
-        await test.step('verify nav accessibility defaults', async () => {
+        await test.step('check the navigation accessibility defaults', async () => {
             await expect(mainPage.navToggle).toHaveAttribute('aria-controls', 'navMenu');
             await expect(mainPage.navToggle).toHaveAttribute('aria-expanded', 'false');
             await expect(mainPage.navMenu).toHaveAttribute('role', 'menu');
             await expect(mainPage.navMenu).toHaveAttribute('aria-hidden', 'true');
         });
 
-        await test.step('verify support labels are present', async () => {
+        await test.step('check the support section labels', async () => {
             await expect(mainPage.supportBlurb).toHaveAttribute('aria-label', 'Support options');
             await expect(mainPage.supportCtas).toHaveAttribute('aria-label', 'Patreon membership');
         });
     });
 
-    test('nav opens/closes and escape closes; skip link is wired to #main', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('ensure overlay hidden', async () => {
+    test('the menu opens and closes correctly, and the skip link targets the main content [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify the rotate prompt stays hidden', async () => {
             await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
         });
-        await test.step('open nav and close with Escape', async () => {
+        await test.step('open the menu and close it with Escape', async () => {
             await mainPage.openNav();
             await expect(mainPage.navMenu).toBeVisible();
             await mainPage.page.keyboard.press('Escape');
             await expect(mainPage.navMenu).toBeHidden();
         });
-        await test.step('verify skip link targets #main', async () => {
+        await test.step('confirm the skip link points to the main content region', async () => {
             await expect(mainPage.skipLink).toHaveAttribute('href', '#main');
             await expect(mainPage.mainRegion).toHaveCount(1);
         });
     });
 
 
-    test.describe('flaky-only', () => {
+    test.describe('Lightbox interactions', () => {
         // Increase retries for this block as the collage/lightbox can be timing-sensitive
         test.describe.configure({ retries: 10 });
-        test('lightbox opens from collage and can be closed', async ({ mainPage }: { mainPage: MainPage }) => {
-            await test.step('ensure overlay hidden', async () => {
+        test('the collage lightbox opens and can be closed again', async ({ mainPage }: { mainPage: MainPage }) => {
+            await test.step('verify the rotate prompt stays hidden', async () => {
                 await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
             });
 
-            await test.step('verify polaroids are visible', async () => {
+            await test.step('confirm the collage polaroids are visible', async () => {
                 await mainPage.verifyPolaroidsVisible();
             });
 
-            await test.step('open lightbox from first polaroid', async () => {
+            await test.step('open the lightbox from a polaroid', async () => {
                 await mainPage.openLightboxFromFirstPolaroid();
                 if (!(await mainPage.lightbox.isVisible())) {
                     await mainPage.page.waitForTimeout(150);
                     await mainPage.openLightboxFromFirstPolaroid();
                 }
             });
-            await test.step('verify lightbox controls appear when open', async () => {
+            await test.step('confirm the lightbox controls appear', async () => {
                 await expect(mainPage.lightboxPrev).toBeVisible();
                 await expect(mainPage.lightboxNext).toBeVisible();
                 await expect(mainPage.lightboxClose).toBeVisible();
             });
-            await test.step('close lightbox if open', async () => {
+            await test.step('close the lightbox', async () => {
                 if (await mainPage.lightbox.isVisible()) {
                     await mainPage.closeLightbox();
                 }
@@ -158,8 +158,8 @@ test.describe('Home page', () => {
         });
     });
 
-    test('hamburger menu reflects updated items and Links item navigates to Links section', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('open nav and verify menu item set/order', async () => {
+    test('the navigation menu lists the current sections and the Links item jumps to the links section', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('open the menu and verify the current item order', async () => {
             await mainPage.openNav();
             await expect(mainPage.navMenuItems).toHaveCount(4);
             await expect(mainPage.navMenuItems.nth(0)).toHaveText('About');
@@ -170,21 +170,21 @@ test.describe('Home page', () => {
             await expect(mainPage.menuLinks).toHaveAttribute('href', '#links-section');
         });
 
-        await test.step('click Links and verify hash + pulse class', async () => {
+        await test.step('choose Links and confirm the links section is highlighted', async () => {
             await mainPage.menuLinks.click();
             await expect(mainPage.page).toHaveURL(/#links-section$/);
             await expect(mainPage.linksGroups).toHaveClass(/links-groups--pulse/);
         });
     });
 
-    test('brand link and menu anchors target the current homepage sections', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify brand link returns to the top anchor', async () => {
+    test('brand and menu links point to the correct homepage sections', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('confirm the brand link returns to the top of the page', async () => {
             await expect(mainPage.brandLink).toHaveAttribute('href', '#top');
             await mainPage.brandLink.click();
             await expect(mainPage.page).toHaveURL(/#top$/);
         });
 
-        await test.step('verify menu items point to About, Videos, and Support sections', async () => {
+        await test.step('confirm the menu links point to About, Videos, and Support', async () => {
             await mainPage.openNav();
             await expect(mainPage.menuAbout).toHaveAttribute('href', '#about');
             await expect(mainPage.menuMusicVideos).toHaveAttribute('href', '#music-videos');
@@ -203,15 +203,15 @@ test.describe('Home page', () => {
         });
     });
 
-    test('about and support sections expose the current copy and benefits', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify About section heading and copy', async () => {
+    test('the About and Support sections show the current copy and membership benefits', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check the About section heading and copy', async () => {
             await expect(mainPage.sectionAbout).toBeVisible();
             await expect(mainPage.sectionAbout.getByRole('heading', { name: 'About Us' })).toBeVisible();
             await expect(mainPage.aboutCopy).toContainText('Band of Echoes reimagines heavy, atmospheric rock');
             await expect(mainPage.aboutCopy).toContainText('Tool, Nine Inch Nails, Soundgarden, Metallica');
         });
 
-        await test.step('verify Support section benefits and image', async () => {
+        await test.step('check the Support section benefits and image', async () => {
             await expect(mainPage.sectionSupport).toBeVisible();
             await expect(mainPage.sectionSupport.getByRole('heading', { name: 'Support' })).toBeVisible();
             await expect(mainPage.supportBenefits).toHaveCount(8);
@@ -223,8 +223,8 @@ test.describe('Home page', () => {
         });
     });
 
-    test('polaroids preserve accessibility and lazy-loading markup', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify collage semantics and image attributes', async () => {
+    test('the collage polaroids keep their accessibility and lazy-loading attributes', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check the collage semantics and image attributes', async () => {
             await expect(mainPage.sectionWatch.locator('.collage')).toHaveAttribute('aria-label', 'Photo collage');
             await expect(mainPage.polaroids).toHaveCount(9);
 
@@ -240,8 +240,8 @@ test.describe('Home page', () => {
         });
     });
 
-    test('countdown and music video carousel scaffolding are wired', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify release countdown and Patreon early access link', async () => {
+    test('the countdown and music video carousel expose the expected shell and metadata', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check the release countdown and Patreon early-access link', async () => {
             await expect(mainPage.sectionMusicVideos).toBeVisible();
             await expect(mainPage.nextReleaseCountdown).toBeVisible();
             await expect(mainPage.nextReleaseTimer).toHaveAttribute('aria-live', 'polite');
@@ -251,7 +251,7 @@ test.describe('Home page', () => {
             await expect(mainPage.patreonEarlyAccessTimer).toHaveAttribute('aria-live', 'polite');
         });
 
-        await test.step('verify carousel shell is present with current playlist wiring', async () => {
+        await test.step('check the carousel shell and current playlist metadata', async () => {
             await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-id', 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
             await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-url', 'https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
             await expect(mainPage.ytCarouselShell).toBeVisible();
@@ -262,7 +262,7 @@ test.describe('Home page', () => {
         });
     });
 
-    test('music video carousel falls back to the playlist link when automation has no cached items', async ({ mainPage }: { mainPage: MainPage }) => {
+    test('the music video carousel falls back to the playlist link when no cached items are available', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('reload with an empty playlist cache', async () => {
             await mainPage.page.addInitScript(() => {
                 try {
@@ -276,7 +276,7 @@ test.describe('Home page', () => {
             await mainPage.page.goto('/');
         });
 
-        await test.step('verify the playlist track exposes the YouTube fallback affordance', async () => {
+        await test.step('confirm the playlist area falls back to a YouTube playlist link', async () => {
             const fallbackLink = mainPage.ytCarouselTrack.locator('a.btn');
             await expect(fallbackLink).toHaveCount(1);
             await expect(fallbackLink).toHaveText('View playlist on YouTube');
@@ -287,7 +287,7 @@ test.describe('Home page', () => {
         });
     });
 
-    test('music video carousel renders cached tiles and updates the hero latest release', async ({ mainPage }: { mainPage: MainPage }) => {
+    test('the music video carousel renders cached items and updates the hero latest release [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('reload with a deterministic cached playlist payload', async () => {
             await mainPage.page.addInitScript(() => {
                 const playlistId = 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0';
@@ -324,13 +324,13 @@ test.describe('Home page', () => {
             await mainPage.page.goto('/');
         });
 
-        await test.step('verify the cached playlist populates the hero latest release', async () => {
+        await test.step('confirm the cached playlist populates the hero latest release', async () => {
             await expect(mainPage.heroLatest).not.toHaveAttribute('hidden', '');
             await expect(mainPage.heroLatestTitle).toHaveText('First Song');
             await expect(mainPage.heroLatestTitle).toHaveAttribute('href', 'https://youtu.be/video-001');
         });
 
-        await test.step('verify the carousel tiles render in featured-last order with cleaned titles', async () => {
+        await test.step('confirm the carousel tiles render in featured-last order with cleaned titles', async () => {
             const tiles = mainPage.ytCarouselTrack.locator('.yt-tile');
             const titles = mainPage.ytCarouselTrack.locator('.yt-title');
 
@@ -344,8 +344,8 @@ test.describe('Home page', () => {
         });
     });
 
-    test('head metadata and structured data remain current for SEO', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify core title, meta, and link tags', async () => {
+    test('homepage SEO metadata and structured data remain current', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check the core title, meta, and link tags', async () => {
             await expect(mainPage.page).toHaveTitle('Band of Echoes | Acoustic Covers (Tool, NIN, Metallica)');
             await expect(mainPage.page.locator('head meta[name="viewport"]')).toHaveAttribute('content', 'width=device-width, initial-scale=1, minimum-scale=1');
             await expect(mainPage.page.locator('head meta[name="description"]')).toHaveAttribute('content', /Band of Echoes is an acoustic duo creating dark, dynamic acoustic covers/);
@@ -358,7 +358,7 @@ test.describe('Home page', () => {
             await expect(mainPage.page.locator('head link[rel="shortcut icon"]')).toHaveAttribute('href', 'favicon.ico');
         });
 
-        await test.step('verify Open Graph, Twitter, and performance hints', async () => {
+        await test.step('check the Open Graph, Twitter, and performance hint tags', async () => {
             await expect(mainPage.page.locator('head meta[property="og:title"]')).toHaveAttribute('content', 'Band of Echoes');
             await expect(mainPage.page.locator('head meta[property="og:description"]')).toHaveAttribute('content', /Acoustic duo reimagining Tool, NIN, AIC, Soundgarden/);
             await expect(mainPage.page.locator('head meta[property="og:site_name"]')).toHaveAttribute('content', 'Band of Echoes');
@@ -375,7 +375,7 @@ test.describe('Home page', () => {
             await expect(mainPage.page.locator('head link[rel="preload"][href="assets/fonts/MaragsaDisplay-GO6PD.otf"]')).toHaveAttribute('as', 'font');
         });
 
-        await test.step('verify JSON-LD blocks still describe the site and band', async () => {
+        await test.step('check that the JSON-LD still describes the site and band', async () => {
             const featuredSchema = JSON.parse(await mainPage.page.locator('script#schema-featured-video').textContent() || '{}');
             expect(featuredSchema['@context']).toBe('https://schema.org');
             expect(Array.isArray(featuredSchema['@graph'])).toBeTruthy();
@@ -407,15 +407,15 @@ test.describe('Home page', () => {
         });
     });
 
-    test('links section destinations and attributes are correct', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify section exists and primary CTA still points to Patreon', async () => {
+    test('the Links section points to the current destinations and uses safe link attributes', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check that the section exists and the primary CTA still points to Patreon', async () => {
             await expect(mainPage.sectionLinks).toBeVisible();
             await expect(mainPage.patreonCta2).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
             await expect(mainPage.patreonCta2).toHaveAttribute('target', '_blank');
             await expect(mainPage.patreonCta2).toHaveAttribute('rel', /noopener/);
         });
 
-        await test.step('verify links in Support + Video, Streaming, and Social groups', async () => {
+        await test.step('check the destinations in the Support, Streaming, and Social groups', async () => {
             await expect(mainPage.patreonLink).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
             await expect(mainPage.youtubeLink).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
             await expect(mainPage.spotifyLink).toHaveAttribute('href', 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS');
@@ -426,7 +426,7 @@ test.describe('Home page', () => {
             await expect(mainPage.instagramLink).toHaveAttribute('href', 'https://www.instagram.com/bandofechoes/');
         });
 
-        await test.step('verify external links open safely and email is mailto', async () => {
+        await test.step('check that external links open safely and the email link stays mailto', async () => {
             const externalLinks = [
                 mainPage.patreonLink,
                 mainPage.youtubeLink,
@@ -448,8 +448,8 @@ test.describe('Home page', () => {
         });
     });
 
-    test('footer year and links section grouping remain current', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('verify link groups are still present in the expected order', async () => {
+    test('the footer year and links groups remain current', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('check that the links groups still appear in the expected order', async () => {
             await expect(mainPage.linkGroups).toHaveCount(4);
             await expect(mainPage.linkGroups.nth(0).getByRole('heading', { name: 'Support + Video' })).toBeVisible();
             await expect(mainPage.linkGroups.nth(1).getByRole('heading', { name: 'Streaming' })).toBeVisible();
@@ -457,17 +457,17 @@ test.describe('Home page', () => {
             await expect(mainPage.linkGroups.nth(3).getByRole('heading', { name: 'Connect With Us' })).toBeVisible();
         });
 
-        await test.step('verify footer year is populated from runtime', async () => {
+        await test.step('check that the footer year is populated at runtime', async () => {
             await expect(mainPage.yearEl).toHaveText(String(new Date().getFullYear()));
         });
     });
 
-    test('puzzle solve chord shows overlay and allows closing', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('trigger solve chord', async () => {
+    test('the numpad 1+2+3 solve chord opens the puzzle modal and it can be dismissed [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('trigger the numpad 1+2+3 solve chord', async () => {
             await mainPage.triggerSolveChord();
             await mainPage.page.waitForTimeout(300);
         });
-        await test.step('dismiss the solve overlay if present', async () => {
+        await test.step('dismiss the puzzle modal', async () => {
             const maybeModal = mainPage.puzzleModal;
             if (await maybeModal.count()) {
                 if (await mainPage.puzzleModalClose.count()) {
@@ -480,17 +480,17 @@ test.describe('Home page', () => {
         });
     });
 
-    test('mixer modal opens and closes via inline button', async ({ mainPage }: { mainPage: MainPage }) => {
-        const hasOpen = await test.step('check openMixerModal API availability', async () => {
+    test('the mixer modal can be opened from the homepage and closed again', async ({ mainPage }: { mainPage: MainPage }) => {
+        const hasOpen = await test.step('check whether the mixer modal API is available', async () => {
             return await mainPage.hasOpenMixerAPI();
         });
         if (hasOpen) {
-            await test.step('open and close mixer modal via API', async () => {
+            await test.step('open and close the mixer modal through the homepage API', async () => {
                 await mainPage.openMixerModal();
                 await mainPage.closeMixerModal();
             });
         } else {
-            await test.step('fallback: navigate directly and click close', async () => {
+            await test.step('fall back to the mixer page directly and close it there', async () => {
                 await mainPage.page.goto('/theseAreNotTheTracksYoureLookingFor.html');
                 await expect(mainPage.mixerInlineCloseBtn).toBeVisible();
                 await mainPage.mixerInlineCloseBtn.click();
