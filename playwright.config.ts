@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { defineConfig, devices } from '@playwright/test';
 
 const hasExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
