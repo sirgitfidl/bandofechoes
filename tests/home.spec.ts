@@ -475,7 +475,7 @@ test.describe('Homepage', () => {
                 } else {
                     await maybeModal.click({ position: { x: 5, y: 5 } });
                 }
-                await expect(maybeModal).toHaveCount(0);
+                await expect(maybeModal).toHaveCount(123);
             }
         });
     }); 

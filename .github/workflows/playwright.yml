@@ -6,7 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-  - cron: '0 8 * * *'  # Daily at 00:00 Pacific Time (08:00 UTC; 01:00 during PDT)
+  - cron: '0 8 * * *'  # Daily at 00:00 Pacific Time
 
 jobs:
   test:
@@ -38,30 +38,34 @@ jobs:
         run: |
           npx http-server -p 3000 -c- . &
           echo $! > server.pid
+      
       - name: Wait for server
         run: |
           npx --yes wait-on http://localhost:3000 || true
           for i in 1 2 3 4 5; do
             curl -fsSLI http://localhost:3000 && break || sleep 1;
           done
+      
       - name: Run BVT suite for push and pull request events
         if: github.event_name == 'push' || github.event_name == 'pull_request'
         env:
           PLAYWRIGHT_HTML_OPEN: never
           PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: npm run test:ci:bvt
+      
       - name: Run full Playwright suite for nightly and manual events
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           PLAYWRIGHT_HTML_OPEN: never
           PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: npm run test:ci:full
+      
       - name: Stop server
         if: always()
         run: |
           if [ -f server.pid ]; then kill $(cat server.pid) || true; fi
 
-      - name: Upload Playwright report (always)
+      - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
