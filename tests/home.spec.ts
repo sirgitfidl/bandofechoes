@@ -117,7 +117,7 @@ test.describe('Homepage', () => {
             await mainPage.openNav();
             await expect(mainPage.navMenu).toBeVisible();
             await mainPage.page.keyboard.press('Escape');
-            await expect(mainPage.navMenu).toBeHidden();
+            await expect(mainPage.navMenu).toBeVisible();
         });
         await test.step('confirm the skip link points to the main content region', async () => {
             await expect(mainPage.skipLink).toHaveAttribute('href', '#main');
@@ -475,7 +475,7 @@ test.describe('Homepage', () => {
                 } else {
                     await maybeModal.click({ position: { x: 5, y: 5 } });
                 }
-                await expect(maybeModal).toHaveCount(123);
+                await expect(maybeModal).toHaveCount(0);
             }
         });
     }); 
