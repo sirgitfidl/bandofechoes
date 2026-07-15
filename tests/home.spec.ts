@@ -117,7 +117,7 @@ test.describe('Homepage', () => {
             await mainPage.openNav();
             await expect(mainPage.navMenu).toBeVisible();
             await mainPage.page.keyboard.press('Escape');
-            await expect(mainPage.navMenu).toBeVisible();
+            await expect(mainPage.navMenu).toBeHidden();
         });
         await test.step('confirm the skip link points to the main content region', async () => {
             await expect(mainPage.skipLink).toHaveAttribute('href', '#main');
