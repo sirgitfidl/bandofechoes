@@ -7,6 +7,7 @@ test.describe('Mixer', () => {
 
     test.beforeEach(async ({ mixerPage }) => {
         await mixerPage.goto();
+        await expect(mixerPage.wrap).toBeVisible();
     });
 
     test('the mixer loads with its core transport controls visible [BVT]', async ({ mixerPage }) => {
@@ -82,7 +83,9 @@ test.describe('Mixer', () => {
     test('double-clicking a fader resets it to 0.0 dB', async ({ mixerPage }) => {
         await test.step('reset the guitar and master faders to 0.0 dB', async () => {
             await mixerPage.strips.guitar.dblclickToZeroDb();
+            await expect(mixerPage.strips.guitar.db).toHaveText(/0\.0\s*dB/i);
             await mixerPage.strips.master.dblclickToZeroDb();
+            await expect(mixerPage.strips.master.db).toHaveText(/0\.0\s*dB/i);
         });
     });
 

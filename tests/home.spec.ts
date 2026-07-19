@@ -8,6 +8,7 @@ test.describe('Homepage', () => {
         // Use portrait viewport across tests to avoid orientation overlay and reflows
         await mainPage.page.setViewportSize({ width: 800, height: 1200 });
         await mainPage.goto();
+        await expect(mainPage.brandTitle).toHaveText(/BAND\s+OF\s+ECHOES/i);
     });
 
     test('clicking the featured poster opens the autoplaying YouTube embed [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
@@ -15,7 +16,11 @@ test.describe('Homepage', () => {
             await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
         });
         await test.step('open the featured video and confirm the autoplaying embed loads', async () => {
-            await mainPage.clickPosterInjectsIframe();
+            await mainPage.clickFeaturedPoster();
+            const frame = mainPage.page.locator('#playerWrap iframe');
+            await expect(frame).toBeVisible();
+            await expect(frame).toHaveAttribute('src', /https:\/\/www\.youtube\.com\/embed\//);
+            await expect(frame).toHaveAttribute('src', /autoplay=1/);
         });
     });
 
@@ -135,7 +140,14 @@ test.describe('Homepage', () => {
             });
 
             await test.step('confirm the collage polaroids are visible', async () => {
-                await mainPage.verifyPolaroidsVisible();
+                await expect(mainPage.polaroids).toHaveCount(9, { timeout: 4000 });
+                await mainPage.scrollPolaroidsIntoView();
+                const count = await mainPage.polaroids.count();
+                for (let i = 0; i < count; i++) {
+                    const polaroid = mainPage.polaroids.nth(i);
+                    await expect(polaroid).toBeVisible();
+                    await expect(polaroid.locator('img:visible').first()).toBeVisible();
+                }
             });
 
             await test.step('open the lightbox from a polaroid', async () => {
@@ -144,6 +156,7 @@ test.describe('Homepage', () => {
                     await mainPage.page.waitForTimeout(150);
                     await mainPage.openLightboxFromFirstPolaroid();
                 }
+                await expect(mainPage.lightbox).toBeVisible({ timeout: 4000 });
             });
             await test.step('confirm the lightbox controls appear', async () => {
                 await expect(mainPage.lightboxPrev).toBeVisible();
@@ -154,6 +167,7 @@ test.describe('Homepage', () => {
                 if (await mainPage.lightbox.isVisible()) {
                     await mainPage.closeLightbox();
                 }
+                await expect(mainPage.lightbox).toBeHidden({ timeout: 5000 });
             });
         });
     });
@@ -487,7 +501,10 @@ test.describe('Homepage', () => {
         if (hasOpen) {
             await test.step('open and close the mixer modal through the homepage API', async () => {
                 await mainPage.openMixerModal();
+                await expect(mainPage.mixerModal).toBeVisible();
+                await expect(mainPage.mixerIframe.locator('body')).toBeVisible();
                 await mainPage.closeMixerModal();
+                await expect(mainPage.mixerModal).toBeHidden();
             });
         } else {
             await test.step('fall back to the mixer page directly and close it there', async () => {

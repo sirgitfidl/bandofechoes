@@ -1,4 +1,4 @@
-import { type Locator, type Page, expect, test } from '@playwright/test';
+import { type Locator, type Page, test } from '@playwright/test';
 
 // POM for theseAreNotTheTracksYoureLookingFor.html (the mixer)
 export class MixerPage {
@@ -61,7 +61,6 @@ export class MixerPage {
     async goto() {
         await test.step('goto mixer page', async () => {
             await this.page.goto('theseAreNotTheTracksYoureLookingFor.html');
-            await expect(this.wrap).toBeVisible();
         });
     }
 
@@ -104,7 +103,6 @@ export class ChannelStrip {
     async dblclickToZeroDb() {
         await test.step(`dblclick ${this.key} fader to 0.0 dB`, async () => {
             await this.fader.dblclick();
-            await expect(this.db).toHaveText(/0\.0\s*dB/i);
         });
     }
 

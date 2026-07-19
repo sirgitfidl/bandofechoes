@@ -1,4 +1,4 @@
-import { expect, Locator, Page, FrameLocator } from '@playwright/test';
+import { Locator, Page, FrameLocator } from '@playwright/test';
 
 /**
  * Page Object Model for the site home page (index.html)
@@ -158,7 +158,6 @@ export class MainPage {
 
     async goto() {
         await this.page.goto('/');
-        await expect(this.brandTitle).toHaveText(/BAND\s+OF\s+ECHOES/i);
     }
 
     // --- Nav helpers ---
@@ -166,7 +165,6 @@ export class MainPage {
         const expanded = await this.navToggle.getAttribute('aria-expanded');
         if (expanded !== 'true') {
             await this.navToggle.click();
-            await expect(this.navMenu).toBeVisible();
         }
     }
 
@@ -174,7 +172,6 @@ export class MainPage {
         const expanded = await this.navToggle.getAttribute('aria-expanded');
         if (expanded === 'true') {
             await this.navToggle.click();
-            await expect(this.navMenu).toBeHidden();
         }
     }
 
@@ -191,14 +188,8 @@ export class MainPage {
     }
 
     // --- Hero helpers ---
-    async clickPosterInjectsIframe() {
+    async clickFeaturedPoster() {
         await this.heroPoster.click();
-        const frame = this.page.locator('#playerWrap iframe');
-        await expect(frame).toBeVisible();
-        const src = await frame.getAttribute('src');
-        expect(src).toBeTruthy();
-        expect(src!).toContain('https://www.youtube.com/embed/');
-        expect(src!).toContain('autoplay=1');
     }
 
     // --- Mixer modal helpers ---
@@ -210,8 +201,6 @@ export class MainPage {
         const hasApi = await this.hasOpenMixerAPI();
         if (!hasApi) throw new Error('openMixerModal() is not available on window');
         await this.page.evaluate(() => (window as any).openMixerModal());
-        await expect(this.mixerModal).toBeVisible();
-        await expect(this.mixerIframe.locator('body')).toBeVisible();
     }
 
     async closeMixerModal() {
@@ -220,7 +209,6 @@ export class MainPage {
         const closeBtnCount = await closeBtn.count();
         if (closeBtnCount > 0) {
             await closeBtn.click();
-            await expect(this.mixerModal).toBeHidden();
             return;
         }
         // Fallbacks
@@ -228,19 +216,14 @@ export class MainPage {
         if (await this.mixerModal.isVisible()) {
             await this.page.click('#mixerModal', { position: { x: 5, y: 5 } });
         }
-        await expect(this.mixerModal).toBeHidden();
     }
 
     // --- Lightbox helpers (optional) ---
-    async verifyPolaroidsVisible(expected = 9) {
-        await expect(this.polaroids).toHaveCount(expected, { timeout: 4000 });
+    async scrollPolaroidsIntoView() {
         const count = await this.polaroids.count();
         for (let i = 0; i < count; i++) {
             const fig = this.polaroids.nth(i);
             await fig.scrollIntoViewIfNeeded();
-            await expect(fig).toBeVisible();
-            const visibleImg = fig.locator('img:visible').first();
-            await expect(visibleImg).toBeVisible();
         }
     }
     async openLightboxFromFirstPolaroid() {
@@ -334,7 +317,6 @@ export class MainPage {
             if (!opened) await this.page.waitForTimeout(75);
         }
         await this.lightbox.waitFor({ state: 'visible', timeout: 4000 }).catch(() => { });
-        await expect(this.lightbox).toBeVisible({ timeout: 4000 });
     }
 
     async closeLightbox() {
@@ -351,7 +333,6 @@ export class MainPage {
         if (await this.lightbox.isVisible()) {
             await this.page.keyboard.press('Escape');
         }
-        await expect(this.lightbox).toBeHidden({ timeout: 5000 });
     }
 
     // --- Puzzle helpers ---
@@ -369,10 +350,9 @@ export class MainPage {
         // Modal builds ~1200ms after solved; allow generous window
         await this.page.waitForTimeout(200);
         await this.puzzleModal.waitFor({ state: 'visible', timeout: 4000 });
-        await expect(this.puzzleModal).toBeVisible();
     }
 
-    async clickWitnessExpectPopup() {
+    async clickWitness(): Promise<{ popup: Page; expectedUrl: string }> {
         // Read the expected URL from the page runtime (selected at load)
         const expectedUrl = await this.page.evaluate(() => (window as any).__WITNESS_URL || 'https://www.youtube.com/shorts/hkYhlXNTsJQ');
         // Clicking WITNESS opens a new tab and closes the modal
@@ -382,19 +362,11 @@ export class MainPage {
         ]);
         // Wait for the popup to navigate to the exact URL set on the anchor
         await popup.waitForURL(expectedUrl, { timeout: 7000 }).catch(() => { });
-        await expect(this.puzzleModal).toHaveCount(0);
-        const finalUrl = popup.url();
-        expect(finalUrl).toBe(expectedUrl);
-        // Close popup to keep test runner tidy
-        await popup.close();
+        return { popup, expectedUrl };
     }
 
-    async clickRejectExpectMixerModal() {
-        // Clicking REJECT opens mixer modal (no navigation) and closes puzzle modal
+    async clickReject() {
         await this.puzzleRejectLink.click();
-        await expect(this.puzzleModal).toHaveCount(0);
-        await expect(this.mixerModal).toBeVisible();
-        await expect(this.mixerIframe.locator('body')).toBeVisible();
     }
 }
 
