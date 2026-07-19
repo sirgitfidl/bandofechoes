@@ -347,8 +347,6 @@ export class MainPage {
 
     async openSolveModal() {
         await this.triggerSolveChord();
-        // Modal builds ~1200ms after solved; allow generous window
-        await this.page.waitForTimeout(200);
         await this.puzzleModal.waitFor({ state: 'visible', timeout: 4000 });
     }
 
