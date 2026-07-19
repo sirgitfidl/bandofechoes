@@ -24,7 +24,7 @@ test.describe('Homepage', () => {
         });
     });
 
-    test('rotating to landscape shows the rotate prompt and returning to portrait restores scrolling', async ({ mainPage }: { mainPage: MainPage }) => {
+    test('rotating to landscape shows the rotate prompt and returning to portrait restores scrolling [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('reload as a touch device in portrait mode', async () => {
             await mainPage.page.addInitScript(() => {
                 (window as Window & { __BOE_FORCE_TOUCH_DEVICE?: boolean }).__BOE_FORCE_TOUCH_DEVICE = true;
