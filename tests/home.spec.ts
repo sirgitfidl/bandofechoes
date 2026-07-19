@@ -134,7 +134,7 @@ test.describe('Homepage', () => {
     test.describe('Lightbox interactions', () => {
         // Increase retries for this block as the collage/lightbox can be timing-sensitive
         test.describe.configure({ retries: 10 });
-        test('the collage lightbox opens and can be closed again', async ({ mainPage }: { mainPage: MainPage }) => {
+        test('the collage lightbox opens and can be closed again [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
             await test.step('verify the rotate prompt stays hidden', async () => {
                 await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
             });
@@ -172,7 +172,7 @@ test.describe('Homepage', () => {
         });
     });
 
-    test('the navigation menu lists the current sections and the Links item jumps to the links section', async ({ mainPage }: { mainPage: MainPage }) => {
+    test('the navigation menu lists the current sections and the Links item jumps to the links section [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('open the menu and verify the current item order', async () => {
             await mainPage.openNav();
             await expect(mainPage.navMenuItems).toHaveCount(4);
@@ -440,7 +440,7 @@ test.describe('Homepage', () => {
             await expect(mainPage.instagramLink).toHaveAttribute('href', 'https://www.instagram.com/bandofechoes/');
         });
 
-        await test.step('check that external links open safely and the email link stays mailto', async () => {
+        await test.step('check that external links open safely and the email link stays mailto [BVT]', async () => {
             const externalLinks = [
                 mainPage.patreonLink,
                 mainPage.youtubeLink,
