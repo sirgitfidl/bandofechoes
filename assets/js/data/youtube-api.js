@@ -14,4 +14,4 @@
 // In production (GitHub Pages via Actions), that file should be generated from a
 // GitHub Secret at deploy time. In git, it can exist as an empty placeholder so
 // the <script> tag doesn't 404.
-window.BOE_YT_API_KEY = '';
+window.YT_API_KEY = '';

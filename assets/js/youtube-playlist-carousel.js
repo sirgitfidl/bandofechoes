@@ -29,12 +29,12 @@
   }
 
   function getApiKey() {
-    const k = (window.BOE_YT_API_KEY || '').trim();
+    const k = (window.YT_API_KEY || '').trim();
     return k ? k : null;
   }
 
   function getFeaturedVideoId() {
-    const id = (window.BOE_FEATURED_VIDEO_ID || '').trim();
+    const id = (window.FEATURED_VIDEO_ID || '').trim();
     return id ? id : null;
   }
 
@@ -59,9 +59,9 @@
   }
 
   function ensureYouTubeIframeApiLoaded() {
-    if (window.__boeYtApiPromise) return window.__boeYtApiPromise;
+    if (window.__ytApiPromise) return window.__ytApiPromise;
 
-    window.__boeYtApiPromise = new Promise((resolve) => {
+    window.__ytApiPromise = new Promise((resolve) => {
       if (isAutomation()) return resolve(null);
 
       if (window.YT && window.YT.Player) return resolve(window.YT);
@@ -76,33 +76,33 @@
         resolve(window.YT);
       };
 
-      const existing = document.querySelector('script[data-boe-yt-iframe-api]');
+      const existing = document.querySelector('script[data-yt-iframe-api]');
       if (existing) return;
 
       const s = document.createElement('script');
       s.src = 'https://www.youtube.com/iframe_api';
       s.async = true;
       s.defer = true;
-      s.setAttribute('data-boe-yt-iframe-api', '1');
+      s.setAttribute('data-yt-iframe-api', '1');
       (document.head || document.documentElement).appendChild(s);
     });
 
-    return window.__boeYtApiPromise;
+    return window.__ytApiPromise;
   }
 
   async function registerYouTubeIframe(iframe) {
     if (!iframe) return;
     if (isAutomation()) return;
 
-    window.__boeYtPlayers = window.__boeYtPlayers || new Map();
-    const map = window.__boeYtPlayers;
+    window.__ytPlayers = window.__ytPlayers || new Map();
+    const map = window.__ytPlayers;
     if (map.has(iframe)) return;
 
     const yt = await ensureYouTubeIframeApiLoaded();
     if (!yt || !yt.Player) return;
 
     if (!iframe.id) {
-      iframe.id = `boe-yt-${Math.random().toString(36).slice(2)}`;
+      iframe.id = `yt-${Math.random().toString(36).slice(2)}`;
     }
 
     try {
@@ -112,7 +112,7 @@
             try {
               if (yt.PlayerState && ev && ev.data === yt.PlayerState.PLAYING) {
                 window.dispatchEvent(
-                  new CustomEvent('boe:media-play', {
+                  new CustomEvent('site:media-play', {
                     detail: { type: 'youtube', source: 'yt-api', iframe }
                   })
                 );
@@ -133,7 +133,7 @@
   function pauseOtherYouTubeIframes(exceptIframe) {
     // Prefer the official API if we have player instances.
     try {
-      const map = window.__boeYtPlayers;
+      const map = window.__ytPlayers;
       if (map && typeof map.forEach === 'function') {
         map.forEach((player, iframe) => {
           if (exceptIframe && iframe === exceptIframe) return;
@@ -164,10 +164,10 @@
   }
 
   function installMediaCoordinator() {
-    if (window.__boeMediaCoordinatorInstalled) return;
-    window.__boeMediaCoordinatorInstalled = true;
+    if (window.__mediaCoordinatorInstalled) return;
+    window.__mediaCoordinatorInstalled = true;
 
-    on(window, 'boe:media-play', (ev) => {
+    on(window, 'site:media-play', (ev) => {
       const detail = ev && ev.detail ? ev.detail : {};
       const type = String(detail.type || '').toLowerCase();
       if (type === 'youtube') {
@@ -176,7 +176,7 @@
     });
 
     // Expose registration for other scripts (hero video).
-    window.__boeRegisterYouTubeIframe = registerYouTubeIframe;
+    window.__registerYouTubeIframe = registerYouTubeIframe;
 
   }
 
@@ -289,7 +289,7 @@
 
       try {
         window.dispatchEvent(
-          new CustomEvent('boe:media-play', {
+          new CustomEvent('site:media-play', {
             detail: { type: 'youtube', source: 'carousel', videoId: item.videoId, iframe }
           })
         );
@@ -346,7 +346,7 @@
   }
 
   function cacheKey(playlistId) {
-    return `BOE_YT_PLAYLIST_CACHE_${playlistId}`;
+    return `YT_PLAYLIST_CACHE_${playlistId}`;
   }
 
   function dispatchFeatured(videoId, source, title) {
@@ -354,9 +354,9 @@
       const id = String(videoId || '').trim();
       if (!id) return;
       const safeTitle = cleanTitle(String(title || ''));
-      if (safeTitle) window.BOE_FEATURED_VIDEO_TITLE = safeTitle;
+      if (safeTitle) window.FEATURED_VIDEO_TITLE = safeTitle;
       window.dispatchEvent(
-        new CustomEvent('boe:featured-video', {
+        new CustomEvent('site:featured-video', {
           detail: { videoId: id, title: safeTitle, source: String(source || 'playlist') }
         })
       );
@@ -375,15 +375,15 @@
       // Always keep the featured title in sync (used by the hero "Latest release" line).
       try {
         const t = cleanTitle(candidateItem && candidateItem.title ? candidateItem.title : '');
-        if (t) window.BOE_FEATURED_VIDEO_TITLE = t;
+        if (t) window.FEATURED_VIDEO_TITLE = t;
       } catch {
         // ignore
       }
 
-      const current = String(window.BOE_FEATURED_VIDEO_ID || '').trim();
+      const current = String(window.FEATURED_VIDEO_ID || '').trim();
       if (current === candidate) return;
 
-      window.BOE_FEATURED_VIDEO_ID = candidate;
+      window.FEATURED_VIDEO_ID = candidate;
       dispatchFeatured(candidate, source, candidateItem && candidateItem.title ? candidateItem.title : '');
     } catch {
       // ignore
@@ -587,7 +587,7 @@
     };
 
     // If the featured video is resolved after we rendered, re-apply ordering.
-    on(window, 'boe:featured-video', () => {
+    on(window, 'site:featured-video', () => {
       try {
         if (!lastItems || !lastItems.length) return;
         if (!atStart(viewport)) return;
@@ -644,7 +644,7 @@
           const host = String(window.location && window.location.hostname ? window.location.hostname : '');
           if (host === 'localhost' || host === '127.0.0.1') {
             // eslint-disable-next-line no-console
-            console.warn('[boe] YouTube playlist live fetch failed; using fallback.', err);
+            console.warn('[site] YouTube playlist live fetch failed; using fallback.', err);
           }
         }
       })();

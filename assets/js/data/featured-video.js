@@ -5,4 +5,4 @@
 // derives it from the same request used to populate the playlist tiles (see
 // assets/js/youtube-playlist-carousel.js). If no API key is present, you can set
 // a fallback ID here for local/dev.
-window.BOE_FEATURED_VIDEO_ID = '';
+window.FEATURED_VIDEO_ID = '';

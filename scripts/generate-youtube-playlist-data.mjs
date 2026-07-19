@@ -271,7 +271,7 @@ async function main() {
     items: allItems
   };
 
-  const js = `// Generated from YouTube playlist page\n// Playlist: ${jsStringEscape(payload.playlistUrl)}\n// Generated: ${payload.generatedAt}\n(function(){\n  window.BOE_YT_PLAYLISTS = window.BOE_YT_PLAYLISTS || {};\n  window.BOE_YT_PLAYLISTS[${JSON.stringify(playlistId)}] = ${JSON.stringify(allItems, null, 2)};\n})();\n`;
+  const js = `// Generated from YouTube playlist page\n// Playlist: ${jsStringEscape(payload.playlistUrl)}\n// Generated: ${payload.generatedAt}\n(function(){\n  window.YT_PLAYLISTS = window.YT_PLAYLISTS || {};\n  window.YT_PLAYLISTS[${JSON.stringify(playlistId)}] = ${JSON.stringify(allItems, null, 2)};\n})();\n`;
 
   await fs.mkdir(outFile.split('/').slice(0, -1).join('/'), { recursive: true });
   await fs.writeFile(outFile, js, 'utf8');

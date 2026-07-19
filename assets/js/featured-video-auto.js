@@ -1,7 +1,7 @@
 (function () {
   function getApiKey() {
     try {
-      const k = (window.BOE_YT_API_KEY || '').trim();
+      const k = (window.YT_API_KEY || '').trim();
       return k ? k : null;
     } catch {
       return null;
@@ -10,7 +10,7 @@
 
   function getPlaylistId() {
     try {
-      const fromGlobal = (window.BOE_YT_PLAYLIST_ID || '').trim();
+      const fromGlobal = (window.YT_PLAYLIST_ID || '').trim();
       if (fromGlobal) return fromGlobal;
     } catch {
       // ignore
@@ -28,7 +28,7 @@
   function dispatchFeatured(videoId) {
     try {
       window.dispatchEvent(
-        new CustomEvent('boe:featured-video', {
+        new CustomEvent('site:featured-video', {
           detail: { videoId, source: 'playlist' }
         })
       );
@@ -38,7 +38,7 @@
   }
 
   function cacheKey(playlistId) {
-    return `BOE_FEATURED_FROM_PLAYLIST_${playlistId}`;
+    return `FEATURED_FROM_PLAYLIST_${playlistId}`;
   }
 
   function readCache(playlistId, maxAgeMs) {
@@ -169,8 +169,8 @@
     const chosen = live || cached;
     if (!chosen) return;
 
-    if (String(window.BOE_FEATURED_VIDEO_ID || '').trim() !== chosen) {
-      window.BOE_FEATURED_VIDEO_ID = chosen;
+    if (String(window.FEATURED_VIDEO_ID || '').trim() !== chosen) {
+      window.FEATURED_VIDEO_ID = chosen;
       dispatchFeatured(chosen);
     }
 

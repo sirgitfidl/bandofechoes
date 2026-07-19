@@ -16,7 +16,7 @@
 
   function getApiKey() {
     try {
-      const k = (window.BOE_YT_API_KEY || '').trim();
+      const k = (window.YT_API_KEY || '').trim();
       return k ? k : null;
     } catch {
       return null;
@@ -25,7 +25,7 @@
 
   function getPlaylistId() {
     try {
-      const fromGlobal = (window.BOE_YT_PLAYLIST_ID || '').trim();
+      const fromGlobal = (window.YT_PLAYLIST_ID || '').trim();
       if (fromGlobal) return fromGlobal;
     } catch {
       // ignore
@@ -47,7 +47,7 @@
 
   function getPremiereUrl() {
     try {
-      const u = (window.BOE_NEXT_PREMIERE_URL || '').trim();
+      const u = (window.NEXT_PREMIERE_URL || '').trim();
       return u ? u : null;
     } catch {
       return null;
@@ -65,7 +65,7 @@
 
   function getCountdownPreviewConfig() {
     try {
-      const cfg = window.BOE_COUNTDOWN_PREVIEW;
+      const cfg = window.COUNTDOWN_PREVIEW;
       return cfg && typeof cfg === 'object' ? cfg : null;
     } catch {
       return null;
@@ -74,7 +74,7 @@
 
   function getNextReleaseScheduleConfig() {
     try {
-      const cfg = window.BOE_NEXT_RELEASE_SCHEDULE;
+      const cfg = window.NEXT_RELEASE_SCHEDULE;
       return cfg && typeof cfg === 'object' ? cfg : null;
     } catch {
       return null;
@@ -215,11 +215,11 @@
   }
 
   function cacheKey(videoId) {
-    return `BOE_PREMIERE_START_${videoId}`;
+    return `PREMIERE_START_${videoId}`;
   }
 
   function playlistPremiereCacheKey(playlistId) {
-    return `BOE_NEXT_PREMIERE_FROM_PLAYLIST_${playlistId}`;
+    return `NEXT_PREMIERE_FROM_PLAYLIST_${playlistId}`;
   }
 
   function readCachedPlaylistPremiere(playlistId, maxAgeMs) {
@@ -569,7 +569,7 @@
 
       if (playlistPremiere && playlistPremiere.videoId) {
         const url = buildYouTubeWatchUrl(playlistPremiere.videoId, playlistId);
-        if (url) window.BOE_NEXT_PREMIERE_URL = url;
+        if (url) window.NEXT_PREMIERE_URL = url;
       }
     }
 

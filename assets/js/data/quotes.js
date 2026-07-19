@@ -8,7 +8,7 @@
         '“Cello + guitar woven into something hauntingly new.” — Blog',
         '“Raw, dynamic, immersive.” — Early Supporter',
     ];
-    const list = (window.BOE_QUOTES && Array.isArray(window.BOE_QUOTES) && window.BOE_QUOTES.length) ? window.BOE_QUOTES : DEFAULT_QUOTES;
+    const list = (window.QUOTES && Array.isArray(window.QUOTES) && window.QUOTES.length) ? window.QUOTES : DEFAULT_QUOTES;
     let idx = 0;
     el.textContent = list[0];
     let timer = null;

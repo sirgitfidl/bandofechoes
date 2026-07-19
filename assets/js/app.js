@@ -39,9 +39,9 @@ function isAutomation() {
     heroLatest.hidden = false;
   };
   try {
-    setHeroLatest(window.BOE_FEATURED_VIDEO_TITLE, window.BOE_FEATURED_VIDEO_ID);
+    setHeroLatest(window.FEATURED_VIDEO_TITLE, window.FEATURED_VIDEO_ID);
   } catch { }
-  window.addEventListener('boe:featured-video', (e) => {
+  window.addEventListener('site:featured-video', (e) => {
     try {
       setHeroLatest(
         e && e.detail ? e.detail.title : '',
@@ -58,7 +58,7 @@ function isAutomation() {
       e.preventDefault();
       const featuredId = String(
         (wrap && wrap.dataset && wrap.dataset.video) ||
-          window.BOE_FEATURED_VIDEO_ID ||
+          window.FEATURED_VIDEO_ID ||
           CONFIG.featuredVideoId ||
           ''
       ).trim();
@@ -71,14 +71,14 @@ function isAutomation() {
       wrap.innerHTML = ''; wrap.appendChild(f);
 
       try {
-        if (typeof window.__boeRegisterYouTubeIframe === 'function') {
-          window.__boeRegisterYouTubeIframe(f);
+        if (typeof window.__registerYouTubeIframe === 'function') {
+          window.__registerYouTubeIframe(f);
         }
       } catch { }
 
       try {
         window.dispatchEvent(
-          new CustomEvent('boe:media-play', {
+          new CustomEvent('site:media-play', {
             detail: { type: 'youtube', source: 'hero', videoId: featuredId, iframe: f }
           })
         );

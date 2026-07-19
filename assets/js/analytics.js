@@ -1,7 +1,7 @@
 (function () {
   function getMeasurementId() {
     try {
-      const id = (window.BOE_GA_MEASUREMENT_ID || '').trim();
+      const id = (window.GA_MEASUREMENT_ID || '').trim();
       return id ? id : null;
     } catch {
       return null;
@@ -10,9 +10,9 @@
 
   function ensureGtagScript(id) {
     try {
-      if (document.getElementById('boe-gtag')) return;
+      if (document.getElementById('analytics-gtag')) return;
       const s = document.createElement('script');
-      s.id = 'boe-gtag';
+      s.id = 'analytics-gtag';
       s.async = true;
       s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
       document.head.appendChild(s);
@@ -23,8 +23,8 @@
 
   function ensureGtagInit(id) {
     try {
-      if (window.__boeGaInited) return;
-      window.__boeGaInited = true;
+      if (window.__analyticsInitialized) return;
+      window.__analyticsInitialized = true;
 
       window.dataLayer = window.dataLayer || [];
       // eslint-disable-next-line no-inner-declarations
@@ -84,7 +84,7 @@
 
   function wireMediaTracking() {
     // Fired from hero and playlist tiles.
-    window.addEventListener('boe:media-play', (ev) => {
+    window.addEventListener('site:media-play', (ev) => {
       try {
         const d = ev && ev.detail ? ev.detail : {};
         if (!d || d.type !== 'youtube') return;

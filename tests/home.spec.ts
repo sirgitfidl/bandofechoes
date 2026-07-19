@@ -27,7 +27,7 @@ test.describe('Homepage', () => {
     test('rotating to landscape shows the rotate prompt and returning to portrait restores scrolling [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('reload as a touch device in portrait mode', async () => {
             await mainPage.page.addInitScript(() => {
-                (window as Window & { __BOE_FORCE_TOUCH_DEVICE?: boolean }).__BOE_FORCE_TOUCH_DEVICE = true;
+                (window as Window & { __FORCE_TOUCH_DEVICE?: boolean }).__FORCE_TOUCH_DEVICE = true;
                 try {
                     Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, get: () => 5 });
                 } catch { }
@@ -280,11 +280,11 @@ test.describe('Homepage', () => {
         await test.step('reload with an empty playlist cache', async () => {
             await mainPage.page.addInitScript(() => {
                 try {
-                    window.localStorage.removeItem('BOE_YT_PLAYLIST_CACHE_PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+                    window.localStorage.removeItem('YT_PLAYLIST_CACHE_PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
                 } catch { }
                 try {
-                    delete (window as Window & { BOE_FEATURED_VIDEO_ID?: string }).BOE_FEATURED_VIDEO_ID;
-                    delete (window as Window & { BOE_FEATURED_VIDEO_TITLE?: string }).BOE_FEATURED_VIDEO_TITLE;
+                    delete (window as Window & { FEATURED_VIDEO_ID?: string }).FEATURED_VIDEO_ID;
+                    delete (window as Window & { FEATURED_VIDEO_TITLE?: string }).FEATURED_VIDEO_TITLE;
                 } catch { }
             });
             await mainPage.page.goto('/');
@@ -325,14 +325,14 @@ test.describe('Homepage', () => {
 
                 try {
                     window.localStorage.setItem(
-                        `BOE_YT_PLAYLIST_CACHE_${playlistId}`,
+                        `YT_PLAYLIST_CACHE_${playlistId}`,
                         JSON.stringify({ fetchedAt: Date.now(), items })
                     );
                 } catch { }
 
                 try {
-                    delete (window as Window & { BOE_FEATURED_VIDEO_ID?: string }).BOE_FEATURED_VIDEO_ID;
-                    delete (window as Window & { BOE_FEATURED_VIDEO_TITLE?: string }).BOE_FEATURED_VIDEO_TITLE;
+                    delete (window as Window & { FEATURED_VIDEO_ID?: string }).FEATURED_VIDEO_ID;
+                    delete (window as Window & { FEATURED_VIDEO_TITLE?: string }).FEATURED_VIDEO_TITLE;
                 } catch { }
             });
             await mainPage.page.goto('/');

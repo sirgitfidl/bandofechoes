@@ -14,7 +14,7 @@
     return true;
   };
 
-  if (go(window.BOE_FEATURED_VIDEO_ID)) return;
+  if (go(window.FEATURED_VIDEO_ID)) return;
 
   let done = false;
   const onFeatured = (ev) => {
@@ -27,11 +27,11 @@
     }
   };
 
-  window.addEventListener('boe:featured-video', onFeatured);
+  window.addEventListener('site:featured-video', onFeatured);
 
   // If we can't resolve quickly, keep the fallback link and stop listening.
   window.setTimeout(() => {
     done = true;
-    window.removeEventListener('boe:featured-video', onFeatured);
+    window.removeEventListener('site:featured-video', onFeatured);
   }, 6000);
 })();

@@ -22,7 +22,7 @@ GitHub Pages (recommended for keeping the key out of git):
 - This repo includes a workflow that deploys via GitHub Actions and generates `assets/js/data/youtube-api.private.js` from a GitHub Secret.
 - Setup:
    - Repo Settings → Secrets and variables → Actions → New repository secret:
-      - Name: `BOE_YT_API_KEY`
+      - Name: `YT_API_KEY`
       - Value: your YouTube Data API key
    - Repo Settings → Pages → Build and deployment:
       - Source: `GitHub Actions`

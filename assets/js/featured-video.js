@@ -24,7 +24,7 @@
     const schema = document.getElementById('schema-featured-video');
     if (schema && typeof schema.textContent === 'string') {
       schema.textContent = schema.textContent
-        .replaceAll('__BOE_FEATURED_VIDEO_ID__', id)
+        .replaceAll('__FEATURED_VIDEO_ID__', id)
         // Keep the JSON valid even if it contained an older video ID.
         .replace(/(https:\/\/www\.youtube\.com\/watch\?v=)([A-Za-z0-9_-]{6,})/g, `$1${id}`)
         .replace(/(https:\/\/www\.youtube\.com\/embed\/)([A-Za-z0-9_-]{6,})/g, `$1${id}`)
@@ -33,13 +33,13 @@
     }
   }
 
-  window.__boeApplyFeaturedVideo = applyFeaturedVideo;
+  window.__applyFeaturedVideo = applyFeaturedVideo;
 
   // Apply current value (manual fallback or prior resolver).
-  applyFeaturedVideo((window.BOE_FEATURED_VIDEO_ID || '').trim());
+  applyFeaturedVideo((window.FEATURED_VIDEO_ID || '').trim());
 
   // Support dynamic updates (e.g. resolving featured from playlist via API).
-  window.addEventListener('boe:featured-video', (ev) => {
+  window.addEventListener('site:featured-video', (ev) => {
     try {
       const id = ev && ev.detail ? ev.detail.videoId : '';
       if (id) applyFeaturedVideo(id);
