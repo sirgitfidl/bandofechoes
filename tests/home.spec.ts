@@ -44,7 +44,7 @@ test.describe('Homepage', () => {
 
         await test.step('scroll down in portrait before rotating', async () => {
             await mainPage.page.evaluate(() => window.scrollTo(0, 900));
-            await mainPage.page.waitForTimeout(100);
+            await mainPage.page.waitForFunction(() => window.scrollY > 0);
             initialScrollY = await mainPage.page.evaluate(() => window.scrollY);
             expect(initialScrollY).toBeGreaterThan(0);
         });
@@ -152,10 +152,6 @@ test.describe('Homepage', () => {
 
             await test.step('open the lightbox from a polaroid', async () => {
                 await mainPage.openLightboxFromFirstPolaroid();
-                if (!(await mainPage.lightbox.isVisible())) {
-                    await mainPage.page.waitForTimeout(150);
-                    await mainPage.openLightboxFromFirstPolaroid();
-                }
                 await expect(mainPage.lightbox).toBeVisible({ timeout: 4000 });
             });
             await test.step('confirm the lightbox controls appear', async () => {
@@ -479,7 +475,7 @@ test.describe('Homepage', () => {
     test('the numpad 1+2+3 solve chord opens the puzzle modal and it can be dismissed [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('trigger the numpad 1+2+3 solve chord', async () => {
             await mainPage.triggerSolveChord();
-            await mainPage.page.waitForTimeout(300);
+            await expect(mainPage.puzzleModal).toBeVisible();
         });
         await test.step('dismiss the puzzle modal', async () => {
             const maybeModal = mainPage.puzzleModal;

@@ -300,7 +300,7 @@ export class MainPage {
             // Keyboard fallback
             try { await fig.focus(); } catch { }
             await this.page.keyboard.press('Enter');
-            await this.page.waitForTimeout(80);
+            await this.lightbox.waitFor({ state: 'visible', timeout: 1800 }).catch(() => { });
             return await isLightboxOpen();
         };
 
@@ -314,7 +314,6 @@ export class MainPage {
             const fig = cards.nth(idx);
             const img = fig.locator('img:visible').first();
             opened = await tryOpen(fig, img);
-            if (!opened) await this.page.waitForTimeout(75);
         }
         await this.lightbox.waitFor({ state: 'visible', timeout: 4000 }).catch(() => { });
     }
