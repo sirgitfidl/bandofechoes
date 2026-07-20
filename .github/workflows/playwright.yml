@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run lint checks
+        run: npm run lint
+
       - name: Install Chromium for BVT runs
         if: github.event_name == 'push' || github.event_name == 'pull_request'
         run: npx playwright install --with-deps chromium

@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base } from '@playwright/test';
 import MainPage from './pages/home.page';
 import MixerPage from './pages/mixer.page';
 

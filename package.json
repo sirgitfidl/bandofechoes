@@ -4,6 +4,7 @@
     "version": "0.0.0",
     "scripts": {
         "test": "playwright test",
+        "lint": "eslint .",
         "test:bvt": "playwright test --project=chromium --grep BVT",
         "test:full": "playwright test",
         "test:ci": "playwright test --reporter=line,html",
@@ -13,9 +14,14 @@
         "start": "npm run serve"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@playwright/test": "^1.47.2",
+        "eslint": "^10.7.0",
+        "eslint-plugin-playwright": "^2.10.5",
+        "globals": "^17.7.0",
         "http-server": "^14.1.1",
-        "playwright": "^1.58.2"
+        "playwright": "^1.58.2",
+        "typescript-eslint": "^8.64.0"
     },
     "dependencies": {
         "puppeteer": "^24.30.0"
