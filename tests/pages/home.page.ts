@@ -257,16 +257,7 @@ export class MainPage {
     }
 
     async closeLightbox() {
-        if (!(await this.lightbox.isVisible())) return;
-        try {
-            await this.lightboxClose.click();
-        } catch { }
-        if (await this.lightbox.isVisible()) {
-            try { await this.lightbox.click({ position: { x: 4, y: 4 } }); } catch { }
-        }
-        if (await this.lightbox.isVisible()) {
-            await this.page.keyboard.press('Escape');
-        }
+        await this.lightboxClose.click();
     }
 
     // --- Puzzle helpers ---
@@ -281,7 +272,7 @@ export class MainPage {
 
     async openSolveModal() {
         await this.triggerSolveChord();
-        await this.puzzleModal.waitFor({ state: 'visible', timeout: 4000 });
+        await this.puzzleModal.waitFor({ state: 'visible' });
     }
 
     async clickWitness(): Promise<{ popup: Page; expectedUrl: string }> {
@@ -290,7 +281,7 @@ export class MainPage {
             this.page.waitForEvent('popup'),
             this.puzzleWitnessLink.click()
         ]);
-        await popup.waitForURL(expectedUrl, { timeout: 7000 }).catch(() => { });
+        await popup.waitForURL(expectedUrl);
         return { popup, expectedUrl };
     }
 

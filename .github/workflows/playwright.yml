@@ -47,10 +47,8 @@ jobs:
       
       - name: Wait for server
         run: |
-          npx --yes wait-on http://localhost:3000 || true
-          for i in 1 2 3 4 5; do
-            curl -fsSLI http://localhost:3000 && break || sleep 1;
-          done
+          npx --yes wait-on --timeout 60000 http://localhost:3000
+          curl --fail --silent --show-error --retry 5 --retry-delay 1 --retry-connrefused --head http://localhost:3000
       
       - name: Run BVT suite for push and pull request events
         if: github.event_name == 'push' || github.event_name == 'pull_request'

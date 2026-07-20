@@ -85,7 +85,7 @@ test.describe('Mixer', () => {
     test('soloing channels mutes the others until Un-solo All is used', async ({ mixerPage }) => {
         await test.step('start playback', async () => {
             await mixerPage.transport.play.click();
-            await expect(mixerPage.loadingOverlay).toBeHidden({ timeout: 60000 });
+            await expect(mixerPage.transport.play).toHaveAttribute('aria-pressed', 'true', { timeout: 60000 });
         });
 
         const { guitar, cello, eric, kathryn } = mixerPage.strips;
@@ -121,7 +121,7 @@ test.describe('Mixer', () => {
     test('the Instruments and Vocals banners apply multiple solo states', async ({ mixerPage }) => {
         await test.step('start playback', async () => {
             await mixerPage.transport.play.click();
-            await expect(mixerPage.loadingOverlay).toBeHidden({ timeout: 60000 });
+            await expect(mixerPage.transport.play).toHaveAttribute('aria-pressed', 'true', { timeout: 60000 });
         });
 
         await test.step('use the Instruments banner to solo the instrument tracks', async () => {
