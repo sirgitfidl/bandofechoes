@@ -225,10 +225,35 @@ export class MainPage {
         }
     }
 
-    async openLightboxFromFirstPolaroid() {
-        const polaroid = this.polaroids.first();
-        await polaroid.scrollIntoViewIfNeeded();
-        await polaroid.click();
+    async openLightboxFromVisiblePolaroid() {
+        const target = await this.page.evaluate(() => {
+            const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="polaroid"]'));
+            const points = [[0.5, 0.5], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+            for (const [index, card] of cards.entries()) {
+                const box = card.getBoundingClientRect();
+                for (const [horizontal, vertical] of points) {
+                    const clientX = box.left + box.width * horizontal;
+                    const clientY = box.top + box.height * vertical;
+                    const inViewport = clientX >= 0 && clientX <= window.innerWidth && clientY >= 0 && clientY <= window.innerHeight;
+                    if (!inViewport) continue;
+
+                    const hit = document.elementFromPoint(clientX, clientY);
+                    if (hit instanceof Element && (hit === card || card.contains(hit))) {
+                        return {
+                            index,
+                            x: clientX - box.left,
+                            y: clientY - box.top
+                        };
+                    }
+                }
+            }
+
+            return null;
+        });
+
+        if (!target) throw new Error('No visible polaroid is available to open the lightbox');
+        await this.polaroids.nth(target.index).click({ position: { x: target.x, y: target.y } });
     }
 
     async closeLightbox() {

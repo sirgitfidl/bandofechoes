@@ -159,7 +159,7 @@ test.describe('Homepage', () => {
         });
 
         await test.step('open the lightbox from a polaroid', async () => {
-            await mainPage.openLightboxFromFirstPolaroid();
+            await mainPage.openLightboxFromVisiblePolaroid();
             await expect(mainPage.lightbox).toBeVisible();
         });
         await test.step('confirm the lightbox controls appear', async () => {
