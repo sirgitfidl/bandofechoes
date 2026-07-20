@@ -65,7 +65,7 @@ test.describe('Mixer', () => {
         await test.step('start playback and wait for the stems to decode', async () => {
             await expect(play).toHaveAttribute('aria-pressed', 'false');
             await play.click();
-            await expect(play).toHaveAttribute('aria-pressed', 'true', { timeout: 60000 });
+            await expect(play).toHaveAttribute('aria-pressed', 'true', { timeout: 60000 }); // timeout for audio loading
         });
         await test.step('pause playback again', async () => {
             await play.click();
@@ -118,7 +118,7 @@ test.describe('Mixer', () => {
         });
     });
 
-    test('the Instruments and Vocals banners apply additive solo states', async ({ mixerPage }) => {
+    test('the Instruments and Vocals banners apply multiple solo states', async ({ mixerPage }) => {
         await test.step('start playback', async () => {
             await mixerPage.transport.play.click();
             await expect(mixerPage.loadingOverlay).toBeHidden({ timeout: 60000 });
@@ -156,24 +156,35 @@ test.describe('Mixer', () => {
     test('channel mute and master mute silence audio and update state', async ({ mixerPage }) => {
         await test.step('start playback', async () => {
             await mixerPage.transport.play.click();
-            await expect(mixerPage.loadingOverlay).toBeHidden({ timeout: 60000 });
+            await expect(mixerPage.transport.play).toHaveAttribute('aria-pressed', 'true', { timeout: 60000 });
         });
 
-        const { guitar, master } = mixerPage.strips;
-        await test.step('mute and unmute the Guitar channel', async () => {
+        const { guitar, cello, eric, kathryn, master } = mixerPage.strips;
+        await test.step('mute Guitar without silencing the other channels', async () => {
             await guitar.mute.click();
             await expect(guitar.mute).toHaveAttribute('aria-checked', 'true');
             await expect(guitar.db).toHaveText(/−∞\s*dB/);
+            await expect(cello.db).not.toHaveText(/−∞/);
+            await expect(eric.db).not.toHaveText(/−∞/);
+            await expect(kathryn.db).not.toHaveText(/−∞/);
 
             await guitar.mute.click();
             await expect(guitar.mute).toHaveAttribute('aria-checked', 'false');
             await expect(guitar.db).not.toHaveText(/−∞/);
         });
 
-        await test.step('toggle the master mute control', async () => {
+        await test.step('mute the master output without changing channel mute states', async () => {
             await master.mute.click();
             await expect(master.mute).toHaveAttribute('aria-checked', 'true');
             await expect(master.db).toHaveText(/−∞\s*dB/);
+            await expect(guitar.mute).toHaveAttribute('aria-checked', 'false');
+            await expect(cello.mute).toHaveAttribute('aria-checked', 'false');
+            await expect(eric.mute).toHaveAttribute('aria-checked', 'false');
+            await expect(kathryn.mute).toHaveAttribute('aria-checked', 'false');
+            await expect(guitar.db).not.toHaveText(/−∞/);
+            await expect(cello.db).not.toHaveText(/−∞/);
+            await expect(eric.db).not.toHaveText(/−∞/);
+            await expect(kathryn.db).not.toHaveText(/−∞/);
 
             await master.mute.click();
             await expect(master.mute).toHaveAttribute('aria-checked', 'false');
