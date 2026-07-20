@@ -2,7 +2,7 @@
 (function () {
     function isTouchDevice() {
         try {
-            if (window.__BOE_FORCE_TOUCH_DEVICE === true) return true;
+            if (window.__FORCE_TOUCH_DEVICE === true) return true;
             if (navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0) return true;
             if ('ontouchstart' in window) return true;
             if (window.matchMedia) {

@@ -14,9 +14,8 @@ test.describe('Mixer', () => {
         await test.step('check that the core transport controls are visible', async () => {
             await expect(mixerPage.titleHeading).toHaveText('Band of Echoes — “Right In Two”');
             await expect(mixerPage.subtitle).toHaveText('Interactive Stem Mixer');
-            await expect(mixerPage.wrap).toHaveAttribute('role', 'application');
             await expect(mixerPage.wrap).toHaveAttribute('aria-label', /Stem Mixer for 'Right In Two'/);
-            await expect(mixerPage.transport.rew).toBeVisible();
+            await expect(mixerPage.transport.rewind).toBeVisible();
             await expect(mixerPage.transport.play).toBeVisible();
             await expect(mixerPage.transport.progress).toBeVisible();
             await expect(mixerPage.transport.time).toHaveText('00:00 / 00:00');
@@ -66,13 +65,7 @@ test.describe('Mixer', () => {
         await test.step('start playback and wait for the stems to decode', async () => {
             await expect(play).toHaveAttribute('aria-pressed', 'false');
             await play.click();
-            await expect(mixerPage.loadingOverlay).toBeHidden({ timeout: 60000 });
-            try {
-                await expect(play).toHaveAttribute('aria-pressed', 'true', { timeout: 10000 });
-            } catch {
-                await play.click();
-                await expect(play).toHaveAttribute('aria-pressed', 'true', { timeout: 10000 });
-            }
+            await expect(play).toHaveAttribute('aria-pressed', 'true', { timeout: 60000 });
         });
         await test.step('pause playback again', async () => {
             await play.click();

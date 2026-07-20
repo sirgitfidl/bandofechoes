@@ -7,7 +7,7 @@
 
   // Core UI elements
   const playBtn = EL('#playBtn');
-  const rewBtn = EL('#rewBtn');
+  const rewindBtn = EL('#rewindBtn');
   const progress = EL('#progress');
   const timeReadout = EL('#timeReadout');
   const overlay = EL('#loadingOverlay');
@@ -247,7 +247,7 @@
   function updateProgressUI(posSec) { if (!state.duration) { progress.value = '0'; return; } const v = Math.max(0, Math.min(1000, Math.round((posSec / state.duration) * 1000))); progress.value = String(v); }
 
   playBtn.addEventListener('click', playPause);
-  rewBtn.addEventListener('click', () => { ensureGraph(); const wasPlaying = state.playing; if (wasPlaying) startFrom(0); else { offsetAtPause = 0; setTimeReadout(); updateProgressUI(0); } });
+  rewindBtn.addEventListener('click', () => { ensureGraph(); const wasPlaying = state.playing; if (wasPlaying) startFrom(0); else { offsetAtPause = 0; setTimeReadout(); updateProgressUI(0); } });
 
   let scrubbing = false, wasPlayingOnScrub = false;
   function scrubToEvent(clientX) {

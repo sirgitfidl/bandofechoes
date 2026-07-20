@@ -31,11 +31,11 @@ jobs:
 
       - name: Inject YouTube API key (optional)
         env:
-          YT_API_KEY: ${{ secrets.YT_API_KEY }}
+          BOE_YT_API_KEY: ${{ secrets.BOE_YT_API_KEY }}
         run: |
-          node -e "const fs=require('fs'); const key=(process.env.YT_API_KEY||'').trim(); console.log('YT_API_KEY length:', key.length); if(!key) console.log('WARNING: YT_API_KEY secret is empty/missing; site will use snapshot data only.'); fs.mkdirSync('assets/js/data',{recursive:true}); const lines=[
+          node -e "const fs=require('fs'); const key=(process.env.BOE_YT_API_KEY||'').trim(); console.log('BOE_YT_API_KEY length:', key.length); if(!key) console.log('WARNING: BOE_YT_API_KEY secret is empty/missing; site will use snapshot data only.'); fs.mkdirSync('assets/js/data',{recursive:true}); const lines=[
             '// GENERATED FILE: written at deploy time by GitHub Actions.',
-            '// Source: YT_API_KEY GitHub Secret.',
+            '// Source: BOE_YT_API_KEY GitHub Secret.',
             '//',
             '// IMPORTANT: This key is visible to site visitors in the browser.',
             '// Protect it by restricting HTTP referrers in Google Cloud Console.',

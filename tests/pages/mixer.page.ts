@@ -13,7 +13,7 @@ export class MixerPage {
         vocals: Locator;
     };
     readonly transport: {
-        rew: Locator;
+        rewind: Locator;
         play: Locator;
         progress: Locator;
         time: Locator;
@@ -41,7 +41,7 @@ export class MixerPage {
             vocals: page.getByTestId('group-vocals'),
         };
         this.transport = {
-            rew: page.getByTestId('btn-rew'),
+            rewind: page.getByTestId('btn-rewind'),
             play: page.getByTestId('btn-play'),
             progress: page.getByTestId('progress'),
             time: page.getByTestId('time'),
@@ -66,7 +66,6 @@ export class MixerPage {
 
     async closeIfInIframeParent() {
         await test.step('close mixer via inline button', async () => {
-            // If opened inside a modal iframe, clicking the inline close should signal the parent.
             await this.transport.close.click();
         });
     }
