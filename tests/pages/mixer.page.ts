@@ -7,6 +7,8 @@ export class MixerPage {
     readonly subtitle: Locator;
     readonly titleHeading: Locator;
     readonly audioEls: Locator;
+    readonly loadingOverlay: Locator;
+    readonly unsoloAll: Locator;
     readonly groups: {
         instruments: Locator;
         vocals: Locator;
@@ -25,8 +27,6 @@ export class MixerPage {
         kathryn: ChannelStrip;
         master: ChannelStrip;
     };
-    readonly loadingOverlay: Locator;
-    readonly unsoloAll: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -35,6 +35,8 @@ export class MixerPage {
         this.titleHeading = page.getByTestId('mixer-title-heading');
         this.subtitle = page.getByTestId('mixer-subtitle');
         this.audioEls = page.getByTestId('audio-stem');
+        this.loadingOverlay = page.getByTestId('loading-overlay');
+        this.unsoloAll = page.getByTestId('unsolo-all');
         this.groups = {
             instruments: page.getByTestId('group-instruments'),
             vocals: page.getByTestId('group-vocals'),
@@ -53,8 +55,6 @@ export class MixerPage {
             kathryn: new ChannelStrip(page, 'kathryn'),
             master: new ChannelStrip(page, 'master'),
         };
-        this.loadingOverlay = page.getByTestId('loading-overlay');
-        this.unsoloAll = page.getByTestId('unsolo-all');
     }
 
     async goto() {
