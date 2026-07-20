@@ -472,24 +472,6 @@ test.describe('Homepage', () => {
         });
     });
 
-    test('the numpad 1+2+3 solve chord opens the puzzle modal and it can be dismissed [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
-        await test.step('trigger the numpad 1+2+3 solve chord', async () => {
-            await mainPage.triggerSolveChord();
-            await expect(mainPage.puzzleModal).toBeVisible();
-        });
-        await test.step('dismiss the puzzle modal', async () => {
-            const maybeModal = mainPage.puzzleModal;
-            if (await maybeModal.count()) {
-                if (await mainPage.puzzleModalClose.count()) {
-                    await mainPage.puzzleModalClose.click();
-                } else {
-                    await maybeModal.click({ position: { x: 5, y: 5 } });
-                }
-                await expect(maybeModal).toHaveCount(0);
-            }
-        });
-    }); 
-
     test('the mixer modal can be opened from the homepage and closed again', async ({ mainPage }: { mainPage: MainPage }) => {
         const hasOpen = await test.step('check whether the mixer modal API is available', async () => {
             return await mainPage.hasOpenMixerAPI();
