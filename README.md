@@ -30,6 +30,18 @@ GitHub Pages (recommended for keeping the key out of git):
 3) Run tests (spins its own server on :3000 automatically):
    npm test
 
+4) Check TypeScript types:
+   npm run typecheck
+
+## Architecture and test strategy
+
+- **Runtime:** This is a static HTML/CSS/JavaScript site. Browser scripts in `assets/js/` provide the interactive collage, puzzle, YouTube playlist carousel, and Web Audio stem mixer.
+- **Page objects:** `tests/pages/` exposes locators and reusable user actions for the homepage and mixer. Specs keep behavior assertions separate from those interaction details.
+- **Fixtures:** `tests/fixtures.ts` extends Playwright's base `test` with typed `mainPage` and `mixerPage` instances, so each test receives the page object it needs.
+- **Coverage:** `tests/home.spec.ts` covers homepage behavior, accessibility metadata, SEO, and carousel fallbacks; `tests/mixer.spec.ts` covers transport, faders, solo, and mute behavior; `tests/puzzle.spec.ts` covers puzzle completion paths.
+- **Selectors:** Tests use `data-testid` selectors to remain stable when visual styling or page structure changes.
+- **CI:** Push and pull-request runs execute Chromium build-verification tests (`[BVT]`) for quick feedback. Scheduled and manually dispatched runs execute the full Playwright project matrix. Deployment to GitHub Pages occurs only after a successful E2E workflow.
+
 Build verification tests (BVT):
 - `npm run test:bvt` runs the fast Chromium-only PR suite.
 - This repo uses BVT on `push` and `pull_request` events in GitHub Actions.

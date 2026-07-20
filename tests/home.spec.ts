@@ -1,6 +1,18 @@
 import { test, expect } from './fixtures';
 import type MainPage from './pages/home.page';
 
+const playlistId = 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0';
+const playlistUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+const playlistCacheKey = `YT_PLAYLIST_CACHE_${playlistId}`;
+const playlistVideoUrl = (videoId: string) => `https://www.youtube.com/watch?v=${videoId}&list=${playlistId}`;
+const siteUrl = 'https://bandofechoes.com/';
+const youtubeChannelUrl = 'https://youtube.com/@BandOfEchoes';
+const patreonUrl = 'https://www.patreon.com/cw/BandofEchoes/membership';
+const spotifyArtistUrl = 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS';
+const schemaOrgUrl = 'https://schema.org';
+const ogImageUrl = `${siteUrl}assets/images/band_photos/hero_images/ogImage.png`;
+const twitterImageUrl = `${siteUrl}assets/images/band_photos/polaroids/polaroid_01.png`;
+
 test.describe.configure({ mode: 'parallel' });
 
 test.describe('Homepage', () => {
@@ -93,7 +105,7 @@ test.describe('Homepage', () => {
 
     test('hero, navigation, and support sections start with the expected accessibility defaults', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('check the hero poster and latest-release placeholder state', async () => {
-            await expect(mainPage.heroPoster).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
+            await expect(mainPage.heroPoster).toHaveAttribute('href', youtubeChannelUrl);
             await expect(mainPage.heroPoster).toHaveAttribute('target', '_blank');
             await expect(mainPage.heroPoster).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.heroLatest).toHaveAttribute('hidden', '');
@@ -130,41 +142,34 @@ test.describe('Homepage', () => {
         });
     });
 
+    test('the collage lightbox opens and can be closed again [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
+        await test.step('verify the rotate prompt stays hidden', async () => {
+            await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
+        });
 
-    test.describe('Lightbox interactions', () => {
-        // Increase retries for this block as the collage/lightbox can be timing-sensitive
-        test.describe.configure({ retries: 10 });
-        test('the collage lightbox opens and can be closed again [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
-            await test.step('verify the rotate prompt stays hidden', async () => {
-                await expect(mainPage.rotateLockOverlay).toHaveAttribute('aria-hidden', 'true');
-            });
+        await test.step('confirm the collage polaroids are visible', async () => {
+            await expect(mainPage.polaroids).toHaveCount(9);
+            await mainPage.scrollPolaroidsIntoView();
+            const count = await mainPage.polaroids.count();
+            for (let i = 0; i < count; i++) {
+                const polaroid = mainPage.polaroids.nth(i);
+                await expect(polaroid).toBeVisible();
+                await expect(polaroid.locator('img:visible').first()).toBeVisible();
+            }
+        });
 
-            await test.step('confirm the collage polaroids are visible', async () => {
-                await expect(mainPage.polaroids).toHaveCount(9, { timeout: 4000 });
-                await mainPage.scrollPolaroidsIntoView();
-                const count = await mainPage.polaroids.count();
-                for (let i = 0; i < count; i++) {
-                    const polaroid = mainPage.polaroids.nth(i);
-                    await expect(polaroid).toBeVisible();
-                    await expect(polaroid.locator('img:visible').first()).toBeVisible();
-                }
-            });
-
-            await test.step('open the lightbox from a polaroid', async () => {
-                await mainPage.openLightboxFromFirstPolaroid();
-                await expect(mainPage.lightbox).toBeVisible({ timeout: 4000 });
-            });
-            await test.step('confirm the lightbox controls appear', async () => {
-                await expect(mainPage.lightboxPrev).toBeVisible();
-                await expect(mainPage.lightboxNext).toBeVisible();
-                await expect(mainPage.lightboxClose).toBeVisible();
-            });
-            await test.step('close the lightbox', async () => {
-                if (await mainPage.lightbox.isVisible()) {
-                    await mainPage.closeLightbox();
-                }
-                await expect(mainPage.lightbox).toBeHidden({ timeout: 5000 });
-            });
+        await test.step('open the lightbox from a polaroid', async () => {
+            await mainPage.openLightboxFromFirstPolaroid();
+            await expect(mainPage.lightbox).toBeVisible();
+        });
+        await test.step('confirm the lightbox controls appear', async () => {
+            await expect(mainPage.lightboxPrev).toBeVisible();
+            await expect(mainPage.lightboxNext).toBeVisible();
+            await expect(mainPage.lightboxClose).toBeVisible();
+        });
+        await test.step('close the lightbox', async () => {
+            await mainPage.closeLightbox();
+            await expect(mainPage.lightbox).toBeHidden();
         });
     });
 
@@ -255,15 +260,15 @@ test.describe('Homepage', () => {
             await expect(mainPage.sectionMusicVideos).toBeVisible();
             await expect(mainPage.nextReleaseCountdown).toBeVisible();
             await expect(mainPage.nextReleaseTimer).toHaveAttribute('aria-live', 'polite');
-            await expect(mainPage.patreonEarlyAccess).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
+            await expect(mainPage.patreonEarlyAccess).toHaveAttribute('href', patreonUrl);
             await expect(mainPage.patreonEarlyAccess).toHaveAttribute('target', '_blank');
             await expect(mainPage.patreonEarlyAccess).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.patreonEarlyAccessTimer).toHaveAttribute('aria-live', 'polite');
         });
 
         await test.step('check the carousel shell and current playlist metadata', async () => {
-            await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-id', 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
-            await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-url', 'https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-id', playlistId);
+            await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-url', playlistUrl);
             await expect(mainPage.ytCarouselShell).toBeVisible();
             await expect(mainPage.ytCarouselViewport).toBeVisible();
             await expect(mainPage.ytCarouselTrack).toBeVisible();
@@ -274,15 +279,15 @@ test.describe('Homepage', () => {
 
     test('the music video carousel falls back to the playlist link when no cached items are available', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('reload with an empty playlist cache', async () => {
-            await mainPage.page.addInitScript(() => {
+            await mainPage.page.addInitScript((cacheKey) => {
                 try {
-                    window.localStorage.removeItem('YT_PLAYLIST_CACHE_PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+                    window.localStorage.removeItem(cacheKey);
                 } catch { }
                 try {
                     delete (window as Window & { FEATURED_VIDEO_ID?: string }).FEATURED_VIDEO_ID;
                     delete (window as Window & { FEATURED_VIDEO_TITLE?: string }).FEATURED_VIDEO_TITLE;
                 } catch { }
-            });
+            }, playlistCacheKey);
             await mainPage.page.goto('/');
         });
 
@@ -290,17 +295,52 @@ test.describe('Homepage', () => {
             const fallbackLink = mainPage.ytCarouselTrack.locator('a.btn');
             await expect(fallbackLink).toHaveCount(1);
             await expect(fallbackLink).toHaveText('View playlist on YouTube');
-            await expect(fallbackLink).toHaveAttribute('href', 'https://www.youtube.com/playlist?list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(fallbackLink).toHaveAttribute('href', playlistUrl);
             await expect(fallbackLink).toHaveAttribute('target', '_blank');
             await expect(fallbackLink).toHaveAttribute('rel', /noopener/);
             await expect(mainPage.heroLatest).toHaveAttribute('hidden', '');
         });
     });
 
+    test('the music video carousel keeps its fallback when the YouTube API request fails', async ({ mainPage }: { mainPage: MainPage }) => {
+        let playlistRequests = 0;
+
+        await test.step('reload with a live API key, an empty cache, and a rate-limited API response', async () => {
+            await mainPage.page.addInitScript((cacheKey) => {
+                Object.defineProperty(navigator, 'webdriver', { configurable: true, get: () => false });
+                Object.defineProperty(window, 'YT_API_KEY', {
+                    configurable: true,
+                    get: () => 'test-api-key',
+                    set: () => { }
+                });
+
+                try {
+                    window.localStorage.removeItem(cacheKey);
+                } catch { }
+            }, playlistCacheKey);
+            await mainPage.page.route('https://www.googleapis.com/youtube/v3/playlistItems**', async (route) => {
+                playlistRequests++;
+                await route.fulfill({
+                    status: 429,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ error: { message: 'Quota exceeded' } })
+                });
+            });
+            await mainPage.page.goto('/');
+        });
+
+        await test.step('confirm the failed request leaves the playlist fallback available', async () => {
+            await expect.poll(() => playlistRequests).toBeGreaterThan(0);
+            const fallbackLink = mainPage.ytCarouselTrack.locator('a.btn');
+            await expect(fallbackLink).toHaveText('View playlist on YouTube');
+            await expect(fallbackLink).toHaveAttribute('href', playlistUrl);
+            await expect(mainPage.heroLatest).toHaveAttribute('hidden', '');
+        });
+    });
+
     test('the music video carousel renders cached items and updates the hero latest release [BVT]', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('reload with a deterministic cached playlist payload', async () => {
-            await mainPage.page.addInitScript(() => {
-                const playlistId = 'PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0';
+            await mainPage.page.addInitScript((cacheKey) => {
                 const items = [
                     {
                         videoId: 'video-001',
@@ -321,7 +361,7 @@ test.describe('Homepage', () => {
 
                 try {
                     window.localStorage.setItem(
-                        `YT_PLAYLIST_CACHE_${playlistId}`,
+                        cacheKey,
                         JSON.stringify({ fetchedAt: Date.now(), items })
                     );
                 } catch { }
@@ -330,7 +370,7 @@ test.describe('Homepage', () => {
                     delete (window as Window & { FEATURED_VIDEO_ID?: string }).FEATURED_VIDEO_ID;
                     delete (window as Window & { FEATURED_VIDEO_TITLE?: string }).FEATURED_VIDEO_TITLE;
                 } catch { }
-            });
+            }, playlistCacheKey);
             await mainPage.page.goto('/');
         });
 
@@ -349,8 +389,8 @@ test.describe('Homepage', () => {
             await expect(titles.nth(1)).toHaveText('Third Song');
             await expect(titles.nth(2)).toHaveText('First Song');
 
-            await expect(titles.nth(0)).toHaveAttribute('href', 'https://www.youtube.com/watch?v=video-002&list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
-            await expect(titles.nth(2)).toHaveAttribute('href', 'https://www.youtube.com/watch?v=video-001&list=PLO9qHD3uzH-QJBT2eqyHQgRGmBR36olk0');
+            await expect(titles.nth(0)).toHaveAttribute('href', playlistVideoUrl('video-002'));
+            await expect(titles.nth(2)).toHaveAttribute('href', playlistVideoUrl('video-001'));
         });
     });
 
@@ -362,8 +402,8 @@ test.describe('Homepage', () => {
             await expect(mainPage.page.locator('head meta[name="robots"]')).toHaveAttribute('content', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
             await expect(mainPage.page.locator('head meta[name="keywords"]')).toHaveAttribute('content', /Tool cover/);
             await expect(mainPage.page.locator('head meta[name="color-scheme"]')).toHaveAttribute('content', 'light dark');
-            await expect(mainPage.page.locator('head link[rel="canonical"]')).toHaveAttribute('href', 'https://bandofechoes.com/');
-            await expect(mainPage.page.locator('head link[rel="me"]')).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
+            await expect(mainPage.page.locator('head link[rel="canonical"]')).toHaveAttribute('href', siteUrl);
+            await expect(mainPage.page.locator('head link[rel="me"]')).toHaveAttribute('href', youtubeChannelUrl);
             await expect(mainPage.page.locator('head link[rel="icon"]').first()).toHaveAttribute('href', 'favicon.ico');
             await expect(mainPage.page.locator('head link[rel="shortcut icon"]')).toHaveAttribute('href', 'favicon.ico');
         });
@@ -373,13 +413,13 @@ test.describe('Homepage', () => {
             await expect(mainPage.page.locator('head meta[property="og:description"]')).toHaveAttribute('content', /Acoustic duo reimagining Tool, NIN, AIC, Soundgarden/);
             await expect(mainPage.page.locator('head meta[property="og:site_name"]')).toHaveAttribute('content', 'Band of Echoes');
             await expect(mainPage.page.locator('head meta[property="og:type"]')).toHaveAttribute('content', 'website');
-            await expect(mainPage.page.locator('head meta[property="og:image"]')).toHaveAttribute('content', 'https://bandofechoes.com/assets/images/band_photos/hero_images/ogImage.png');
+            await expect(mainPage.page.locator('head meta[property="og:image"]')).toHaveAttribute('content', ogImageUrl);
             await expect(mainPage.page.locator('head meta[property="og:image:alt"]')).toHaveAttribute('content', 'Band of Echoes');
-            await expect(mainPage.page.locator('head meta[property="og:url"]')).toHaveAttribute('content', 'https://bandofechoes.com/');
+            await expect(mainPage.page.locator('head meta[property="og:url"]')).toHaveAttribute('content', siteUrl);
             await expect(mainPage.page.locator('head meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
             await expect(mainPage.page.locator('head meta[name="twitter:title"]')).toHaveAttribute('content', 'Band of Echoes');
             await expect(mainPage.page.locator('head meta[name="twitter:description"]')).toHaveAttribute('content', /Acoustic covers with cello \+ acoustic guitar/);
-            await expect(mainPage.page.locator('head meta[name="twitter:image"]')).toHaveAttribute('content', 'https://bandofechoes.com/assets/images/band_photos/polaroids/polaroid_01.png');
+            await expect(mainPage.page.locator('head meta[name="twitter:image"]')).toHaveAttribute('content', twitterImageUrl);
             await expect(mainPage.page.locator('head link[rel="preconnect"][href="https://www.youtube.com"]')).toHaveCount(1);
             await expect(mainPage.page.locator('head link[rel="preconnect"][href="https://i.ytimg.com"]')).toHaveCount(1);
             await expect(mainPage.page.locator('head link[rel="preload"][href="assets/fonts/MaragsaDisplay-GO6PD.otf"]')).toHaveAttribute('as', 'font');
@@ -387,28 +427,28 @@ test.describe('Homepage', () => {
 
         await test.step('check that the JSON-LD still describes the site and band', async () => {
             const featuredSchema = JSON.parse(await mainPage.page.locator('script#schema-featured-video').textContent() || '{}');
-            expect(featuredSchema['@context']).toBe('https://schema.org');
+            expect(featuredSchema['@context']).toBe(schemaOrgUrl);
             expect(Array.isArray(featuredSchema['@graph'])).toBeTruthy();
             expect(featuredSchema['@graph']).toEqual(expect.arrayContaining([
-                expect.objectContaining({ '@type': 'Organization', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
-                expect.objectContaining({ '@type': 'WebSite', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
-                expect.objectContaining({ '@type': 'WebPage', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
+                expect.objectContaining({ '@type': 'Organization', name: 'Band of Echoes', url: siteUrl }),
+                expect.objectContaining({ '@type': 'WebSite', name: 'Band of Echoes', url: siteUrl }),
+                expect.objectContaining({ '@type': 'WebPage', name: 'Band of Echoes', url: siteUrl }),
                 expect.objectContaining({ '@type': 'VideoObject', name: 'Band of Echoes — Featured Video' })
             ]));
 
             const baseSchema = JSON.parse(await mainPage.page.locator('script#schema').textContent() || '{}');
-            expect(baseSchema['@context']).toBe('https://schema.org');
+            expect(baseSchema['@context']).toBe(schemaOrgUrl);
             expect(Array.isArray(baseSchema['@graph'])).toBeTruthy();
             expect(baseSchema['@graph']).toEqual(expect.arrayContaining([
-                expect.objectContaining({ '@type': 'WebSite', name: 'Band of Echoes', url: 'https://bandofechoes.com/' }),
-                expect.objectContaining({ '@type': 'MusicGroup', name: 'Band of Echoes', url: 'https://bandofechoes.com/' })
+                expect.objectContaining({ '@type': 'WebSite', name: 'Band of Echoes', url: siteUrl }),
+                expect.objectContaining({ '@type': 'MusicGroup', name: 'Band of Echoes', url: siteUrl })
             ]));
 
             const musicGroup = baseSchema['@graph'].find((entry: { '@type'?: string }) => entry['@type'] === 'MusicGroup');
             expect(musicGroup.sameAs).toEqual(expect.arrayContaining([
-                'https://youtube.com/@BandOfEchoes',
-                'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS',
-                'https://www.patreon.com/cw/BandofEchoes/membership'
+                youtubeChannelUrl,
+                spotifyArtistUrl,
+                patreonUrl
             ]));
             expect(musicGroup.member).toEqual(expect.arrayContaining([
                 expect.objectContaining({ name: 'Eric' }),
@@ -420,15 +460,15 @@ test.describe('Homepage', () => {
     test('the Links section points to the current destinations and uses safe link attributes', async ({ mainPage }: { mainPage: MainPage }) => {
         await test.step('check that the section exists and the primary CTA still points to Patreon', async () => {
             await expect(mainPage.sectionLinks).toBeVisible();
-            await expect(mainPage.patreonCta2).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
+            await expect(mainPage.patreonCta2).toHaveAttribute('href', patreonUrl);
             await expect(mainPage.patreonCta2).toHaveAttribute('target', '_blank');
             await expect(mainPage.patreonCta2).toHaveAttribute('rel', /noopener/);
         });
 
         await test.step('check the destinations in the Support, Streaming, and Social groups', async () => {
-            await expect(mainPage.patreonLink).toHaveAttribute('href', 'https://www.patreon.com/cw/BandofEchoes/membership');
-            await expect(mainPage.youtubeLink).toHaveAttribute('href', 'https://youtube.com/@BandOfEchoes');
-            await expect(mainPage.spotifyLink).toHaveAttribute('href', 'https://open.spotify.com/artist/02Mwc9O3vBzaRF9RnZGgVS');
+            await expect(mainPage.patreonLink).toHaveAttribute('href', patreonUrl);
+            await expect(mainPage.youtubeLink).toHaveAttribute('href', youtubeChannelUrl);
+            await expect(mainPage.spotifyLink).toHaveAttribute('href', spotifyArtistUrl);
             await expect(mainPage.appleMusicLink).toHaveAttribute('href', 'https://music.apple.com/us/artist/band-of-echoes/1859262959');
             await expect(mainPage.youtubeMusicLink).toHaveAttribute('href', 'https://music.youtube.com/channel/UCvxe6T06QNZOOFmetbKHCdA');
             await expect(mainPage.tidalLink).toHaveAttribute('href', 'https://tidal.com/artist/70905205');

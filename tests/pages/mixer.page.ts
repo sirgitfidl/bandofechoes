@@ -1,6 +1,5 @@
 import { type Locator, type Page, test } from '@playwright/test';
 
-// POM for theseAreNotTheTracksYoureLookingFor.html (the mixer)
 export class MixerPage {
     readonly page: Page;
     readonly wrap: Locator;

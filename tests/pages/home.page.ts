@@ -1,8 +1,7 @@
 import { Locator, Page, FrameLocator } from '@playwright/test';
 
-/**
- * Page Object Model for the site home page (index.html)
- */
+type MenuLabel = 'About' | 'Videos' | 'Support' | 'Links';
+
 export class MainPage {
     readonly page: Page;
 
@@ -175,16 +174,15 @@ export class MainPage {
         }
     }
 
-    async clickMenu(label: 'Home' | 'About' | 'Music Videos' | 'Support' | 'Contact') {
+    async clickMenu(label: MenuLabel) {
         await this.openNav();
-        const menuByLabel: Partial<Record<'Home' | 'About' | 'Music Videos' | 'Support' | 'Contact', Locator>> = {
+        const menuByLabel: Record<MenuLabel, Locator> = {
             About: this.menuAbout,
-            'Music Videos': this.menuMusicVideos,
+            Videos: this.menuMusicVideos,
             Support: this.menuSupport,
+            Links: this.menuLinks,
         };
-        const menuTarget = menuByLabel[label];
-        if (!menuTarget) throw new Error(`No test-id backed menu locator is configured for ${label}`);
-        await menuTarget.click();
+        await menuByLabel[label].click();
     }
 
     // --- Hero helpers ---
@@ -226,109 +224,21 @@ export class MainPage {
             await fig.scrollIntoViewIfNeeded();
         }
     }
+
     async openLightboxFromFirstPolaroid() {
-        // Wait for puzzle script and at least one card with an image to appear
-        await this.page.waitForFunction(() => !!(window as any).dumpPuzzleState, null, { timeout: 2000 }).catch(() => { });
-        const cards = this.polaroids;
-        await cards.first().waitFor({ state: 'visible', timeout: 4000 });
-        await cards.first().scrollIntoViewIfNeeded();
-
-        // Wait for any polaroid image to be fully loaded
-        await this.page.waitForFunction(() => {
-            const imgs = Array.from(document.querySelectorAll('.collage figure.polaroid img')) as HTMLImageElement[];
-            return imgs.some(img => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0);
-        }, null, { timeout: 4000 }).catch(() => { });
-
-        // Helper to determine if lightbox is open
-        const isLightboxOpen = async () => {
-            if (this.page.isClosed()) return false;
-            return await this.page.evaluate(() => {
-                const el = document.getElementById('lightbox');
-                if (!el) return false;
-                const visible = getComputedStyle(el).display !== 'none';
-                return visible || el.classList.contains('open');
-            });
-        };
-
-        const tryOpen = async (fig: Locator, img: Locator) => {
-            if (this.page.isClosed()) return false;
-            await fig.scrollIntoViewIfNeeded();
-            try {
-                await fig.waitFor({ state: 'visible', timeout: 1500 });
-                const fh = await fig.elementHandle();
-                if (fh) {
-                    try { await fh.waitForElementState('stable', { timeout: 1000 }); } catch { }
-                }
-            } catch { return false; }
-            const clickCenter = async (target: Locator) => {
-                const box = await target.boundingBox();
-                if (box) {
-                    const x = Math.floor(box.width / 2);
-                    const y = Math.floor(box.height / 2);
-                    await target.click({ position: { x, y } });
-                } else {
-                    await target.click();
-                }
-            };
-            try {
-                if (!this.page.isClosed() && await img.count()) {
-                    await img.waitFor({ state: 'visible', timeout: 1500 }).catch(() => { });
-                    const ih = await img.elementHandle();
-                    if (ih) {
-                        try { await ih.waitForElementState('stable', { timeout: 800 }); } catch { }
-                    }
-                    await img.click({ trial: true }).catch(() => { });
-                    await clickCenter(img);
-                } else {
-                    await clickCenter(fig);
-                }
-            } catch {
-                // Force as last resort if page still open
-                if (!this.page.isClosed()) {
-                    try {
-                        if (await img.count()) {
-                            await img.click({ force: true });
-                        } else {
-                            await fig.click({ force: true });
-                        }
-                    } catch { }
-                }
-            }
-            // Short wait to observe the open state
-            try { await this.lightbox.waitFor({ state: 'visible', timeout: 1800 }); } catch { }
-            if (await isLightboxOpen()) return true;
-            // Keyboard fallback
-            try { await fig.focus(); } catch { }
-            await this.page.keyboard.press('Enter');
-            await this.lightbox.waitFor({ state: 'visible', timeout: 1800 }).catch(() => { });
-            return await isLightboxOpen();
-        };
-
-        // Retry tryOpen up to 20 times, rotating through available cards
-        const count = await cards.count();
-        const maxAttempts = 20;
-        let opened = await isLightboxOpen();
-        for (let attempt = 0; !opened && attempt < maxAttempts; attempt++) {
-            if (this.page.isClosed()) break;
-            const idx = count > 0 ? attempt % count : 0;
-            const fig = cards.nth(idx);
-            const img = fig.locator('img:visible').first();
-            opened = await tryOpen(fig, img);
-        }
-        await this.lightbox.waitFor({ state: 'visible', timeout: 4000 }).catch(() => { });
+        const polaroid = this.polaroids.first();
+        await polaroid.scrollIntoViewIfNeeded();
+        await polaroid.click();
     }
 
     async closeLightbox() {
         if (!(await this.lightbox.isVisible())) return;
-        // Primary: click the close button
         try {
             await this.lightboxClose.click();
         } catch { }
-        // If still visible, click the backdrop (top-left corner targets the overlay element)
         if (await this.lightbox.isVisible()) {
             try { await this.lightbox.click({ position: { x: 4, y: 4 } }); } catch { }
         }
-        // Final fallback: Escape
         if (await this.lightbox.isVisible()) {
             await this.page.keyboard.press('Escape');
         }
@@ -350,14 +260,11 @@ export class MainPage {
     }
 
     async clickWitness(): Promise<{ popup: Page; expectedUrl: string }> {
-        // Read the expected URL from the page runtime (selected at load)
         const expectedUrl = await this.page.evaluate(() => (window as any).__WITNESS_URL || 'https://www.youtube.com/shorts/hkYhlXNTsJQ');
-        // Clicking WITNESS opens a new tab and closes the modal
         const [popup] = await Promise.all([
             this.page.waitForEvent('popup'),
             this.puzzleWitnessLink.click()
         ]);
-        // Wait for the popup to navigate to the exact URL set on the anchor
         await popup.waitForURL(expectedUrl, { timeout: 7000 }).catch(() => { });
         return { popup, expectedUrl };
     }
