@@ -1,5 +1,7 @@
 import { type Locator, type Page, test } from '@playwright/test';
 
+type MixerGroup = 'instruments' | 'vocals';
+
 export class MixerPage {
     readonly page: Page;
     readonly wrap: Locator;
@@ -69,6 +71,18 @@ export class MixerPage {
         });
     }
 
+    async clickPlay() {
+        await test.step('click mixer play button', async () => {
+            await this.transport.play.click();
+        });
+    }
+
+    async clickGroup(group: MixerGroup) {
+        await test.step(`click ${group} group`, async () => {
+            await this.groups[group].click();
+        });
+    }
+
     async unsoloAllClick() {
         await test.step('unsolo all channels', async () => {
             await this.unsoloAll.click();
@@ -107,6 +121,20 @@ export class ChannelStrip {
     async setFader(value: number) {
         await test.step(`set ${this.key} fader to ${value}`, async () => {
             await this.fader.fill(String(value));
+        });
+    }
+
+    async clickSolo() {
+        if (!this.solo) throw new Error(`${this.key} strip has no solo control`);
+
+        await test.step(`toggle ${this.key} solo`, async () => {
+            await this.solo!.click();
+        });
+    }
+
+    async clickMute() {
+        await test.step(`toggle ${this.key} mute`, async () => {
+            await this.mute.click();
         });
     }
 }

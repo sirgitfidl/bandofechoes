@@ -185,6 +185,10 @@ export class MainPage {
         await menuByLabel[label].click();
     }
 
+    async clickBrandLink() {
+        await this.brandLink.click();
+    }
+
     // --- Hero helpers ---
     async clickFeaturedPoster() {
         await this.heroPoster.click();
@@ -214,6 +218,10 @@ export class MainPage {
         if (await this.mixerModal.isVisible()) {
             await this.page.click('#mixerModal', { position: { x: 5, y: 5 } });
         }
+    }
+
+    async closeInlineMixer() {
+        await this.mixerInlineCloseBtn.click();
     }
 
     // --- Lightbox helpers (optional) ---
