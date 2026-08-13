@@ -591,11 +591,11 @@ header .logo {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: var(--countdown-preview-image, url('../images/random_images/metallicaLogo.png'));
+    background-image: var(--countdown-preview-image, url('../images/random_images/systemLogo.png'));
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: var(--countdown-preview-opacity, .12);
+    opacity: var(--countdown-preview-opacity, .25);
     pointer-events: none;
     z-index: 0;
 }
