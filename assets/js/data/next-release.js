@@ -11,7 +11,7 @@ window.NEXT_PREMIERE_URL = '';
 // - upcomingPreview: image automatically shown after main countdown expires.
 window.COUNTDOWN_PREVIEW = {
   currentPreview: 'metallicaLogo.png',
-  upcomingPreview: 'ninLogo.png'
+  upcomingPreview: 'systemLogo.png'
 };
 
 // Two-stage release scheduling:
@@ -21,7 +21,7 @@ window.NEXT_RELEASE_SCHEDULE = {
   upcoming: {
     year: 2026,
     month: 10,
-    day: 15,
+    day: 31,
     hour: 10,
     minute: 0,
     timeZone: 'America/Los_Angeles'

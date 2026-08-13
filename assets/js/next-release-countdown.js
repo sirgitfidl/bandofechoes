@@ -98,12 +98,30 @@
     const raw = String(input || '').trim();
     if (!raw) return null;
 
-    if (/^https?:\/\//i.test(raw) || raw.startsWith('/') || raw.startsWith('assets/')) {
+    if (/^https?:\/\//i.test(raw)) {
       return raw;
     }
 
-    if (!/^[A-Za-z0-9_.-]+$/.test(raw)) return null;
-    return `assets/images/random_images/${raw}`;
+    // Custom-property url() values resolve relative to whichever stylesheet
+    // substitutes the var(), not the page — so resolve to an absolute URL
+    // here instead, relative to the document itself. This also works
+    // correctly whether the page is served over http(s) or opened directly
+    // via file://.
+    const relative = raw.startsWith('/')
+      ? raw.slice(1)
+      : raw.startsWith('assets/')
+        ? raw
+        : /^[A-Za-z0-9_.-]+$/.test(raw)
+          ? `assets/images/random_images/${raw}`
+          : null;
+
+    if (relative == null) return null;
+
+    try {
+      return new URL(relative, document.baseURI).toString();
+    } catch {
+      return null;
+    }
   }
 
   function setCountdownPreview(root, mode) {
