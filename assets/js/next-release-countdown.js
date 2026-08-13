@@ -137,6 +137,7 @@
     if (!normalizedPath) return;
 
     root.style.setProperty('--countdown-preview-image', `url('${normalizedPath}')`);
+    root.style.setProperty('--countdown-preview-opacity', mode === 'upcoming' ? '.25' : '.12');
   }
 
   function cleanPremiereTitle(title) {

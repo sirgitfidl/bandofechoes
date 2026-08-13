@@ -595,7 +595,7 @@ header .logo {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: .12;
+    opacity: var(--countdown-preview-opacity, .12);
     pointer-events: none;
     z-index: 0;
 }
