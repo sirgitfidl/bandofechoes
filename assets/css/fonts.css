@@ -1,0 +1,13 @@
+/* Central font config for the site. Change fonts here; all other CSS references these variables. */
+:root {
+    --font-title: 'PP Eiko', serif;
+    --font-body: 'PP Eiko', serif;
+}
+
+@font-face {
+    font-family: 'PP Eiko';
+    src: url('../fonts/ppeiko-medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: block;
+}

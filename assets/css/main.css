@@ -21,17 +21,9 @@ body {
     min-height: 100%;
 }
 
-@font-face {
-    font-family: 'PP Editorial Old';
-    src: url('../fonts/ppeditorialold-regular.otf') format('opentype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: block;
-}
-
 body {
     margin: 0;
-    font-family: 'PP Editorial Old', serif;
+    font-family: var(--font-body);
     font-size: 18px;
     background: var(--bg);
     color: var(--fg);
@@ -550,7 +542,7 @@ header h1,
 header h1 a,
 header .site-title,
 header .logo {
-    font-family: 'PP Editorial Old', serif;
+    font-family: var(--font-title);
     font-weight: 400;
     font-size: 50px;
     letter-spacing: .02em;

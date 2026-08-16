@@ -419,7 +419,7 @@ test.describe('Homepage', () => {
             await expect(mainPage.page.locator('head meta[name="twitter:image"]')).toHaveAttribute('content', twitterImageUrl);
             await expect(mainPage.page.locator('head link[rel="preconnect"][href="https://www.youtube.com"]')).toHaveCount(1);
             await expect(mainPage.page.locator('head link[rel="preconnect"][href="https://i.ytimg.com"]')).toHaveCount(1);
-            await expect(mainPage.page.locator('head link[rel="preload"][href="assets/fonts/ppeditorialold-regular.otf"]')).toHaveAttribute('as', 'font');
+            await expect(mainPage.page.locator('head link[rel="preload"][href="assets/fonts/ppeiko-medium.otf"]')).toHaveAttribute('as', 'font');
         });
 
         await test.step('check that the JSON-LD still describes the site and band', async () => {
