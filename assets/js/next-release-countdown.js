@@ -224,6 +224,17 @@
     return String(n).padStart(2, '0');
   }
 
+  // Wrap each digit in a fixed-width span so proportional-width glyphs don't
+  // change the rendered string's total width tick-to-tick (which otherwise
+  // makes the centered countdown dart around horizontally).
+  function digitSpans(str) {
+    return str.replace(/\d/g, (d) => `<span class="cd-digit">${d}</span>`);
+  }
+
+  function formatCountdownMarkup(days, hours, minutes, seconds) {
+    return `${digitSpans(pad2(days))}d ${digitSpans(pad2(hours))}h ${digitSpans(pad2(minutes))}m ${digitSpans(pad2(seconds))}s`;
+  }
+
   function formatCountdown(ms) {
     const totalSeconds = Math.max(0, Math.floor(ms / 1000));
     const days = Math.floor(totalSeconds / 86400);
@@ -520,7 +531,7 @@
       const onComplete =
         typeof options.onComplete === 'function'
           ? options.onComplete
-          : () => { timerEl.textContent = '00d 00h 00m 00s'; };
+          : () => { timerEl.innerHTML = formatCountdownMarkup(0, 0, 0, 0); };
 
       function tick() {
         const now = Date.now();
@@ -532,7 +543,7 @@
         }
 
         const { days, hours, minutes, seconds } = formatCountdown(diff);
-        timerEl.textContent = `${pad2(days)}d ${pad2(hours)}h ${pad2(minutes)}m ${pad2(seconds)}s`;
+        timerEl.innerHTML = formatCountdownMarkup(days, hours, minutes, seconds);
         window.setTimeout(tick, 250);
       }
 
@@ -548,7 +559,7 @@
           return;
         }
 
-        mainTimerEl.textContent = '00d 00h 00m 00s';
+        mainTimerEl.innerHTML = formatCountdownMarkup(0, 0, 0, 0);
         setCountdownPreview(root, 'upcoming');
       }
     });

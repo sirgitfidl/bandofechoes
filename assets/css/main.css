@@ -621,6 +621,14 @@ header .logo {
     color: var(--fg);
 }
 
+/* Fixed-width digit slots keep the string's total width stable each tick,
+   even if the font's numerals aren't equal-width. */
+.next-video-countdown .countdown-timer .cd-digit {
+    display: inline-block;
+    width: 1ch;
+    text-align: center;
+}
+
 /* Upcoming premiere card (replaces the main countdown's placement when present) */
 .next-video-countdown .next-premiere {
     width: min(720px, 92%);

@@ -1,13 +1,61 @@
 /* Central font config for the site. Change fonts here; all other CSS references these variables. */
 :root {
-    --font-title: 'PP Eiko', serif;
-    --font-body: 'PP Eiko', serif;
+    --font-title: 'PP Editorial Old', serif;
+    --font-body: 'Libre Baskerville', serif;
+}
+
+@font-face {
+    font-family: 'PP Editorial Old';
+    src: url('../fonts/ppeditorialold-regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'PP Writer';
+    src: url('../fonts/PPWriter-RegularText-BF6445d4ec57a2b.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'PP Pangaia';
+    src: url('../fonts/PPPangaia-Medium-BF654c530cc86d5.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'PP Editorial Old Ultralight';
+    src: url('../fonts/ppeditorialold-ultralight.otf') format('opentype');
+    font-weight: 200;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'PP Editorial New';
+    src: url('../fonts/PPEditorialNew-Regular-BF644b214ff145f.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: block;
 }
 
 @font-face {
     font-family: 'PP Eiko';
     src: url('../fonts/ppeiko-medium.otf') format('opentype');
     font-weight: 500;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'PP Eiko Thin';
+    src: url('../fonts/ppeiko-thin.otf') format('opentype');
+    font-weight: 100;
     font-style: normal;
     font-display: block;
 }
