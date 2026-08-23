@@ -20,7 +20,7 @@ body {
     background: radial-gradient(1200px 700px at 70% -20%, #1b2030 0%, #0d0f14 60%, #0b0d12 100%);
     color: var(--text);
     font-family: var(--font-body);
-    font-size: 18px;
+    font-size: 19.8px;
     display: flex;
     flex-direction: column;
     align-items: center;

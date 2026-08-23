@@ -1,7 +1,7 @@
 /* Central font config for the site. Change fonts here; all other CSS references these variables. */
 :root {
     --font-title: 'PP Editorial Old', serif;
-    --font-body: 'Libre Baskerville', serif;
+    --font-body: 'PP Editorial Old', serif;
 }
 
 @font-face {
