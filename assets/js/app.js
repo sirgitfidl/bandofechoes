@@ -99,6 +99,19 @@ function isAutomation() {
     }, 2200);
   };
 
+  // Patreon CTA glow (twice) when Support is opened from the nav menu
+  const patreonCta = document.querySelector('[data-testid="cta-patreon"]');
+  const pulsePatreonCta = () => {
+    if (!patreonCta) return;
+    patreonCta.classList.remove('patreon-cta--pulse');
+    // Force reflow so repeated clicks retrigger animation.
+    void patreonCta.offsetWidth;
+    patreonCta.classList.add('patreon-cta--pulse');
+    window.setTimeout(() => {
+      try { patreonCta.classList.remove('patreon-cta--pulse'); } catch { }
+    }, 2000);
+  };
+
   // hamburger menu wiring (restore)
   const navToggle = document.getElementById('navToggle');
   const navMenu = document.getElementById('navMenu');
@@ -134,6 +147,13 @@ function isAutomation() {
       linksMenuItem.addEventListener('click', () => {
         // Trigger only from explicit Links menu navigation, not scroll.
         pulseLinksSection();
+      });
+    }
+    const supportMenuItem = navMenu.querySelector('[data-testid="menu-support"]');
+    if (supportMenuItem) {
+      supportMenuItem.addEventListener('click', () => {
+        // Trigger only from explicit Support menu navigation, not scroll.
+        pulsePatreonCta();
       });
     }
     navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));

@@ -175,11 +175,12 @@ test.describe('Homepage', () => {
     test('the navigation menu lists the current sections and the Links item jumps to the links section [BVT]', async ({ mainPage }) => {
         await test.step('open the menu and verify the current item order', async () => {
             await mainPage.openNav();
-            await expect(mainPage.navMenuItems).toHaveCount(4);
+            await expect(mainPage.navMenuItems).toHaveCount(5);
             await expect(mainPage.navMenuItems.nth(0)).toHaveText('About');
             await expect(mainPage.navMenuItems.nth(1)).toHaveText('Videos');
-            await expect(mainPage.navMenuItems.nth(2)).toHaveText('Support');
-            await expect(mainPage.navMenuItems.nth(3)).toHaveText('Links');
+            await expect(mainPage.navMenuItems.nth(2)).toHaveText('Posts');
+            await expect(mainPage.navMenuItems.nth(3)).toHaveText('Support');
+            await expect(mainPage.navMenuItems.nth(4)).toHaveText('Links');
             await expect(mainPage.navMenu.getByRole('link', { name: 'Connect' })).toHaveCount(0);
             await expect(mainPage.menuLinks).toHaveAttribute('href', '#links-section');
         });
@@ -188,6 +189,12 @@ test.describe('Homepage', () => {
             await mainPage.clickMenu('Links');
             await expect(mainPage.page).toHaveURL(/#links-section$/);
             await expect(mainPage.linksGroups).toHaveClass(/links-groups--pulse/);
+        });
+
+        await test.step('choose Support and confirm the Patreon CTA glows', async () => {
+            await mainPage.clickMenu('Support');
+            await expect(mainPage.page).toHaveURL(/#support$/);
+            await expect(mainPage.patreonCta2).toHaveClass(/patreon-cta--pulse/);
         });
     });
 
@@ -198,10 +205,11 @@ test.describe('Homepage', () => {
             await expect(mainPage.page).toHaveURL(/#top$/);
         });
 
-        await test.step('confirm the menu links point to About, Videos, and Support', async () => {
+        await test.step('confirm the menu links point to About, Videos, Posts, and Support', async () => {
             await mainPage.openNav();
             await expect(mainPage.menuAbout).toHaveAttribute('href', '#about');
             await expect(mainPage.menuMusicVideos).toHaveAttribute('href', '#music-videos');
+            await expect(mainPage.menuPosts).toHaveAttribute('href', '#posts');
             await expect(mainPage.menuSupport).toHaveAttribute('href', '#support');
 
             await mainPage.clickMenu('About');
@@ -209,6 +217,9 @@ test.describe('Homepage', () => {
 
             await mainPage.clickMenu('Videos');
             await expect(mainPage.page).toHaveURL(/#music-videos$/);
+
+            await mainPage.clickMenu('Posts');
+            await expect(mainPage.page).toHaveURL(/#posts$/);
 
             await mainPage.clickMenu('Support');
             await expect(mainPage.page).toHaveURL(/#support$/);
@@ -226,9 +237,9 @@ test.describe('Homepage', () => {
         await test.step('check the Support section benefits and image', async () => {
             await expect(mainPage.sectionSupport).toBeVisible();
             await expect(mainPage.sectionSupport.getByRole('heading', { name: 'Support' })).toBeVisible();
-            await expect(mainPage.supportBenefits).toHaveCount(8);
+            await expect(mainPage.supportBenefits).toHaveCount(6);
             await expect(mainPage.supportBenefits.nth(0)).toHaveText('Tabs and sheet music');
-            await expect(mainPage.supportBenefits.nth(7)).toHaveText('4K high bitrate music video downloads');
+            await expect(mainPage.supportBenefits.nth(5)).toHaveText('4K high bitrate music video downloads');
             await expect(mainPage.supportHeroImage).toHaveAttribute('loading', 'lazy');
             await expect(mainPage.supportHeroImage).toHaveAttribute('decoding', 'async');
             await expect(mainPage.supportHeroImage).toHaveAttribute('alt', 'Band of Echoes');
@@ -254,7 +265,7 @@ test.describe('Homepage', () => {
 
     test('the countdown and music video carousel expose the expected shell and metadata', async ({ mainPage }) => {
         await test.step('check the release countdown and Patreon early-access link', async () => {
-            await expect(mainPage.sectionMusicVideos).toBeVisible();
+            await expect(mainPage.sectionCountdown).toBeVisible();
             await expect(mainPage.nextReleaseCountdown).toBeVisible();
             await expect(mainPage.nextReleaseTimer).toHaveAttribute('aria-live', 'polite');
             await expect(mainPage.patreonEarlyAccess).toHaveAttribute('href', patreonUrl);
@@ -264,6 +275,7 @@ test.describe('Homepage', () => {
         });
 
         await test.step('check the carousel shell and current playlist metadata', async () => {
+            await expect(mainPage.sectionMusicVideos).toBeVisible();
             await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-id', playlistId);
             await expect(mainPage.ytPlaylist).toHaveAttribute('data-playlist-url', playlistUrl);
             await expect(mainPage.ytCarouselShell).toBeVisible();
@@ -271,6 +283,104 @@ test.describe('Homepage', () => {
             await expect(mainPage.ytCarouselTrack).toBeVisible();
             await expect(mainPage.ytCarouselLeft).toHaveClass(/is-hidden/);
             await expect(mainPage.ytCarouselRight).toHaveClass(/is-hidden/);
+        });
+    });
+
+    test('the Posts section renders all posts up front in a collage carousel, or a YouTube fallback link', async ({ mainPage }) => {
+        await test.step('check the Posts section heading and feed shell', async () => {
+            await expect(mainPage.sectionPosts).toBeVisible();
+            await expect(mainPage.sectionPosts.getByRole('heading', { name: 'Posts' })).toBeVisible();
+            await expect(mainPage.ytPostsFeed).toHaveAttribute('data-channel-url', youtubeChannelUrl);
+            await expect(mainPage.ytPostsTrack).toBeVisible();
+        });
+
+        await test.step('confirm the feed rendered post cards plus a "See more" tile, or the fallback link', async () => {
+            const cardCount = await mainPage.ytPostCards.count();
+            if (cardCount > 0) {
+                await expect(mainPage.ytPostsTrack.locator('a.yt-post-link')).toHaveCount(0);
+                await expect(mainPage.ytPostCards.first().locator('.yt-post-time')).not.toBeEmpty();
+
+                const seeMore = mainPage.ytPostsTrack.getByTestId('yt-post-see-more');
+                await expect(seeMore).toHaveCount(1);
+                const seeMoreLink = seeMore.locator('a.yt-post-see-more-link');
+                await expect(seeMoreLink).toHaveText('See more on YouTube');
+                await expect(seeMoreLink).toHaveAttribute('href', `${youtubeChannelUrl}/community`);
+                await expect(seeMoreLink).toHaveAttribute('target', '_blank');
+                await expect(seeMoreLink).toHaveAttribute('rel', /noopener/);
+            } else {
+                const fallbackLink = mainPage.ytPostsTrack.locator('a.btn');
+                await expect(fallbackLink).toHaveText('View posts on YouTube');
+                await expect(fallbackLink).toHaveAttribute('href', youtubeChannelUrl);
+            }
+        });
+
+        await test.step('clicking the right arrow scrolls the carousel without changing how many posts are mounted', async () => {
+            const initialCount = await mainPage.ytPostCards.count();
+            if (initialCount === 0) return;
+
+            const rightDisabled = await mainPage.ytPostsRight.getAttribute('aria-disabled');
+            if (rightDisabled === 'true') return;
+
+            await mainPage.ytPostsRight.click();
+            await expect.poll(() => mainPage.ytPostsViewport.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+            expect(await mainPage.ytPostCards.count()).toBe(initialCount);
+        });
+    });
+
+    test('clicking a post tile opens it full-screen and its own arrows step through the posts [BVT]', async ({ mainPage }) => {
+        test.skip((await mainPage.ytPostCards.count()) === 0, 'No community posts rendered (fallback link shown instead)');
+
+        let firstPostText: string | null = null;
+
+        await test.step('click the first post tile and confirm it opens full-screen', async () => {
+            const firstCardTextLocator = mainPage.ytPostCards.first().locator('.yt-post-text');
+            firstPostText = (await firstCardTextLocator.count()) ? await firstCardTextLocator.textContent() : null;
+            await mainPage.ytPostCards.first().click();
+
+            await expect(mainPage.postLightbox).toHaveClass(/open/);
+            await expect(mainPage.postLightboxBody.locator('a.yt-post-link')).toHaveAttribute('target', '_blank');
+            if (firstPostText) {
+                await expect(mainPage.postLightboxBody.locator('.yt-post-text')).toHaveText(firstPostText);
+            }
+        });
+
+        await test.step('the lightbox\'s own next arrow steps to the following post', async () => {
+            const nextDisabled = await mainPage.postLightboxNext.getAttribute('aria-disabled');
+            test.skip(nextDisabled === 'true', 'Only one community post available');
+
+            await expect(mainPage.postLightboxPrev).toHaveAttribute('aria-disabled', 'false');
+            await mainPage.postLightboxNext.click();
+
+            if (firstPostText) {
+                await expect(mainPage.postLightboxBody.locator('.yt-post-text')).not.toHaveText(firstPostText);
+            }
+        });
+
+        await test.step('the prev/next arrows wrap around at the ends instead of stopping', async () => {
+            const nextDisabled = await mainPage.postLightboxNext.getAttribute('aria-disabled');
+            test.skip(nextDisabled === 'true', 'Only one community post available');
+
+            // Back to the first post, then prev should wrap to the last post.
+            await mainPage.postLightboxPrev.click();
+            if (firstPostText) {
+                await expect(mainPage.postLightboxBody.locator('.yt-post-text')).toHaveText(firstPostText);
+            }
+
+            await mainPage.postLightboxPrev.click();
+            if (firstPostText) {
+                await expect(mainPage.postLightboxBody.locator('.yt-post-text')).not.toHaveText(firstPostText);
+            }
+
+            // Next from the last post should wrap back to the first post.
+            await mainPage.postLightboxNext.click();
+            if (firstPostText) {
+                await expect(mainPage.postLightboxBody.locator('.yt-post-text')).toHaveText(firstPostText);
+            }
+        });
+
+        await test.step('closing the lightbox restores the page', async () => {
+            await mainPage.postLightboxClose.click();
+            await expect(mainPage.postLightbox).not.toHaveClass(/open/);
         });
     });
 

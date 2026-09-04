@@ -27,6 +27,13 @@ GitHub Pages (recommended for keeping the key out of git):
    - Repo Settings → Pages → Build and deployment:
       - Source: `GitHub Actions`
 
+YouTube community posts feed:
+- The Posts section renders from a static snapshot at [assets/js/data/youtube-posts-items.js](assets/js/data/youtube-posts-items.js), since YouTube has no public API for community posts.
+- Refresh it locally with `npm run generate:youtube-posts` (scrapes `https://www.youtube.com/@BandOfEchoes/community`).
+- The Pages deploy workflow refreshes this snapshot automatically before each deploy (best effort; falls back to the last committed snapshot if scraping fails).
+- YouTube's community JSON isn't always in strict reverse-chronological order, so the generator sorts posts newest-first using each post's relative "time ago" text.
+- The feed renders as a carousel and only mounts posts in small batches; clicking the right arrow reveals the next batch instead of rendering everything at once.
+
 3) Run tests (spins its own server on :3000 automatically):
    npm test
 

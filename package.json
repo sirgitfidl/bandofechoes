@@ -12,7 +12,8 @@
         "test:ci:bvt": "playwright test --project=chromium --grep BVT --reporter=line,html",
         "test:ci:full": "playwright test --reporter=line,html",
         "serve": "http-server -p 3000 -c- .",
-        "start": "npm run serve"
+        "start": "npm run serve",
+        "generate:youtube-posts": "node scripts/generate-youtube-posts-data.mjs"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",

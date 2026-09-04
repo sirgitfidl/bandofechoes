@@ -1,6 +1,6 @@
 import { Locator, Page, FrameLocator } from '@playwright/test';
 
-type MenuLabel = 'About' | 'Videos' | 'Support' | 'Links';
+type MenuLabel = 'About' | 'Videos' | 'Posts' | 'Support' | 'Links';
 
 export class MainPage {
     readonly page: Page;
@@ -22,6 +22,8 @@ export class MainPage {
     readonly sectionWatch: Locator;
     readonly sectionAbout: Locator;
     readonly sectionMusicVideos: Locator;
+    readonly sectionPosts: Locator;
+    readonly sectionCountdown: Locator;
     readonly sectionSupport: Locator;
     readonly sectionLinks: Locator;
 
@@ -48,6 +50,7 @@ export class MainPage {
     readonly menuLinks: Locator;
     readonly menuAbout: Locator;
     readonly menuMusicVideos: Locator;
+    readonly menuPosts: Locator;
     readonly menuSupport: Locator;
     readonly patreonLink: Locator;
     readonly youtubeLink: Locator;
@@ -77,6 +80,17 @@ export class MainPage {
     readonly ytCarouselTrack: Locator;
     readonly ytCarouselLeft: Locator;
     readonly ytCarouselRight: Locator;
+    readonly ytPostsFeed: Locator;
+    readonly ytPostsTrack: Locator;
+    readonly ytPostsViewport: Locator;
+    readonly ytPostsLeft: Locator;
+    readonly ytPostsRight: Locator;
+    readonly ytPostCards: Locator;
+    readonly postLightbox: Locator;
+    readonly postLightboxBody: Locator;
+    readonly postLightboxClose: Locator;
+    readonly postLightboxPrev: Locator;
+    readonly postLightboxNext: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -98,6 +112,8 @@ export class MainPage {
         this.sectionWatch = page.getByTestId('section-watch');
         this.sectionAbout = page.getByTestId('section-about');
         this.sectionMusicVideos = page.getByTestId('section-music-videos');
+        this.sectionPosts = page.getByTestId('section-posts');
+        this.sectionCountdown = page.getByTestId('section-countdown');
         this.sectionSupport = page.getByTestId('section-support');
         this.sectionLinks = page.getByTestId('section-links');
 
@@ -124,6 +140,7 @@ export class MainPage {
         this.menuLinks = page.getByTestId('menu-links');
         this.menuAbout = page.getByTestId('menu-about');
         this.menuMusicVideos = page.getByTestId('menu-music-videos');
+        this.menuPosts = page.getByTestId('menu-posts');
         this.menuSupport = page.getByTestId('menu-support');
         this.patreonLink = page.getByTestId('links-patreon');
         this.youtubeLink = page.getByTestId('links-youtube');
@@ -153,6 +170,17 @@ export class MainPage {
         this.ytCarouselTrack = page.getByTestId('yt-carousel-track');
         this.ytCarouselLeft = page.getByTestId('yt-carousel-left');
         this.ytCarouselRight = page.getByTestId('yt-carousel-right');
+        this.ytPostsFeed = page.getByTestId('yt-posts-feed');
+        this.ytPostsTrack = page.getByTestId('yt-posts-track');
+        this.ytPostsViewport = page.getByTestId('yt-posts-viewport');
+        this.ytPostsLeft = page.getByTestId('yt-posts-left');
+        this.ytPostsRight = page.getByTestId('yt-posts-right');
+        this.ytPostCards = page.getByTestId('yt-post-card');
+        this.postLightbox = page.getByTestId('post-lightbox');
+        this.postLightboxBody = page.getByTestId('post-lightbox-body');
+        this.postLightboxClose = page.getByTestId('post-lightbox-close');
+        this.postLightboxPrev = page.getByTestId('post-lightbox-prev');
+        this.postLightboxNext = page.getByTestId('post-lightbox-next');
     }
 
     async goto() {
@@ -179,6 +207,7 @@ export class MainPage {
         const menuByLabel: Record<MenuLabel, Locator> = {
             About: this.menuAbout,
             Videos: this.menuMusicVideos,
+            Posts: this.menuPosts,
             Support: this.menuSupport,
             Links: this.menuLinks,
         };

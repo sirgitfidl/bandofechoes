@@ -30,6 +30,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Refresh YouTube community posts (best effort)
+        run: node scripts/generate-youtube-posts-data.mjs || echo "WARNING: could not refresh community posts; keeping last committed snapshot."
+
       - name: Inject YouTube API key (optional)
         env:
           BOE_YT_API_KEY: ${{ secrets.BOE_YT_API_KEY }}
