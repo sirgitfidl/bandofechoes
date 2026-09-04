@@ -25,6 +25,32 @@ function isAutomation() {
 (function init() {
   const year = document.getElementById('year'); if (year) year.textContent = new Date().getFullYear();
 
+  // About: collapsible bio on narrow viewports, with a "Read more" toggle
+  const aboutCopy = document.getElementById('aboutCopy');
+  const aboutToggle = document.querySelector('[data-testid="about-toggle"]');
+  if (aboutCopy && aboutToggle) {
+    const aboutMq = window.matchMedia('(max-width: 600px)');
+    const ABOUT_COLLAPSED_HEIGHT = 155;
+    const setupAboutToggle = () => {
+      // scrollHeight reflects the full content height even while clipped, so this stays accurate on repeated calls
+      const needsToggle = aboutMq.matches && aboutCopy.scrollHeight > ABOUT_COLLAPSED_HEIGHT + 20;
+      aboutCopy.classList.toggle('is-collapsible', needsToggle);
+      aboutToggle.hidden = !needsToggle;
+      if (!needsToggle) {
+        aboutCopy.classList.remove('is-expanded');
+        aboutToggle.setAttribute('aria-expanded', 'false');
+        aboutToggle.textContent = 'Read more';
+      }
+    };
+    aboutToggle.addEventListener('click', () => {
+      const expanded = aboutCopy.classList.toggle('is-expanded');
+      aboutToggle.setAttribute('aria-expanded', String(expanded));
+      aboutToggle.textContent = expanded ? 'Read less' : 'Read more';
+    });
+    setupAboutToggle();
+    window.addEventListener('resize', setupAboutToggle);
+  }
+
   // Hero: Latest release text (populated from playlist carousel data)
   const heroLatest = document.querySelector('[data-testid="hero-latest"]');
   const heroLatestLink = document.getElementById('heroLatestLink');

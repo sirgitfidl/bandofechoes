@@ -1883,3 +1883,66 @@ input[type=email] {
     max-width: 96ch;
     margin: 0 auto;
 }
+
+.about-copy p {
+    margin: 0;
+}
+
+.about-copy p + p {
+    margin-top: 14px;
+}
+
+.about-toggle {
+    display: none;
+}
+
+/* Justified text on a narrow column stretches word spacing badly; left-align instead. */
+@media (max-width: 600px) {
+    .about-copy {
+        text-align: left;
+    }
+
+    .about-copy.is-collapsible {
+        position: relative;
+        max-height: 155px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .about-copy.is-collapsible::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 56px;
+        background: linear-gradient(to bottom, transparent, var(--bg));
+        pointer-events: none;
+    }
+
+    .about-copy.is-collapsible.is-expanded {
+        max-height: 2000px;
+    }
+
+    .about-copy.is-collapsible.is-expanded::after {
+        display: none;
+    }
+
+    .about-toggle[hidden] {
+        display: none;
+    }
+
+    .about-toggle {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--accent);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}

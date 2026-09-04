@@ -66,6 +66,7 @@ export class MainPage {
     readonly skipLink: Locator;
     readonly puzzleModal: Locator;
     readonly aboutCopy: Locator;
+    readonly aboutToggle: Locator;
     readonly supportBenefits: Locator;
     readonly supportBlurb: Locator;
     readonly supportCtas: Locator;
@@ -156,6 +157,7 @@ export class MainPage {
         this.skipLink = page.getByTestId('skip-link');
         this.puzzleModal = page.getByTestId('puzzle-modal');
         this.aboutCopy = page.getByTestId('about-copy');
+        this.aboutToggle = page.getByTestId('about-toggle');
         this.supportBenefits = page.getByTestId('support-benefit');
         this.supportBlurb = page.getByTestId('support-blurb');
         this.supportCtas = page.getByTestId('support-ctas');

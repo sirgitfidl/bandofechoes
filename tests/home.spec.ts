@@ -229,9 +229,9 @@ test.describe('Homepage', () => {
     test('the About and Support sections show the current copy and membership benefits', async ({ mainPage }) => {
         await test.step('check the About section heading and copy', async () => {
             await expect(mainPage.sectionAbout).toBeVisible();
-            await expect(mainPage.sectionAbout.getByRole('heading', { name: 'About Us' })).toBeVisible();
-            await expect(mainPage.aboutCopy).toContainText('Band of Echoes reimagines heavy, atmospheric rock');
-            await expect(mainPage.aboutCopy).toContainText('Tool, Nine Inch Nails, Soundgarden, Metallica');
+            await expect(mainPage.sectionAbout.getByRole('heading', { name: 'About', exact: true })).toBeVisible();
+            await expect(mainPage.aboutCopy).toContainText('Band of Echoes is an acoustic duo based in Oregon');
+            await expect(mainPage.aboutCopy).toContainText('Tool, Nine Inch Nails, A Perfect Circle, Metallica');
         });
 
         await test.step('check the Support section benefits and image', async () => {
@@ -243,6 +243,26 @@ test.describe('Homepage', () => {
             await expect(mainPage.supportHeroImage).toHaveAttribute('loading', 'lazy');
             await expect(mainPage.supportHeroImage).toHaveAttribute('decoding', 'async');
             await expect(mainPage.supportHeroImage).toHaveAttribute('alt', 'Band of Echoes');
+        });
+    });
+
+    test('the About bio collapses behind a Read more toggle on narrow viewports only', async ({ mainPage }) => {
+        await test.step('desktop: no toggle, full copy visible', async () => {
+            await mainPage.page.setViewportSize({ width: 1280, height: 900 });
+            await expect(mainPage.aboutToggle).toBeHidden();
+        });
+
+        await test.step('mobile: toggle appears and expands the bio', async () => {
+            await mainPage.page.setViewportSize({ width: 390, height: 844 });
+            await mainPage.page.reload();
+            await expect(mainPage.aboutToggle).toBeVisible();
+            await expect(mainPage.aboutToggle).toHaveAttribute('aria-expanded', 'false');
+            await expect(mainPage.aboutToggle).toHaveText('Read more');
+
+            await mainPage.aboutToggle.click();
+            await expect(mainPage.aboutToggle).toHaveAttribute('aria-expanded', 'true');
+            await expect(mainPage.aboutToggle).toHaveText('Read less');
+            await expect(mainPage.aboutCopy).toHaveClass(/is-expanded/);
         });
     });
 
@@ -558,8 +578,8 @@ test.describe('Homepage', () => {
                 patreonUrl
             ]));
             expect(musicGroup.member).toEqual(expect.arrayContaining([
-                expect.objectContaining({ name: 'Eric' }),
-                expect.objectContaining({ name: 'Kathryn' })
+                expect.objectContaining({ name: 'Eric Happe' }),
+                expect.objectContaining({ name: 'Kathryn Brunhaver' })
             ]));
         });
     });
