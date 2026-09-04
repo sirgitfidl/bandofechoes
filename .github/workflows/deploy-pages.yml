@@ -36,7 +36,8 @@ jobs:
           node-version: 20
 
       - name: Refresh YouTube community posts (best effort)
-        run: node scripts/generate-youtube-posts-data.mjs || echo "WARNING: could not refresh community posts; keeping last committed snapshot."
+        run: |
+          node scripts/generate-youtube-posts-data.mjs || echo "WARNING: could not refresh community posts; keeping last committed snapshot."
 
       - name: Inject YouTube API key (optional)
         env:
