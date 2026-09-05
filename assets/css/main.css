@@ -30,6 +30,91 @@ body {
     line-height: 1.45;
 }
 
+/* Full-screen intro video overlay; click/tap dissolves it to reveal the site beneath */
+.landing-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999998;
+    background: #0c0c0c;
+    cursor: pointer;
+    transition: opacity 700ms ease;
+}
+
+.landing-overlay.is-dismissed {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.landing-overlay .landing-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* Fills the screen at all times; crops rather than letterboxing */
+    object-fit: cover;
+    pointer-events: none;
+}
+
+/* Slight tint between the video and the logo for separation */
+.landing-overlay .landing-tint {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .15);
+    pointer-events: none;
+}
+
+.landing-overlay .landing-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Spans nearly the full screen width at any viewport size */
+    width: min(94vw, 1600px);
+    height: auto;
+    opacity: .78;
+    pointer-events: none;
+}
+
+/* Line-flanked call to action, styled like the section headings (e.g. "About") */
+.landing-overlay .landing-cta {
+    position: absolute;
+    top: 88%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    max-width: 360px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.25vw, 11px);
+    color: var(--fg);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: clamp(11px, 1.5vw, 16px);
+    pointer-events: none;
+}
+
+.landing-overlay .landing-cta::before,
+.landing-overlay .landing-cta::after {
+    content: '';
+    flex: 1 1 auto;
+    min-width: 16px;
+    height: 1px;
+}
+
+.landing-overlay .landing-cta::before {
+    background: linear-gradient(90deg, transparent 0%, color-mix(in oklab, var(--muted) 65%, var(--fg)) 78%, color-mix(in oklab, var(--muted) 65%, var(--fg)) 100%);
+}
+
+.landing-overlay .landing-cta::after {
+    background: linear-gradient(90deg, color-mix(in oklab, var(--muted) 65%, var(--fg)) 0%, color-mix(in oklab, var(--muted) 65%, var(--fg)) 22%, transparent 100%);
+}
+
+body.landing-active {
+    overflow: hidden;
+}
+
 /* Portrait lock overlay (shown when user rotates phone to landscape) */
 .rotate-lock-overlay {
     position: fixed;

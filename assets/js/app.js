@@ -25,6 +25,28 @@ function isAutomation() {
 (function init() {
   const year = document.getElementById('year'); if (year) year.textContent = new Date().getFullYear();
 
+  // Landing intro: full-screen looping video overlay, dissolved on click/keypress
+  const landingOverlay = document.getElementById('landingOverlay');
+  if (landingOverlay) {
+    if (isAutomation()) {
+      landingOverlay.remove();
+    } else {
+      document.body.classList.add('landing-active');
+      const landingVideo = landingOverlay.querySelector('video');
+      const dismissLanding = () => {
+        if (landingOverlay.classList.contains('is-dismissed')) return;
+        landingOverlay.classList.add('is-dismissed');
+        document.body.classList.remove('landing-active');
+        if (landingVideo) landingVideo.pause();
+        window.setTimeout(() => landingOverlay.remove(), 700);
+      };
+      landingOverlay.addEventListener('click', dismissLanding);
+      landingOverlay.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dismissLanding(); }
+      });
+    }
+  }
+
   // About: collapsible bio on narrow viewports, with a "Read more" toggle
   const aboutCopy = document.getElementById('aboutCopy');
   const aboutToggle = document.querySelector('[data-testid="about-toggle"]');
