@@ -28,6 +28,13 @@ body {
     background: var(--bg);
     color: var(--fg);
     line-height: 1.45;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
 }
 
 /* Full-screen intro video overlay; click/tap dissolves it to reveal the site beneath */
